@@ -1,4 +1,4 @@
-modules = ["dotnet-7.0", "nodejs-20", "bash"]
+modules = ["dotnet-7.0", "nodejs-20", "bash", "postgresql-16", "dotnet-8.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -159,3 +159,7 @@ JWT_SECRET = "7596ffa786dfbfbacbeab9629a474bdb61a74aaec7225881b0d8b1e5abf23644"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3000

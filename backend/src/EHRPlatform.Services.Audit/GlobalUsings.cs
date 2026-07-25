@@ -12,3 +12,4 @@ global using EHRPlatform.Services.Audit.Features.Audit.Commands;
 global using EHRPlatform.Services.Audit.Features.Audit.Queries;
 global using EHRPlatform.Services.Audit.Features.Audit.Handlers;
 global using EHRPlatform.Services.Audit.Features.Audit.Validation;
+global using EHRPlatform.Services.Audit.Features.Audit.Dtos.Responses;

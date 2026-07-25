@@ -2,7 +2,7 @@ using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Notification.Features.Notifications.Commands;
-using EHRPlatform.Services.Notification.Features.Notifications.Domain;
+
 using EHRPlatform.Services.Notification.Features.Notifications.Dtos.Responses;
 using Mapster;
 
@@ -62,7 +62,7 @@ public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCo
             TemplateVars = command.TemplateVars ?? new()
         };
 
-        var repo = _unitOfWork.Repository<Domain.Notification>();
+        var repo = _unitOfWork.Repository<Notification>();
         await repo.AddAsync(notification, cancellationToken);
 
         // Publish event

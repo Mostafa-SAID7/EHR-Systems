@@ -1,6 +1,5 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Services.Audit.Features.Audit.Domain;
 using Mapster;
 using System.Security.Cryptography;
 using System.Text;

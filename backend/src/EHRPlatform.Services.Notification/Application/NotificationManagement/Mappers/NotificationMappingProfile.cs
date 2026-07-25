@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Services.Notification.Features.Notifications.Domain;
+
 using EHRPlatform.Services.Notification.Features.Notifications.Dtos.Responses;
 
 namespace EHRPlatform.Services.Notification.Application.NotificationManagement.Mappers;
@@ -14,7 +14,7 @@ public class NotificationMappingProfile : IRegister
     public void Register(TypeAdapterConfig config)
     {
         // Notification → NotificationResponseDto
-        config.NewConfig<Domain.Notification, NotificationResponseDto>()
+        config.NewConfig<Notification, NotificationResponseDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.RecipientId, src => src.RecipientId)
             .Map(dest => dest.Channel, src => src.Channel)
@@ -40,7 +40,7 @@ public class NotificationMappingProfile : IRegister
             .Map(dest => dest.IsActive, src => src.IsActive);
 
         // NotificationResponseDto → Notification (for updates)
-        config.NewConfig<NotificationResponseDto, Domain.Notification>()
+        config.NewConfig<NotificationResponseDto, Notification>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.RecipientId, src => src.RecipientId)
             .Map(dest => dest.Channel, src => src.Channel)

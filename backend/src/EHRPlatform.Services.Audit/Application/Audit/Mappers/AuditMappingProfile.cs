@@ -1,27 +1,20 @@
-using AutoMapper;
+using Mapster;
 using EHRPlatform.Services.Audit.Domain.Entities;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 
 namespace EHRPlatform.Services.Audit.Application.Audit.Mappers;
 
 /// <summary>
-/// AutoMapper profile for Audit entities.
+/// Mapster registration profile for Audit entity mappings.
 /// </summary>
-public class AuditMappingProfile : Profile
+public class AuditMappingProfile : IRegister
 {
-    public AuditMappingProfile()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<AuditEntry, AuditEntryResponse>();
-        CreateMap<AccessLog, AccessLogResponse>();
-    }
-}
+        config.NewConfig<AuditEntry, AuditEntryResponse>()
+            .Map(dest => dest.Details, src => src.ChangeDetails);
 
-public class AccessLogResponse
-{
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public string? UserEmail { get; set; }
-    public string? ResourceType { get; set; }
-    public string? ResourceId { get; set; }
-    public DateTime AccessedAt { get; set; }
+        config.NewConfig<AccessLog, AccessLogResponse>()
+            .Map(dest => dest.AccessedAt, src => src.AccessedAt);
+    }
 }

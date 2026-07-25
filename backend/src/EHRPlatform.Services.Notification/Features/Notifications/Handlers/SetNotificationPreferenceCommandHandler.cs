@@ -1,7 +1,7 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Notification.Features.Notifications.Commands;
-using EHRPlatform.Services.Notification.Features.Notifications.Domain;
+
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Handlers;
 
