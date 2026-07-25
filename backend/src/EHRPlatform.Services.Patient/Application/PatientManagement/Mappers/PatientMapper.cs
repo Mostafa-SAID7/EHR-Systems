@@ -2,6 +2,7 @@ using Mapster;
 using EHRPlatform.Common.Mapping;
 using Microsoft.Extensions.Logging;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
+using PatientListDto = EHRPlatform.Services.Patient.Application.PatientManagement.Responses.PatientListDto;
 
 namespace EHRPlatform.Services.Patient.Application.PatientManagement.Mappers;
 
