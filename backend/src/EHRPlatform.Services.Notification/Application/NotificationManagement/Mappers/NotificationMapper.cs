@@ -1,6 +1,6 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
-
+using EHRPlatform.Services.Notification.Domain.Entities;
 using EHRPlatform.Services.Notification.Features.Notifications.Dtos.Responses;
 using Microsoft.Extensions.Logging;
 

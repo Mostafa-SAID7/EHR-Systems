@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ApptEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
 
 namespace EHRPlatform.Services.Appointment.Data.Configuration;
 
-public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
+public class AppointmentConfiguration : IEntityTypeConfiguration<ApptEntity>
 {
-    public void Configure(EntityTypeBuilder<Appointment> entity)
+    public void Configure(EntityTypeBuilder<ApptEntity> entity)
     {
         entity.HasKey(e => e.Id);
         entity.HasIndex(e => e.PatientId);

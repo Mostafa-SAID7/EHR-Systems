@@ -12,7 +12,7 @@ public class PatientMappingProfile : IRegister
     public void Register(TypeAdapterConfig config)
     {
         // Patient → PatientResponseDto
-        config.NewConfig<Entities.Patient, PatientResponseDto>()
+        config.NewConfig<Patient, PatientResponseDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.FirstName, src => src.FirstName)
             .Map(dest => dest.LastName, src => src.LastName)

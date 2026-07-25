@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
-
+using EHRPlatform.Services.Notification.Domain.Entities;
 
 namespace EHRPlatform.Services.Notification.Data;
 

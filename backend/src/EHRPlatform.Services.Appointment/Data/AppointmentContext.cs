@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
+using ApptEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
+using ProvAvailEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.ProviderAvailability;
 
 namespace EHRPlatform.Services.Appointment.Data;
 
@@ -8,9 +10,9 @@ public class AppointmentContext : BaseDbContext
 {
     public AppointmentContext(DbContextOptions<AppointmentContext> options) : base(options) { }
 
-    public DbSet<Appointment> Appointments { get; set; } = null!;
+    public DbSet<ApptEntity> Appointments { get; set; } = null!;
     public DbSet<AppointmentReminder> AppointmentReminders { get; set; } = null!;
-    public DbSet<ProviderAvailability> ProviderAvailability { get; set; } = null!;
+    public DbSet<ProvAvailEntity> ProviderAvailability { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

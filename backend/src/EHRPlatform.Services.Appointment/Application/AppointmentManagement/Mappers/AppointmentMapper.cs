@@ -2,32 +2,34 @@ using Mapster;
 using EHRPlatform.Common.Mapping;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 using Microsoft.Extensions.Logging;
+using ApptEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
+using ProvAvailEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.ProviderAvailability;
 
 namespace EHRPlatform.Services.Appointment.Application.AppointmentManagement.Mappers;
 
 /// <summary>
 /// Appointment mapper. Single Responsibility: convert Appointment domain model to DTOs.
 /// </summary>
-public class AppointmentMapper : MappingServiceBase<Appointment, AppointmentResponseDto>
+public class AppointmentMapper : MappingServiceBase<ApptEntity, AppointmentResponseDto>
 {
     public AppointmentMapper(ILogger<AppointmentMapper> logger) : base(logger) { }
 
-    public AppointmentResponseDto MapToResponseDto(Appointment appointment) => MapToDto(appointment);
+    public AppointmentResponseDto MapToResponseDto(ApptEntity appointment) => MapToDto(appointment);
 
-    public List<AppointmentResponseDto> MapToResponseDtoList(ICollection<Appointment> appointments)
+    public List<AppointmentResponseDto> MapToResponseDtoList(ICollection<ApptEntity> appointments)
     {
         Logger.LogDebug("Mapping {Count} appointments to response DTO list", appointments.Count);
         return appointments.Adapt<List<AppointmentResponseDto>>();
     }
 
-    public AppointmentListDto MapToListDto(IList<Appointment> appointments, int total, int pageNumber, int pageSize)
+    public AppointmentListDto MapToListDto(IList<ApptEntity> appointments, int total, int pageNumber, int pageSize)
         => new()
         {
             Items = appointments.Adapt<List<AppointmentResponseDto>>(),
             Total = total, PageNumber = pageNumber, PageSize = pageSize
         };
 
-    public ProviderAppointmentCalendarDto MapToProviderCalendarDto(Guid providerId, DateTime date, IList<Appointment> appointments)
+    public ProviderAppointmentCalendarDto MapToProviderCalendarDto(Guid providerId, DateTime date, IList<ApptEntity> appointments)
         => new()
         {
             ProviderId = providerId, Date = date,
@@ -39,7 +41,7 @@ public class AppointmentMapper : MappingServiceBase<Appointment, AppointmentResp
             }).ToList()
         };
 
-    public ProviderAvailabilityListDto MapToAvailabilityListDto(Guid providerId, IList<ProviderAvailability> slots)
+    public ProviderAvailabilityListDto MapToAvailabilityListDto(Guid providerId, IList<ProvAvailEntity> slots)
         => new()
         {
             ProviderId = providerId,

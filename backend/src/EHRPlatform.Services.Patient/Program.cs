@@ -1,6 +1,7 @@
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Health;
 using EHRPlatform.Common.Messaging;
+using EHRPlatform.Common.Security;
 using EHRPlatform.Services.Patient.Data;
 using EHRPlatform.Services.Patient.Messaging.Consumers;
 using EHRPlatform.Services.Patient.Sagas;

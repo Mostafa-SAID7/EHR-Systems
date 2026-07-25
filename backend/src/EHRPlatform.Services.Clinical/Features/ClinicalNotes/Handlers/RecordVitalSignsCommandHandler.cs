@@ -1,6 +1,8 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
+using EHRPlatform.Services.Clinical.Domain.Events;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;

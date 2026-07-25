@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EHRPlatform.Services.Prescription.Features.Prescriptions.Domain;
+using EHRPlatform.Services.Prescription.Domain.Entities;
 
 namespace EHRPlatform.Services.Prescription.Data.Configuration;
 
