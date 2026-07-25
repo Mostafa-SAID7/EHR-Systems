@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { SidebarComponent, NavItem } from '../../shared/components/layout/sidebar/sidebar.component';
 import { TopbarComponent, TopbarAction } from '../../shared/components/layout/topbar/topbar.component';
+import { AuthService } from '../../core/services/auth.service';
 
 // SVG path constants — centralised so icons are consistent across sidebar + topbar
 const ICONS = {
@@ -52,7 +54,8 @@ const ICONS = {
         <app-topbar
           [title]="pageTitle"
           [actions]="topbarActions"
-          [userName]="'Dr. Admin'"
+          [userName]="displayName"
+          [userAvatar]="userAvatar"
           (toggleSidebar)="onToggleSidebar()"
           (logout)="onLogout()"
         />
@@ -66,10 +69,27 @@ const ICONS = {
   `,
 })
 export class MainLayoutComponent implements OnInit {
-  sidebarCollapsed = false;
-  mobileSidebarOpen = false;
-  pageTitle = 'Dashboard';
+  private authService = inject(AuthService);
+  private router      = inject(Router);
 
+  sidebarCollapsed  = false;
+  mobileSidebarOpen = false;
+  pageTitle         = 'Dashboard';
+
+  // ── Reactive user data from AuthService ─────────────────────────────
+  get displayName(): string {
+    const user = this.authService.getCurrentUser();
+    if (!user) return 'User';
+    const parts = [user.firstName, user.lastName].filter(Boolean);
+    return parts.length ? parts.join(' ') : (user.email ?? 'User');
+  }
+
+  get userAvatar(): string {
+    const user = this.authService.getCurrentUser();
+    return (user as any)?.avatar ?? (user as any)?.profileImage ?? '';
+  }
+
+  // ── Navigation items ─────────────────────────────────────────────────
   navItems: NavItem[] = [
     { id: 'dashboard',    label: 'Dashboard',    icon: ICONS.dashboard,     route: '/dashboard' },
     { id: 'patients',     label: 'Patients',     icon: ICONS.patients,      route: '/patients' },
@@ -79,21 +99,46 @@ export class MainLayoutComponent implements OnInit {
       children: [
         { id: 'notes',  label: 'Clinical Notes', icon: ICONS.notes,  route: '/clinical/notes' },
         { id: 'vitals', label: 'Vitals',          icon: ICONS.vitals, route: '/clinical/vitals' },
-        { id: 'labs',   label: 'Lab Results',     icon: ICONS.labs,   route: '/clinical/labs' },
+        { id: 'labs',   label: 'Lab Results',     icon: ICONS.labs,   route: '/lab-results' },
       ],
     },
     { id: 'prescriptions', label: 'Prescriptions', icon: ICONS.prescriptions, route: '/prescriptions' },
     { id: 'billing',       label: 'Billing',        icon: ICONS.billing,       route: '/billing' },
-    { id: 'reports',       label: 'Reports',        icon: ICONS.reports,       route: '/reports' },
-    { id: 'admin',         label: 'Admin',           icon: ICONS.admin,         route: '/admin' },
+    {
+      id: 'reports', label: 'Reports', icon: ICONS.reports,
+      children: [
+        { id: 'reports-main',  label: 'Analytics',        icon: ICONS.reports, route: '/reports' },
+        { id: 'pop-health',    label: 'Population Health', icon: ICONS.vitals,  route: '/reports/population-health' },
+        { id: 'compliance',    label: 'Compliance',        icon: ICONS.admin,   route: '/reports/compliance' },
+      ],
+    },
+    {
+      id: 'admin', label: 'Admin', icon: ICONS.admin,
+      children: [
+        { id: 'admin-dash',  label: 'Overview',       icon: ICONS.dashboard,    route: '/admin' },
+        { id: 'admin-users', label: 'Users',           icon: ICONS.patients,     route: '/admin/users' },
+        { id: 'admin-roles', label: 'Roles',           icon: ICONS.clinical,     route: '/admin/roles' },
+        { id: 'admin-audit', label: 'Audit Logs',      icon: ICONS.notes,        route: '/admin/audit-logs' },
+        { id: 'admin-set',   label: 'Settings',        icon: ICONS.admin,        route: '/admin/settings' },
+      ],
+    },
   ];
 
   topbarActions: TopbarAction[] = [
-    { id: 'search',        iconPath: ICONS.search, label: 'Search' },
+    { id: 'search',        iconPath: ICONS.search, label: 'Search patients' },
     { id: 'notifications', iconPath: ICONS.bell,   label: 'Notifications', badge: 3 },
   ];
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Update page title from route data on navigation
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => {
+        let route = this.router.routerState.snapshot.root;
+        while (route.firstChild) route = route.firstChild;
+        this.pageTitle = route.data['title'] ?? 'EHR Platform';
+      });
+  }
 
   onToggleSidebar(): void {
     if (window.innerWidth < 768) {
@@ -103,5 +148,9 @@ export class MainLayoutComponent implements OnInit {
     }
   }
 
-  onLogout(): void {}
+  onLogout(): void {
+    this.authService.logout().subscribe(() => {
+      this.router.navigate(['/auth/login']);
+    });
+  }
 }

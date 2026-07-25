@@ -1,0 +1,31 @@
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+export interface VitalsData {
+  label: string;
+  value: string;
+  unit: string;
+}
+
+@Component({
+  selector: 'app-appointment-vitals-card',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="card" *ngIf="show">
+      <h2 class="heading-sm mb-4">Vitals Recorded</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div *ngFor="let v of vitals" class="p-3 rounded-xl card-green text-center">
+          <p class="text-2xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{{ v.label }}</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{{ v.value }}</p>
+          <p class="text-2xs text-gray-400">{{ v.unit }}</p>
+        </div>
+      </div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class AppointmentVitalsCardComponent {
+  @Input() vitals: VitalsData[] = [];
+  @Input() show = true;
+}

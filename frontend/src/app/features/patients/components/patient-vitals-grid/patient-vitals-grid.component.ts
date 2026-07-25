@@ -1,0 +1,40 @@
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+export interface PatientVitals {
+  label: string;
+  value: string;
+  unit: string;
+  icon: string;
+  iconClass: string;
+  alert: boolean;
+}
+
+@Component({
+  selector: 'app-patient-vitals-grid',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
+      <div *ngFor="let v of vitals" class="card-hover">
+        <div class="flex items-center gap-2 mb-2">
+          <div [ngClass]="v.iconClass" class="icon-box-sm shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="v.icon"/>
+            </svg>
+          </div>
+          <p class="text-2xs font-semibold text-gray-400 uppercase tracking-wider">{{ v.label }}</p>
+        </div>
+        <p class="text-2xl font-bold tabular-nums" [ngClass]="v.alert ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'">
+          {{ v.value }}
+        </p>
+        <p class="text-2xs text-gray-400 dark:text-gray-500 mt-0.5">{{ v.unit }}</p>
+        <p *ngIf="v.alert" class="text-2xs text-red-500 mt-1 font-medium">⚠ Above normal</p>
+      </div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PatientVitalsGridComponent {
+  @Input() vitals: PatientVitals[] = [];
+}

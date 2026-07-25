@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { BillingStatsStripComponent, BillingStat } from '../../components/billing-stats-strip/billing-stats-strip.component';
 
 interface Invoice {
   id: string;
@@ -17,7 +18,7 @@ interface Invoice {
 @Component({
   selector: 'app-billing-page',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, BillingStatsStripComponent, DecimalPipe],
   template: `
     <div class="space-y-6 stagger">
 
@@ -44,106 +45,84 @@ interface Invoice {
         </div>
       </div>
 
-      <!-- ── Revenue stats ────────────────────────── -->
-      <div class="grid-stats">
-        <div *ngFor="let s of revenueStats; let i = index"
-          class="stat-card animate-count-up"
-          [style.animation-delay]="i * 70 + 'ms'">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
-              <p class="stat-label">{{ s.label }}</p>
-              <p class="stat-value mt-1.5">{{ s.value }}</p>
-            </div>
-            <div [ngClass]="s.iconClass" class="icon-box-lg shrink-0">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="s.icon"/>
-              </svg>
-            </div>
-          </div>
-          <div class="mt-3" [ngClass]="s.positive ? 'stat-change positive' : 'stat-change negative'">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                [attr.d]="s.positive ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
-            </svg>
-            <span>{{ s.change }}</span>
-          </div>
-        </div>
-      </div>
+      <!-- ── Revenue stats subcomponent ──────────────── -->
+      <app-billing-stats-strip
+        [stats]="revenueStats"
+      ></app-billing-stats-strip>
 
-      <!-- ── Collection rate ──────────────────────── -->
-      <div class="card">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="heading-sm">Collection Rate</h2>
-            <p class="body-text mt-0.5">Monthly payment collection progress</p>
-          </div>
-          <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">87.4%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: 87.4%"></div>
-        </div>
-        <div class="flex items-center justify-between mt-3 text-xs text-gray-500 dark:text-gray-400">
-          <span>Collected: <span class="font-semibold text-primary-600">$42,800</span></span>
-          <span>Target: $49,000</span>
-        </div>
-      </div>
+      <!-- ── Recent invoices + Summary ───────────── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- ── Invoices table ────────────────────────── -->
-      <div class="card p-0 overflow-hidden">
-        <div class="card-header">
-          <h2 class="heading-sm">Recent Invoices</h2>
-          <div class="flex items-center gap-2">
-            <span *ngFor="let f of invoiceFilters"
-              class="badge-neutral cursor-pointer hover:badge-primary transition-all duration-150">{{ f }}</span>
+        <!-- Invoices table -->
+        <div class="lg:col-span-2 card p-0 overflow-hidden">
+          <div class="card-header">
+            <h2 class="heading-sm">Recent Invoices</h2>
+            <button class="link-primary text-xs">View all &rarr;</button>
           </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="table-base">
-            <thead>
-              <tr>
-                <th>Patient</th>
-                <th>Service</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Balance</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let inv of invoices">
-                <td>
-                  <div class="flex items-center gap-2.5">
-                    <div class="avatar-custom-md" [style.background]="inv.color">
-                      {{ inv.initials }}
+          <div class="overflow-x-auto">
+            <table class="table-base">
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Patient</th>
+                  <th>Service</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inv of recentInvoices">
+                  <td class="font-mono font-medium text-xs text-gray-500">#{{ inv.id }}</td>
+                  <td>
+                    <div class="flex items-center gap-2.5">
+                      <div class="avatar-custom-sm" [style.background]="inv.color">{{ inv.initials }}</div>
+                      <span class="font-medium text-gray-900 dark:text-white">{{ inv.patient }}</span>
                     </div>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ inv.patient }}</span>
-                  </div>
-                </td>
-                <td class="text-gray-600 dark:text-gray-400">{{ inv.service }}</td>
-                <td class="text-gray-500 dark:text-gray-400 text-xs">{{ inv.date | date:'MMM d, y' }}</td>
-                <td class="font-semibold text-gray-900 dark:text-white">\${{ inv.amount | number:'1.2-2' }}</td>
-                <td>
-                  <span [class]="inv.paid >= inv.amount ? 'text-primary-600 dark:text-primary-400 font-semibold' : 'text-red-500 dark:text-red-400 font-semibold'">
-                    \${{ (inv.amount - inv.paid) | number:'1.2-2' }}
-                  </span>
-                </td>
-                <td>
-                  <span [ngClass]="getInvoiceStatusClass(inv.status)" class="badge">{{ inv.status }}</span>
-                </td>
-                <td>
-                  <button class="btn-icon-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                  <td class="text-xs text-gray-500 dark:text-gray-400">{{ inv.service }}</td>
+                  <td class="font-semibold text-gray-900 dark:text-white tabular-nums">\${{ inv.amount }}</td>
+                  <td>
+                    <span [ngClass]="statusClass(inv.status)" class="badge">{{ inv.status }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <!-- Billing summary / Breakdown -->
+        <div class="space-y-4">
+          <div class="card">
+            <h2 class="heading-sm mb-4">Payer Breakdown</h2>
+            <div class="space-y-3">
+              <div *ngFor="let p of payerBreakdown">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="text-gray-600 dark:text-gray-400 font-medium">{{ p.label }}</span>
+                  <span class="font-semibold text-gray-900 dark:text-white tabular-nums">{{ p.pct }}%</span>
+                </div>
+                <div class="progress-bar h-1.5">
+                  <div class="progress-fill" [style.width.%]="p.pct"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-green p-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs font-semibold text-primary-700 dark:text-primary-300">Clean Claims Rate</p>
+                <p class="text-3xl font-extrabold text-primary-800 dark:text-primary-200 mt-1">98.4%</p>
+                <p class="text-2xs text-primary-600 dark:text-primary-400 mt-1">↑ +2.1% vs last month</p>
+              </div>
+              <div class="icon-box-lg bg-white/60 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -151,32 +130,30 @@ interface Invoice {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BillingPageComponent implements OnInit {
-  invoiceFilters = ['All', 'Pending', 'Overdue'];
-
-  revenueStats = [
-    { label: 'Total Revenue',    value: '$49,200', change: '+8.2% vs last month', positive: true,  icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', iconClass: 'icon-box-primary' },
-    { label: 'Collected',        value: '$42,800', change: '+5.1% vs last month', positive: true,  icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', iconClass: 'icon-box-teal' },
-    { label: 'Outstanding',      value: '$6,400',  change: '-12% vs last month',  positive: true,  icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', iconClass: 'icon-box-amber' },
-    { label: 'Overdue',          value: '$1,820',  change: '+2 invoices',         positive: false, icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', iconClass: 'icon-box-red' },
+  revenueStats: BillingStat[] = [
+    { label: 'Total Billed (MTD)', value: '$124,850', change: '+12.4% vs last month', positive: true,  icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', iconClass: 'icon-box-primary' },
+    { label: 'Collected (MTD)',    value: '$98,420',  change: '+8.2% collection rate', positive: true,  icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', iconClass: 'icon-box-teal' },
+    { label: 'Outstanding A/R',    value: '$26,430',  change: '-4.1% aged >30 days',   positive: true,  icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', iconClass: 'icon-box-amber' },
+    { label: 'Claims Denied',      value: '1.6%',     change: '-0.4% denial rate',     positive: true,  icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', iconClass: 'icon-box-red' },
   ];
 
-  invoices: Invoice[] = [
-    { id: 'INV-001', patient: 'Sarah Johnson',  initials: 'SJ', service: 'General Checkup',    date: new Date(2026, 6, 20), amount: 250,   paid: 250,   status: 'Paid',    color: '#16a34a' },
-    { id: 'INV-002', patient: 'Michael Chen',   initials: 'MC', service: 'Pulmonology Consult', date: new Date(2026, 6, 18), amount: 480,   paid: 0,     status: 'Pending', color: '#2563eb' },
-    { id: 'INV-003', patient: 'Emma Williams',  initials: 'EW', service: 'Neurology Review',    date: new Date(2026, 6, 15), amount: 320,   paid: 160,   status: 'Partial', color: '#7c3aed' },
-    { id: 'INV-004', patient: 'Robert Davis',   initials: 'RD', service: 'Cardiology + Echo',   date: new Date(2026, 5, 30), amount: 1200,  paid: 0,     status: 'Overdue', color: '#dc2626' },
-    { id: 'INV-005', patient: 'Linda Martinez', initials: 'LM', service: 'Annual Physical',     date: new Date(2026, 6, 22), amount: 180,   paid: 180,   status: 'Paid',    color: '#0d9488' },
-    { id: 'INV-006', patient: 'James Wilson',   initials: 'JW', service: 'COPD Follow-up',      date: new Date(2026, 6, 10), amount: 290,   paid: 0,     status: 'Overdue', color: '#d97706' },
+  recentInvoices: Invoice[] = [
+    { id: '1084', patient: 'Sarah Johnson',  initials: 'SJ', service: 'Annual Physical + Labs', date: new Date(2026, 6, 23), amount: 350, paid: 350, status: 'Paid',    color: 'linear-gradient(135deg,#16a34a,#15803d)' },
+    { id: '1083', patient: 'Michael Chen',   initials: 'MC', service: 'Pulmonary Consult',     date: new Date(2026, 6, 22), amount: 220, paid: 0,   status: 'Pending', color: 'linear-gradient(135deg,#0d9488,#0f766e)' },
+    { id: '1082', patient: 'Robert Davis',   initials: 'RD', service: 'Cardiology Follow-up',   date: new Date(2026, 6, 20), amount: 180, paid: 90,  status: 'Partial', color: 'linear-gradient(135deg,#d97706,#b45309)' },
+    { id: '1081', patient: 'Linda Martinez', initials: 'LM', service: 'Lab Diagnostic Panel',   date: new Date(2026, 5, 28), amount: 145, paid: 0,   status: 'Overdue', color: 'linear-gradient(135deg,#dc2626,#b91c1c)' },
+    { id: '1080', patient: 'Emma Williams',  initials: 'EW', service: 'Neurology Evaluation',   date: new Date(2026, 6, 18), amount: 410, paid: 410, status: 'Paid',    color: 'linear-gradient(135deg,#7c3aed,#6d28d9)' },
   ];
 
-  getInvoiceStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      'Paid':    'badge-success',
-      'Pending': 'badge-warning',
-      'Overdue': 'badge-danger',
-      'Partial': 'badge-info',
-    };
-    return map[status] || 'badge-neutral';
+  payerBreakdown = [
+    { label: 'Commercial / Private', pct: 52 },
+    { label: 'Medicare',             pct: 28 },
+    { label: 'Medicaid',             pct: 12 },
+    { label: 'Self-Pay / Patient',   pct: 8 },
+  ];
+
+  statusClass(s: string): string {
+    return s === 'Paid' ? 'badge-success' : s === 'Pending' ? 'badge-warning' : s === 'Partial' ? 'badge-info' : 'badge-danger';
   }
 
   ngOnInit(): void {}

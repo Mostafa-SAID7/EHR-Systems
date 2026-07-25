@@ -1,0 +1,40 @@
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+export interface QuickAction {
+  label: string;
+  route: string;
+  iconPath: string;
+  iconBoxClass: string;
+}
+
+@Component({
+  selector: 'app-dashboard-quick-actions',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div>
+      <div class="section-header">
+        <h2>Quick Actions</h2>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <a *ngFor="let action of actions; let i = index"
+          [routerLink]="action.route"
+          class="card-hover flex flex-col items-center justify-center gap-3 py-6 text-center"
+          [style.animation-delay]="i * 55 + 'ms'">
+          <div [ngClass]="action.iconBoxClass" class="icon-box-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="action.iconPath"/>
+            </svg>
+          </div>
+          <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ action.label }}</span>
+        </a>
+      </div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class DashboardQuickActionsComponent {
+  @Input() actions: QuickAction[] = [];
+}

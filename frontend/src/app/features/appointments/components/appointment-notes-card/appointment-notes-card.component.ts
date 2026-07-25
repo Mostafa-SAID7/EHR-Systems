@@ -1,0 +1,39 @@
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-appointment-notes-card',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="heading-sm">Visit Notes</h2>
+        <button class="btn-secondary btn-sm" (click)="toggleEditing()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+          </svg>
+          {{ editingNotes ? 'Save' : 'Edit' }}
+        </button>
+      </div>
+      <div *ngIf="!editingNotes">
+        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{{ notes || 'No notes recorded for this appointment.' }}</p>
+      </div>
+      <textarea *ngIf="editingNotes" [(ngModel)]="notes" (ngModelChange)="notesChange.emit($event)" rows="5"
+        class="input-base w-full resize-none text-sm"
+        placeholder="Enter visit notes, chief complaint, clinical observations…"></textarea>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class AppointmentNotesCardComponent {
+  @Input() notes = '';
+  @Output() notesChange = new EventEmitter<string>();
+
+  editingNotes = false;
+
+  toggleEditing(): void {
+    this.editingNotes = !this.editingNotes;
+  }
+}

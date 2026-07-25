@@ -1,0 +1,75 @@
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+export interface PatientCard {
+  id: string;
+  name: string;
+  initials: string;
+  age: number;
+  gender: string;
+  mrn: string;
+  lastVisit: Date;
+  status: 'Active' | 'Inactive' | 'Critical';
+  conditions: string[];
+  color: string;
+}
+
+@Component({
+  selector: 'app-patient-cards-grid',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div *ngFor="let p of patients" class="card-hover group">
+        <div class="flex items-start gap-3">
+          <!-- Avatar -->
+          <div class="avatar-custom-lg" [style.background]="p.color">{{ p.initials }}</div>
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ p.name }}</p>
+              <span [ngClass]="getStatusClass(p.status)" class="badge shrink-0">{{ p.status }}</span>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {{ p.gender }}, {{ p.age }} yrs · MRN {{ p.mrn }}
+            </p>
+          </div>
+        </div>
+
+        <div class="divider my-3"></div>
+
+        <!-- Conditions -->
+        <div class="flex flex-wrap gap-1.5 mb-3">
+          <span *ngFor="let c of p.conditions" class="badge-neutral text-2xs">{{ c }}</span>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Last: {{ p.lastVisit | date:'MMM d' }}
+          </div>
+          <a [routerLink]="['/patients', p.id]" class="link-primary">
+            View
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PatientCardsGridComponent {
+  @Input() patients: PatientCard[] = [];
+
+  getStatusClass(status: string): string {
+    return status === 'Active' ? 'badge-success' :
+           status === 'Critical' ? 'badge-danger' : 'badge-neutral';
+  }
+}

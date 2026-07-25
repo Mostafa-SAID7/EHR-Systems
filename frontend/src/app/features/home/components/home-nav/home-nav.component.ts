@@ -1,0 +1,88 @@
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-home-nav',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-white/85 dark:bg-[#0c1410]/85 border-b border-primary-100/60 dark:border-primary-900/30 transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
+        <!-- Logo -->
+        <div class="flex items-center gap-3 cursor-pointer" (click)="scrollTo.emit('hero')">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary-700 via-primary-600 to-primary-400 flex items-center justify-center shadow-md shadow-primary-600/20 text-white animate-glow-pulse">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" 
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-gray-900 via-primary-900 to-primary-600 dark:from-white dark:via-gray-100 dark:to-primary-400 bg-clip-text text-transparent">
+              EHR Platform
+            </span>
+            <span class="block text-[10px] uppercase font-semibold tracking-widest text-primary-600 dark:text-primary-400 -mt-1">
+              Clinical OS
+            </span>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-300">
+          <button (click)="scrollTo.emit('features')" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Platform Features</button>
+          <button (click)="scrollTo.emit('solutions')" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Clinical Solutions</button>
+          <button (click)="scrollTo.emit('workflows')" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Workflows</button>
+          <button (click)="scrollTo.emit('security')" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Compliance</button>
+        </nav>
+
+        <!-- Auth Actions + Theme Toggle -->
+        <div class="flex items-center gap-3">
+          <button
+            (click)="toggleTheme.emit()"
+            [title]="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+            class="btn-icon text-amber-500 dark:text-primary-400"
+            aria-label="Toggle Theme"
+          >
+            <svg *ngIf="isDark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <svg *ngIf="!isDark" class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+          </button>
+
+          <ng-container *ngIf="isLoggedIn; else publicNav">
+            <a routerLink="/dashboard" class="btn-primary flex items-center gap-2 shadow-md">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              Go to Dashboard
+            </a>
+          </ng-container>
+          <ng-template #publicNav>
+            <a routerLink="/auth/login" class="btn-ghost">
+              Sign In
+            </a>
+            <a routerLink="/auth/login" class="btn-primary flex items-center gap-2">
+              <span>Launch Demo</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </a>
+          </ng-template>
+        </div>
+      </div>
+    </header>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class HomeNavComponent {
+  @Input() isLoggedIn = false;
+  @Input() isDark = false;
+
+  @Output() scrollTo = new EventEmitter<string>();
+  @Output() toggleTheme = new EventEmitter<void>();
+}

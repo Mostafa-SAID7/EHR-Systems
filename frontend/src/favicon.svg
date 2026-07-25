@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#15803d"/>
+      <stop offset="50%" style="stop-color:#16a34a"/>
+      <stop offset="100%" style="stop-color:#22c55e"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#15803d" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="64" height="64" rx="16" ry="16" fill="url(#bg)" filter="url(#shadow)"/>
+  <!-- Medical Cross (white) -->
+  <rect x="26" y="12" width="12" height="40" rx="4" ry="4" fill="white"/>
+  <rect x="12" y="26" width="40" height="12" rx="4" ry="4" fill="white"/>
+</svg>

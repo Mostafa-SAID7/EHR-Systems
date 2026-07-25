@@ -1,27 +1,13 @@
-import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-
-interface Patient {
-  id: string;
-  name: string;
-  initials: string;
-  dob: string;
-  age: number;
-  gender: 'Male' | 'Female' | 'Other';
-  mrn: string;
-  phone: string;
-  lastVisit: Date;
-  status: 'Active' | 'Inactive' | 'Critical';
-  conditions: string[];
-  color: string;
-}
+import { PatientCardsGridComponent, PatientCard } from '../../components/patient-cards-grid/patient-cards-grid.component';
 
 @Component({
   selector: 'app-patient-list-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PatientCardsGridComponent],
   template: `
     <div class="space-y-6 stagger">
 
@@ -50,7 +36,6 @@ interface Patient {
 
       <!-- ── Search + filters ─────────────────────── -->
       <div class="flex flex-col sm:flex-row gap-3">
-        <!-- Search -->
         <div class="relative flex-1">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +50,6 @@ interface Patient {
             class="input-icon w-full"
           />
         </div>
-        <!-- Filter pills -->
         <div class="flex items-center gap-2">
           <button *ngFor="let f of filters"
             (click)="activeFilter = f"
@@ -77,8 +61,7 @@ interface Patient {
 
       <!-- ── Stats row ────────────────────────────── -->
       <div class="grid-3-stats">
-        <div *ngFor="let s of summaryStats"
-          class="card-green flex items-center gap-3 py-3">
+        <div *ngFor="let s of summaryStats" class="card-green flex items-center gap-3 py-3">
           <div [ngClass]="s.iconClass" class="icon-box-md shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="s.icon"/>
@@ -91,52 +74,8 @@ interface Patient {
         </div>
       </div>
 
-      <!-- ── Patient grid ──────────────────────────── -->
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <div *ngFor="let p of filteredPatients()"
-          class="card-hover group">
-          <div class="flex items-start gap-3">
-            <!-- Avatar -->
-            <div class="avatar-custom-lg" [style.background]="p.color">
-              {{ p.initials }}
-            </div>
-            <!-- Info -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between gap-2">
-                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ p.name }}</p>
-                <span [ngClass]="getStatusClass(p.status)" class="badge shrink-0">{{ p.status }}</span>
-              </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {{ p.gender }}, {{ p.age }} yrs · MRN {{ p.mrn }}
-              </p>
-            </div>
-          </div>
-
-          <div class="divider my-3"></div>
-
-          <!-- Conditions -->
-          <div class="flex flex-wrap gap-1.5 mb-3">
-            <span *ngFor="let c of p.conditions" class="badge-neutral text-2xs">{{ c }}</span>
-          </div>
-
-          <!-- Footer -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Last: {{ p.lastVisit | date:'MMM d' }}
-            </div>
-            <a [routerLink]="['/patients', p.id]" class="link-primary">
-              View
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
+      <!-- ── Patient grid (subcomponent) ─────────── -->
+      <app-patient-cards-grid [patients]="filteredPatients()"></app-patient-cards-grid>
 
     </div>
   `,
@@ -147,13 +86,13 @@ export class PatientListPageComponent implements OnInit {
   activeFilter = 'All';
   filters = ['All', 'Active', 'Critical', 'Inactive'];
 
-  patients: Patient[] = [
-    { id: '1', name: 'Sarah Johnson',   initials: 'SJ', dob: '1985-03-12', age: 39, gender: 'Female', mrn: '00-1234', phone: '555-0101', lastVisit: new Date(Date.now() - 2 * 86400000),  status: 'Active',   conditions: ['Hypertension', 'Diabetes'],   color: 'linear-gradient(135deg,#16a34a,#15803d)' },
-    { id: '2', name: 'Michael Chen',    initials: 'MC', dob: '1978-07-22', age: 46, gender: 'Male',   mrn: '00-2345', phone: '555-0102', lastVisit: new Date(Date.now() - 1 * 86400000),  status: 'Active',   conditions: ['Asthma'],                     color: 'linear-gradient(135deg,#2563eb,#1d4ed8)' },
-    { id: '3', name: 'Emma Williams',   initials: 'EW', dob: '1992-11-05', age: 31, gender: 'Female', mrn: '00-3456', phone: '555-0103', lastVisit: new Date(Date.now() - 7 * 86400000),  status: 'Active',   conditions: ['Migraine', 'Anxiety'],        color: 'linear-gradient(135deg,#7c3aed,#6d28d9)' },
-    { id: '4', name: 'Robert Davis',    initials: 'RD', dob: '1965-01-30', age: 59, gender: 'Male',   mrn: '00-4567', phone: '555-0104', lastVisit: new Date(Date.now() - 3 * 86400000),  status: 'Critical', conditions: ['CAD', 'Heart Failure', 'CKD'], color: 'linear-gradient(135deg,#dc2626,#b91c1c)' },
-    { id: '5', name: 'Linda Martinez',  initials: 'LM', dob: '1988-09-14', age: 35, gender: 'Female', mrn: '00-5678', phone: '555-0105', lastVisit: new Date(Date.now() - 14 * 86400000), status: 'Active',   conditions: ['Hypothyroidism'],             color: 'linear-gradient(135deg,#0d9488,#0f766e)' },
-    { id: '6', name: 'James Wilson',    initials: 'JW', dob: '1971-04-18', age: 53, gender: 'Male',   mrn: '00-6789', phone: '555-0106', lastVisit: new Date(Date.now() - 30 * 86400000), status: 'Inactive', conditions: ['COPD'],                       color: 'linear-gradient(135deg,#d97706,#b45309)' },
+  patients: PatientCard[] = [
+    { id: '1', name: 'Sarah Johnson',  initials: 'SJ', age: 39, gender: 'Female', mrn: '00-1234', lastVisit: new Date(Date.now() - 2 * 86400000),  status: 'Active',   conditions: ['Hypertension', 'Diabetes'],   color: 'linear-gradient(135deg,#16a34a,#15803d)' },
+    { id: '2', name: 'Michael Chen',   initials: 'MC', age: 46, gender: 'Male',   mrn: '00-2345', lastVisit: new Date(Date.now() - 1 * 86400000),  status: 'Active',   conditions: ['Asthma'],                     color: 'linear-gradient(135deg,#2563eb,#1d4ed8)' },
+    { id: '3', name: 'Emma Williams',  initials: 'EW', age: 31, gender: 'Female', mrn: '00-3456', lastVisit: new Date(Date.now() - 7 * 86400000),  status: 'Active',   conditions: ['Migraine', 'Anxiety'],        color: 'linear-gradient(135deg,#7c3aed,#6d28d9)' },
+    { id: '4', name: 'Robert Davis',   initials: 'RD', age: 59, gender: 'Male',   mrn: '00-4567', lastVisit: new Date(Date.now() - 3 * 86400000),  status: 'Critical', conditions: ['CAD', 'Heart Failure', 'CKD'], color: 'linear-gradient(135deg,#dc2626,#b91c1c)' },
+    { id: '5', name: 'Linda Martinez', initials: 'LM', age: 35, gender: 'Female', mrn: '00-5678', lastVisit: new Date(Date.now() - 14 * 86400000), status: 'Active',   conditions: ['Hypothyroidism'],             color: 'linear-gradient(135deg,#0d9488,#0f766e)' },
+    { id: '6', name: 'James Wilson',   initials: 'JW', age: 53, gender: 'Male',   mrn: '00-6789', lastVisit: new Date(Date.now() - 30 * 86400000), status: 'Inactive', conditions: ['COPD'],                       color: 'linear-gradient(135deg,#d97706,#b45309)' },
   ];
 
   summaryStats = [
@@ -162,7 +101,7 @@ export class PatientListPageComponent implements OnInit {
     { value: '4',     label: 'Critical Status',  icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', iconClass: 'icon-box-red icon-box-md' },
   ];
 
-  filteredPatients(): Patient[] {
+  filteredPatients(): PatientCard[] {
     let list = this.patients;
     if (this.activeFilter !== 'All') {
       list = list.filter(p => p.status === this.activeFilter);
@@ -176,11 +115,6 @@ export class PatientListPageComponent implements OnInit {
       );
     }
     return list;
-  }
-
-  getStatusClass(status: string): string {
-    return status === 'Active' ? 'badge-success' :
-           status === 'Critical' ? 'badge-danger' : 'badge-neutral';
   }
 
   ngOnInit(): void {}

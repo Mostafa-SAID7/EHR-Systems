@@ -1,0 +1,36 @@
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+export interface LabStatusStat {
+  label: string;
+  count: number;
+  icon: string;
+  iconClass: string;
+}
+
+@Component({
+  selector: 'app-lab-status-strip',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div *ngFor="let s of stats"
+        class="card p-3 flex items-center gap-2.5 cursor-pointer
+               hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200">
+        <div class="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center" [ngClass]="s.iconClass">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="s.icon"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-base font-bold text-gray-900 dark:text-white tabular-nums">{{ s.count }}</p>
+          <p class="text-2xs text-gray-500 dark:text-gray-400 font-medium">{{ s.label }}</p>
+        </div>
+      </div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LabStatusStripComponent {
+  @Input() stats: LabStatusStat[] = [];
+}

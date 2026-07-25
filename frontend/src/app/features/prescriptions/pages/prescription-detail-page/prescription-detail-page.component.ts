@@ -1,29 +1,196 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CardComponent } from '../../../../shared/components/ui/card/card.component';
+import { RouterModule } from '@angular/router';
 
-/**
- * prescription-detail-page Component
- * Page for prescription-detail-page
- */
 @Component({
   selector: 'app-prescription-detail-page',
   standalone: true,
-  imports: [CommonModule, CardComponent],
+  imports: [CommonModule, RouterModule],
   template: `
-    <app-card title="prescription-detail-page">
-      <div class="text-center py-12">
-        <p class="text-gray-600 dark:text-gray-400">
-          prescription-detail-page page - Implementation in progress
-        </p>
+    <div class="space-y-6 stagger">
+
+      <!-- ── Header ───────────────────────────────────── -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <a routerLink="/prescriptions" class="btn-icon-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </a>
+          <div>
+            <h1 class="heading-xl">Prescription Detail</h1>
+            <p class="body-text mt-0.5">RX-{{ rx.id }} &middot; Issued {{ rx.date | date:'MMMM d, y' }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span [ngClass]="rx.status === 'Active' ? 'badge-success' : 'badge-neutral'" class="badge">{{ rx.status }}</span>
+          <button class="btn-secondary btn-sm">Print Rx</button>
+          <button class="btn-primary btn-sm">Request Refill</button>
+        </div>
       </div>
-    </app-card>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Main Rx card -->
+        <div class="lg:col-span-2 space-y-5">
+
+          <!-- Drug info card -->
+          <div class="card bg-gradient-to-br from-primary-50/60 to-white dark:from-primary-950/30 dark:to-surface-800 border border-primary-100 dark:border-primary-900/30">
+            <div class="flex items-start gap-4 mb-5">
+              <div class="icon-box-xl icon-box-teal shrink-0">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ rx.drug }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ rx.genericName }}</p>
+                <p class="text-xs text-primary-600 dark:text-primary-400 font-semibold mt-1">{{ rx.category }}</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div *ngFor="let d of drugDetails" class="p-3 rounded-xl bg-white/70 dark:bg-surface-800/70 border border-surface-100 dark:border-surface-700/40 text-center">
+                <p class="text-2xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{{ d.label }}</p>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">{{ d.value }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sig & instructions -->
+          <div class="card">
+            <h2 class="heading-sm mb-3">Directions for Use</h2>
+            <div class="p-4 rounded-xl bg-primary-50/50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/30">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white leading-relaxed">{{ rx.sig }}</p>
+            </div>
+            <div class="mt-4 space-y-2">
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Generic substitution permitted
+                </label>
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                  <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Dispense as written (DAW) — No
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Refill history -->
+          <div class="card p-0 overflow-hidden">
+            <div class="card-header">
+              <h2 class="heading-sm">Refill History</h2>
+              <span class="badge-primary">{{ rx.refills }} remaining</span>
+            </div>
+            <div class="divide-y divide-surface-100 dark:divide-surface-700/50">
+              <div *ngFor="let r of refillHistory" class="flex items-center justify-between px-5 py-3.5">
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ r.event }}</p>
+                  <p class="text-xs text-gray-400">{{ r.pharmacy }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ r.date }}</p>
+                  <span class="badge-success badge text-2xs">{{ r.status }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-5">
+
+          <!-- Patient card -->
+          <div class="card">
+            <h2 class="heading-sm mb-3">Patient</h2>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="avatar-custom-md" style="background: linear-gradient(135deg,#15803d,#16a34a)">SJ</div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Sarah Johnson</p>
+                <p class="text-2xs text-gray-400">MRN 00-1234 · DOB Mar 12, 1985</p>
+              </div>
+            </div>
+            <dl class="space-y-2">
+              <div class="flex justify-between">
+                <dt class="text-xs text-gray-400">Allergies</dt>
+                <dd class="text-xs font-semibold text-red-600 dark:text-red-400">Penicillin</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-xs text-gray-400">Indication</dt>
+                <dd class="text-xs font-semibold text-gray-900 dark:text-white">Type 2 Diabetes</dd>
+              </div>
+            </dl>
+            <a routerLink="/patients/1" class="link-primary mt-3 inline-flex">View Patient Profile →</a>
+          </div>
+
+          <!-- Prescriber -->
+          <div class="card">
+            <h2 class="heading-sm mb-3">Prescriber</h2>
+            <div class="flex items-center gap-3">
+              <div class="avatar-custom-md" style="background: linear-gradient(135deg,#0d9488,#0f766e)">DP</div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Dr. Ramesh Patel</p>
+                <p class="text-2xs text-gray-400">Internal Medicine · NPI: 1234567890</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pharmacy -->
+          <div class="card">
+            <h2 class="heading-sm mb-3">Dispensing Pharmacy</h2>
+            <div class="icon-box-sm icon-box-primary mb-3">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">CVS Pharmacy — Main St</p>
+            <p class="text-xs text-gray-400 mt-0.5">1200 Main St, Springfield · (555) 212-0000</p>
+            <p class="text-xs text-primary-600 dark:text-primary-400 font-medium mt-1">Sent electronically ✓</p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
   `,
-  styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrescriptionDetailPageComponent implements OnInit {
-  ngOnInit(): void {
-    // Initialize component
-  }
+  rx = {
+    id: '10042',
+    drug: 'Metformin 1000mg',
+    genericName: 'Metformin Hydrochloride',
+    category: 'Biguanide Antidiabetic Agent',
+    date: new Date(2026, 5, 15),
+    status: 'Active',
+    refills: 3,
+    sig: 'Take 1 tablet (1000mg) by mouth TWICE DAILY with meals. Swallow whole — do not crush or chew. Take with food to reduce GI side effects.',
+  };
+
+  drugDetails = [
+    { label: 'Strength',     value: '1000mg' },
+    { label: 'Form',         value: 'Tablet' },
+    { label: 'Route',        value: 'Oral' },
+    { label: 'Frequency',    value: 'Twice daily' },
+    { label: 'Quantity',     value: '60 tablets' },
+    { label: 'Days Supply',  value: '30 days' },
+    { label: 'Refills',      value: '3 remaining' },
+    { label: 'Expires',      value: 'Jun 15, 2027' },
+  ];
+
+  refillHistory = [
+    { event: 'Original Fill',  pharmacy: 'CVS Pharmacy — Main St', date: 'Jun 15, 2026', status: 'Dispensed' },
+    { event: 'Refill #1',     pharmacy: 'CVS Pharmacy — Main St', date: 'Jul 14, 2026', status: 'Dispensed' },
+    { event: 'Refill #2',     pharmacy: 'Walgreens — Oak Ave',    date: 'Pending',       status: 'Processing' },
+  ];
+
+  ngOnInit(): void {}
 }

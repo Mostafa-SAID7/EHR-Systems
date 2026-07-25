@@ -7,8 +7,18 @@ import { roleGuard } from '../core/guards/role.guard';
 export const appRoutes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard',
+    loadComponent: () =>
+      import('../features/home/pages/home-page/home-page.component').then(
+        (m) => m.HomePageComponent
+      ),
     pathMatch: 'full',
+  },
+  {
+    path: 'home',
+    loadComponent: () =>
+      import('../features/home/pages/home-page/home-page.component').then(
+        (m) => m.HomePageComponent
+      ),
   },
   
   // Auth Routes (Public)
