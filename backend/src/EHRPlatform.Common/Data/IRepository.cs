@@ -115,4 +115,12 @@ public interface IRepository<TEntity> where TEntity : BaseEntity
     /// Used for audit recovery operations.
     /// </summary>
     Task<IEnumerable<TEntity>> GetDeletedAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get a filtered list of entities as a materialized List.
+    /// Applies the query transform to AsQueryable() then executes ToListAsync.
+    /// </summary>
+    Task<List<TEntity>> ToListAsync(
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> query,
+        CancellationToken cancellationToken = default);
 }

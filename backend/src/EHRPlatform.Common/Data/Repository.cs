@@ -244,6 +244,18 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Materializes a filtered query into a List.
+    /// Applies the query transform then calls ToListAsync.
+    /// </summary>
+    public virtual async Task<List<TEntity>> ToListAsync(
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> query,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentGuard.NotNull(query, nameof(query));
+        return await query(_dbSet.AsQueryable()).AsNoTracking().ToListAsync(cancellationToken);
+    }
 }
 
 /// <summary>

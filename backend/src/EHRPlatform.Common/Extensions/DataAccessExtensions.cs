@@ -5,6 +5,7 @@ using EHRPlatform.Common.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 
@@ -123,6 +124,49 @@ public static class DataAccessExtensions
     {
         services.AddHostedService<DatabaseMigrationHostedService>();
         return services;
+    }
+
+    /// <summary>
+    /// Register a health check that verifies the given DbContext can connect to its database.
+    /// </summary>
+    public static IHealthChecksBuilder AddDbContextCheck<TDbContext>(
+        this IHealthChecksBuilder builder,
+        string name,
+        string[]? tags = null)
+        where TDbContext : DbContext
+    {
+        return builder.Add(new HealthCheckRegistration(
+            name,
+            sp => new DbContextHealthCheck<TDbContext>(sp.GetRequiredService<TDbContext>()),
+            failureStatus: null,
+            tags: tags));
+    }
+}
+
+/// <summary>
+/// Simple health check that verifies a DbContext can connect by calling CanConnectAsync.
+/// </summary>
+internal sealed class DbContextHealthCheck<TDbContext> : IHealthCheck
+    where TDbContext : DbContext
+{
+    private readonly TDbContext _context;
+    public DbContextHealthCheck(TDbContext context) => _context = context;
+
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var canConnect = await _context.Database.CanConnectAsync(cancellationToken);
+            return canConnect
+                ? HealthCheckResult.Healthy()
+                : HealthCheckResult.Unhealthy("Database unreachable");
+        }
+        catch (Exception ex)
+        {
+            return HealthCheckResult.Unhealthy(ex.Message, ex);
+        }
     }
 }
 
