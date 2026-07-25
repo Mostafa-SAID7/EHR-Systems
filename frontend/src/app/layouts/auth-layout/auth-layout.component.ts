@@ -51,7 +51,7 @@ import { RouterModule } from '@angular/router';
           </p>
 
           <!-- Stat highlights -->
-          <div class="grid grid-cols-3 gap-4 mb-10">
+          <div class="grid grid-cols-3 gap-3 mb-10">
             <div *ngFor="let s of highlights"
               class="rounded-2xl bg-white/10 backdrop-blur-sm
                      border border-white/15 p-4 text-center">
