@@ -32,15 +32,19 @@ public class GetPatientsQueryHandler : IQueryHandler<GetPatientsQuery, PatientLi
         _logger.LogDebug("Retrieving patients, page {PageNumber}, status filter: {Status}", query.PageNumber, query.Status);
 
         var repo = _unitOfWork.Repository<Domain.Entities.Patient>();
-        
-        // Build query with filters
-        var (patients, total) = await repo.GetPagedAsync(
-            pageNumber: query.PageNumber,
-            pageSize: query.PageSize,
-            predicate: p => query.Status == null || p.Status == query.Status,
-            orderBy: p => p.OrderByDescending(x => x.CreatedAt),
-            cancellationToken: cancellationToken
-        );
+
+        var total = await repo.CountAsync(
+            q => query.Status == null ? q : q.Where(p => p.Status == query.Status),
+            cancellationToken);
+
+        var skip = (query.PageNumber - 1) * query.PageSize;
+        var patients = await repo.ToListAsync(
+            q =>
+            {
+                var filtered = query.Status == null ? q : q.Where(p => p.Status == query.Status);
+                return filtered.OrderByDescending(x => x.CreatedAt).Skip(skip).Take(query.PageSize);
+            },
+            cancellationToken);
 
         return _mapper.MapToListDto(patients, total, query.PageNumber, query.PageSize);
     }
