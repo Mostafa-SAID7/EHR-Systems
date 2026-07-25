@@ -2,7 +2,7 @@ using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Notification.Features.Notifications.Commands;
-using EHRPlatform.Services.Notification.Features.Notifications.Domain;
+
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Handlers;
 
@@ -30,7 +30,7 @@ public class MarkNotificationSentCommandHandler : ICommandHandler<MarkNotificati
     {
         _logger.LogInformation("Marking notification {NotificationId} as sent", command.NotificationId);
 
-        var repo = _unitOfWork.Repository<Domain.Notification>();
+        var repo = _unitOfWork.Repository<Notification>();
         var notification = await repo.FirstOrDefaultAsync(
             q => q.Where(n => n.Id == command.NotificationId),
             cancellationToken);

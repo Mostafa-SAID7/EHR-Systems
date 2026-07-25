@@ -1,13 +1,16 @@
-using AutoMapper;
+using Mapster;
 using EHRPlatform.Services.Notification.Domain.Entities;
 using EHRPlatform.Services.Notification.Application.Notifications.Responses;
 
 namespace EHRPlatform.Services.Notification.Application.Notifications.Mappers;
 
-public class NotificationMappingProfile : Profile
+/// <summary>
+/// Mapster registration profile for Notification entity mappings.
+/// </summary>
+public class NotificationMappingProfile : IRegister
 {
-    public NotificationMappingProfile()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<Notification, NotificationResponse>();
+        config.NewConfig<Notification, NotificationResponse>();
     }
 }

@@ -1,7 +1,5 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Services.Audit.Features.Audit.Domain;
-using EHRPlatform.Services.Audit.Features.Audit.Dtos.Responses;
 using Mapster;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Queries;

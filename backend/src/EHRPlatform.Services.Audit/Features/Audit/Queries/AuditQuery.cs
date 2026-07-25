@@ -1,5 +1,4 @@
 using EHRPlatform.Common.CQRS;
-using EHRPlatform.Services.Audit.Features.Audit.Dtos.Responses;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Queries;
 
