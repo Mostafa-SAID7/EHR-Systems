@@ -4,13 +4,17 @@
 
 ## Stories Overview
 
-| Story | Question | Time | File |
-|-------|----------|------|------|
-| **Microservices Architecture** | "Tell me about leadership" | 5 min | Leadership.md |
-| **Cache Invalidation Bug** | "Tell me about failure" | 5 min | Failure.md |
-| **Cross-Team Collaboration** | "Working with different perspectives" | 5 min | Collaboration.md |
-| **Healthcare Domain Learning** | "Learning something new quickly" | 5 min | Learning.md |
-| **Process Improvement** | "Going above and beyond" | 5 min | Initiative.md |
+| Story | Domain | Question | Time | File |
+|-------|--------|----------|------|------|
+| **Microservices Architecture** | Healthcare | "Tell me about leadership" | 5 min | Leadership.md |
+| **Cache Invalidation Bug** | Healthcare | "Tell me about failure" | 5 min | Failure.md |
+| **Cross-Team Collaboration** | Healthcare | "Working with different perspectives" | 5 min | Collaboration.md |
+| **Healthcare Domain Learning** | Healthcare | "Learning something new quickly" | 5 min | Learning.md |
+| **Process Improvement** | Healthcare | "Going above and beyond" | 5 min | Initiative.md |
+| **Real-Time Consistency** | Ecommerce | "Technical challenge", "Scalability" | 5 min | We3ds-Story-Real-Time-Consistency.md |
+| **Multi-Vendor Payment** | Ecommerce | "Complex business logic", "Financial systems" | 5 min | We3ds-Story-Multi-Vendor-Payment.md |
+
+**Total: 7 Stories** - Pick the most relevant one for each question.
 
 ## Quick Story Selection Guide
 

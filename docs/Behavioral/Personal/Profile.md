@@ -6,8 +6,20 @@ Senior Full Stack Developer with [X] years of experience building enterprise-sca
 
 ## Career Overview
 
-### Current/Recent: Enterprise Healthcare Systems
-- **Company**: [Previous EHR Platform Company]
+### Current/Recent: Multi-Vendor Ecommerce at we3ds (3 Years)
+- **Company**: we3ds
+- **Role**: Full Stack Developer / Senior Developer
+- **Duration**: 3 years
+
+**Key Contributions:**
+- Built real-time inventory management system (preventing overselling at scale)
+- Designed multi-vendor payment processing and reconciliation system
+- Implemented event-driven architecture for reliable financial transactions
+- Handled 1000+ concurrent orders during peak load (handled 10x growth)
+- Built vendor dashboards and admin systems for multi-tenant coordination
+- Optimized search and filtering for ecommerce platform (sub-second search)
+
+### Previous: Enterprise Healthcare Systems (EHR Platform)
 - **Role**: Senior Full Stack Developer
 - **Duration**: [X] years
 
