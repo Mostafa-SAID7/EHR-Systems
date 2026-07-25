@@ -1,6 +1,6 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Domain;
+using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 using Microsoft.EntityFrameworkCore;
 using Mapster;

@@ -18,7 +18,7 @@ public static class InvoiceSeed
                 ServiceDate = new DateTime(2024, 1, 1),
                 DueDate = new DateTime(2024, 2, 1),
                 TotalAmount = 1500.00m,
-                Status = InvoiceStatus.Outstanding,
+                Status = InvoiceStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = "System"
             }

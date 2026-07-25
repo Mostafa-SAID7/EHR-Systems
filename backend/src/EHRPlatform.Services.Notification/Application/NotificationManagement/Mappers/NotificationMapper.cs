@@ -11,7 +11,7 @@ namespace EHRPlatform.Services.Notification.Application.NotificationManagement.M
 /// Single Responsibility: Convert between Notification domain models and DTOs.
 /// Handles all Notification-related mappings with optional post-processing.
 /// </summary>
-public class NotificationMapper : MappingServiceBase<Notification, NotificationResponseDto>
+public class NotificationMapper : MappingServiceBase<NotificationEntity, NotificationResponseDto>
 {
     public NotificationMapper(ILogger<NotificationMapper> logger) : base(logger)
     {
@@ -20,15 +20,15 @@ public class NotificationMapper : MappingServiceBase<Notification, NotificationR
     /// <summary>
     /// Map single notification to response DTO.
     /// </summary>
-    public NotificationResponseDto MapToResponseDto(Notification notification)
+    public NotificationResponseDto MapToResponseDto(NotificationEntity notification)
     {
-        return MapToDto(notification);
+        return MapSingleToDto(notification);
     }
 
     /// <summary>
     /// Map collection of notifications to response DTO list.
     /// </summary>
-    public List<NotificationResponseDto> MapToResponseDtoList(ICollection<Notification> notifications)
+    public List<NotificationResponseDto> MapToResponseDtoList(ICollection<NotificationEntity> notifications)
     {
         Logger.LogDebug("Mapping {Count} notifications to response DTO list", notifications.Count);
         return notifications.Adapt<List<NotificationResponseDto>>();

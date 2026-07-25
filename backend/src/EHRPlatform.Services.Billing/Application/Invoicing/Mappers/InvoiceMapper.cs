@@ -20,7 +20,7 @@ public class InvoiceMapper : MappingServiceBase<Invoice, InvoiceResponseDto>
     /// </summary>
     public InvoiceResponseDto MapToResponseDto(Invoice invoice)
     {
-        return MapToDto(invoice);
+        return MapSingleToDto(invoice);
     }
 
     /// <summary>

@@ -10,13 +10,13 @@ namespace EHRPlatform.Services.Patient.Application.Patients.Mappers;
 /// Patient Mapper
 /// Single Responsibility: Convert between Patient domain models and DTOs.
 /// </summary>
-public class PatientMapper : MappingServiceBase<Domain.Entities.Patient, PatientResponse>
+public class PatientMapper : MappingServiceBase<PatientEntity, PatientResponse>
 {
     public PatientMapper(ILogger<PatientMapper> logger) : base(logger)
     {
     }
 
-    public PatientResponse MapToResponse(Domain.Entities.Patient patient)
+    public PatientResponse MapToResponse(PatientEntity patient)
     {
         Logger.LogDebug("Mapping patient {PatientId} to response DTO", patient.Id);
 
@@ -58,7 +58,7 @@ public class PatientMapper : MappingServiceBase<Domain.Entities.Patient, Patient
     }
 
     public PatientListDto MapToListDto(
-        ICollection<Domain.Entities.Patient> patients,
+        ICollection<PatientEntity> patients,
         int total,
         int pageNumber,
         int pageSize)

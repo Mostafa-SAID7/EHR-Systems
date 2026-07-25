@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Domain;
+using EHRPlatform.Services.Clinical.Domain.Entities;
 
 namespace EHRPlatform.Services.Clinical.Data.Configuration;
 

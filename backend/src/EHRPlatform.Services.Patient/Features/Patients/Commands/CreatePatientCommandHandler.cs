@@ -1,7 +1,7 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
-using EHRPlatform.Services.Patient.Features.Patients.Domain;
+// Domain entities via GlobalUsings (Domain.Entities)
 using Mapster;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Commands;

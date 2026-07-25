@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
-// Alias resolves the naming conflict between the Appointment class and the
-// EHRPlatform.Services.Appointment namespace segment.
-using Appointment = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
+// Appointment alias comes from GlobalUsings.cs; AppointmentReminder and ProviderAvailability are fully resolved via global namespace import
 using AppointmentReminder = EHRPlatform.Services.Appointment.Features.Appointments.Domain.AppointmentReminder;
 using ProviderAvailability = EHRPlatform.Services.Appointment.Features.Appointments.Domain.ProviderAvailability;
 

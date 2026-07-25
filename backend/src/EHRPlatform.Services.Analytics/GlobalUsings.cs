@@ -12,3 +12,4 @@ global using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 global using EHRPlatform.Services.Analytics.Features.Analytics.Commands;
 global using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 global using EHRPlatform.Services.Analytics.Features.Analytics.Dtos.Responses;
+global using Microsoft.AspNetCore.Authorization;

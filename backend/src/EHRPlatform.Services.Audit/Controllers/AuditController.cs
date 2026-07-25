@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EHRPlatform.Services.Audit.Features.Audit.Commands;
 using EHRPlatform.Services.Audit.Features.Audit.Queries;

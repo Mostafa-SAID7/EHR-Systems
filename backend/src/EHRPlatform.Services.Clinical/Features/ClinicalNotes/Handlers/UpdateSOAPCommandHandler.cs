@@ -1,7 +1,7 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
-using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Domain;
+using EHRPlatform.Services.Clinical.Domain.Entities;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;
 

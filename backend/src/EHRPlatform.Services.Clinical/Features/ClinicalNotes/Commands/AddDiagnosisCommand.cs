@@ -1,3 +1,4 @@
+using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Common.CQRS;
 using FluentValidation;
 
@@ -6,7 +7,7 @@ namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 /// <summary>
 /// Add diagnosis command.
 /// </summary>
-public record AddDiagnosisCommand : ICommand
+public record AddDiagnosisCommand : ICommand<ClinicalNoteResponse>
 {
     public Guid ClinicalNoteId { get; init; }
     public string DiagnosisCode { get; init; } = string.Empty; // ICD-10

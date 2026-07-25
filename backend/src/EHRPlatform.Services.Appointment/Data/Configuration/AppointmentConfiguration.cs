@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Appointment = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
+// Appointment alias comes from GlobalUsings.cs
 
 namespace EHRPlatform.Services.Appointment.Data.Configuration;
 

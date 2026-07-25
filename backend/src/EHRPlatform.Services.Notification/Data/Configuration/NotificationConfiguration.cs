@@ -7,9 +7,9 @@ namespace EHRPlatform.Services.Notification.Data.Configuration;
 /// <summary>
 /// Entity configuration for Notification.
 /// </summary>
-public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
+public class NotificationConfiguration : IEntityTypeConfiguration<NotificationEntity>
 {
-    public void Configure(EntityTypeBuilder<Notification> entity)
+    public void Configure(EntityTypeBuilder<NotificationEntity> entity)
     {
         entity.HasKey(e => e.Id);
         entity.HasIndex(e => e.RecipientId);
