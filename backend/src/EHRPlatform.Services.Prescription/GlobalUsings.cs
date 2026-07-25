@@ -14,8 +14,9 @@ global using EHRPlatform.Common.Data;
 global using EHRPlatform.Common.Messaging;
 global using EHRPlatform.Common.Mapping;
 
-// Domain events
-global using EHRPlatform.Services.Prescription.Features.Prescriptions.Domain;
+// Domain entities and enums
+global using EHRPlatform.Services.Prescription.Domain.Entities;
+global using EHRPlatform.Services.Prescription.Domain.Enums;
 
 // Application layer
 global using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;

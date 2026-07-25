@@ -2,8 +2,7 @@ using Mapster;
 using EHRPlatform.Common.Mapping;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 using Microsoft.Extensions.Logging;
-using Appointment = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
-using ProviderAvailability = EHRPlatform.Services.Appointment.Features.Appointments.Domain.ProviderAvailability;
+// Appointment and ProviderAvailability aliases come from GlobalUsings.cs
 
 namespace EHRPlatform.Services.Appointment.Application.AppointmentManagement.Mappers;
 

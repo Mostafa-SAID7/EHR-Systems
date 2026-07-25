@@ -1,16 +1,5 @@
-using MediatR;
-using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
-
+// This file is intentionally left empty.
+// GetDashboardsQuery is handled by GetDashboardsQueryHandler in this same folder.
+// Having two handlers for the same query type causes ambiguous registration errors.
 namespace EHRPlatform.Services.Analytics.Features.Analytics.Handlers;
 
-/// <summary>
-/// Handler for GetDashboardsQuery.
-/// </summary>
-public class GetDashboardsHandler : IRequestHandler<GetDashboardsQuery, IEnumerable<object>>
-{
-    public Task<IEnumerable<object>> Handle(GetDashboardsQuery request, CancellationToken cancellationToken)
-    {
-        // Implementation would go here
-        throw new NotImplementedException();
-    }
-}

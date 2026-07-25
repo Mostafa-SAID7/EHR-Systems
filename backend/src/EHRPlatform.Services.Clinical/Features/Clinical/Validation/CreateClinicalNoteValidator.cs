@@ -1,5 +1,5 @@
 using FluentValidation;
-using EHRPlatform.Services.Clinical.Features.Clinical.Commands;
+
 
 namespace EHRPlatform.Services.Clinical.Features.Clinical.Validation;
 

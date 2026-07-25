@@ -12,7 +12,7 @@ public class PatientContext : BaseDbContext
 {
     public PatientContext(DbContextOptions<PatientContext> options) : base(options) { }
 
-    public DbSet<Entities.Patient> Patients { get; set; } = null!;
+    public DbSet<PatientEntity> Patients { get; set; } = null!;
     public DbSet<PatientAllergy> PatientAllergies { get; set; } = null!;
     public DbSet<PatientCondition> PatientConditions { get; set; } = null!;
 

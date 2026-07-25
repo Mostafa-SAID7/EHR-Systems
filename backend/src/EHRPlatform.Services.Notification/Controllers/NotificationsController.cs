@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EHRPlatform.Services.Notification.Features.Notifications.Commands;
 using EHRPlatform.Services.Notification.Features.Notifications.Queries;

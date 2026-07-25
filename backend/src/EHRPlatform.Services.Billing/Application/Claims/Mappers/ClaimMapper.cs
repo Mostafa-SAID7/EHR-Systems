@@ -20,7 +20,7 @@ public class ClaimMapper : MappingServiceBase<InsuranceClaim, ClaimResponseDto>
     /// </summary>
     public ClaimResponseDto MapToResponseDto(InsuranceClaim claim)
     {
-        return MapToDto(claim);
+        return MapSingleToDto(claim);
     }
 
     /// <summary>

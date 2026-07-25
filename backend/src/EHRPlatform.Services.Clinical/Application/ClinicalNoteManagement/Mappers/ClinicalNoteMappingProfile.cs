@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Domain;
+using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 
 namespace EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Mappers;

@@ -12,7 +12,7 @@ public class NotificationContext : BaseDbContext
 {
     public NotificationContext(DbContextOptions<NotificationContext> options) : base(options) { }
 
-    public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<NotificationEntity> Notifications { get; set; } = null!;
     public DbSet<NotificationTemplate> NotificationTemplates { get; set; } = null!;
     public DbSet<NotificationPreference> NotificationPreferences { get; set; } = null!;
 

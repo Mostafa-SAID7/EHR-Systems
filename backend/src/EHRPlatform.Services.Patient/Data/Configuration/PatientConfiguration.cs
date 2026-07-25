@@ -6,9 +6,9 @@ namespace EHRPlatform.Services.Patient.Data.Configuration;
 /// <summary>
 /// Entity configuration for Patient.
 /// </summary>
-public class PatientConfiguration : IEntityTypeConfiguration<Entities.Patient>
+public class PatientConfiguration : IEntityTypeConfiguration<PatientEntity>
 {
-    public void Configure(EntityTypeBuilder<Entities.Patient> entity)
+    public void Configure(EntityTypeBuilder<PatientEntity> entity)
     {
         entity.HasKey(e => e.Id);
         entity.HasIndex(e => e.MRN).IsUnique();

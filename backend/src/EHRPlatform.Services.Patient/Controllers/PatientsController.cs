@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EHRPlatform.Services.Patient.Features.Patients.Commands;
 using EHRPlatform.Services.Patient.Features.Patients.Queries;

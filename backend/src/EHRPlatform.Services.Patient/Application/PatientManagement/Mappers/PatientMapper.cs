@@ -9,7 +9,7 @@ namespace EHRPlatform.Services.Patient.Application.PatientManagement.Mappers;
 /// Patient Mapper.
 /// Single Responsibility: Convert between Patient domain model and DTOs.
 /// </summary>
-public class PatientMapper : MappingServiceBase<Entities.Patient, PatientResponseDto>
+public class PatientMapper : MappingServiceBase<PatientEntity, PatientResponseDto>
 {
     public PatientMapper(ILogger<PatientMapper> logger) : base(logger)
     {
@@ -18,15 +18,15 @@ public class PatientMapper : MappingServiceBase<Entities.Patient, PatientRespons
     /// <summary>
     /// Map single patient to response DTO.
     /// </summary>
-    public PatientResponseDto MapToResponseDto(Entities.Patient patient)
+    public PatientResponseDto MapToResponseDto(PatientEntity patient)
     {
-        return MapToDto(patient);
+        return MapSingleToDto(patient);
     }
 
     /// <summary>
     /// Map collection of patients to response DTO list.
     /// </summary>
-    public List<PatientResponseDto> MapToResponseDtoList(ICollection<Entities.Patient> patients)
+    public List<PatientResponseDto> MapToResponseDtoList(ICollection<PatientEntity> patients)
     {
         Logger.LogDebug("Mapping {Count} patients to response DTO list", patients.Count);
         return patients.Adapt<List<PatientResponseDto>>();
@@ -36,7 +36,7 @@ public class PatientMapper : MappingServiceBase<Entities.Patient, PatientRespons
     /// Map patients to paginated list DTO.
     /// </summary>
     public PatientListDto MapToListDto(
-        ICollection<Entities.Patient> patients,
+        ICollection<PatientEntity> patients,
         int total,
         int pageNumber,
         int pageSize)

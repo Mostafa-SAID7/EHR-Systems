@@ -1,8 +1,8 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Search;
-using EHRPlatform.Services.Patient.Features.Patients.Domain;
-using EHRPlatform.Services.Patient.Features.Patients.Dtos.Responses;
+// Domain entities via GlobalUsings (Domain.Entities)
+using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 using Mapster;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Queries;
