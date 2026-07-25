@@ -1,4 +1,4 @@
-modules = ["dotnet-7.0", "nodejs-20", "bash"]
+modules = ["dotnet-7.0", "nodejs-20", "bash", "dotnet-8.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -153,8 +153,8 @@ args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5009 dotnet run --project s
 [userenv]
 
 [userenv.shared]
-ENCRYPTION_KEY = "6a6cf17800a0302839da7c01f2e454b9"
-JWT_SECRET = "7596ffa786dfbfbacbeab9629a474bdb61a74aaec7225881b0d8b1e5abf23644"
+ENCRYPTION_KEY = "UpWTA8a9PDllXPOzgYisgV4lX3pZJtcR"
+JWT_SECRET = "2215f77c4386f663c3c8b99e1d2eb752aab7d440c67d181f4287475edca9cca2"
 
 [[ports]]
 localPort = 5000

@@ -9,13 +9,5 @@ public class CreatePatientValidator : AbstractValidator<CreatePatientCommand>
     {
         RuleFor(x => x.FirstName).NotEmpty();
         RuleFor(x => x.LastName).NotEmpty();
-        RuleFor(x => x.MRN).NotEmpty();
     }
-}
-
-public class CreatePatientCommand
-{
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    public string? MRN { get; set; }
 }
