@@ -1,4 +1,4 @@
-modules = ["dotnet-7.0", "nodejs-20", "bash", "dotnet-8.0"]
+modules = ["dotnet-7.0", "nodejs-20", "bash"]
 
 [nix]
 channel = "stable-25_05"
@@ -163,3 +163,7 @@ externalPort = 80
 [[ports]]
 localPort = 5001
 externalPort = 3000
+
+[[ports]]
+localPort = 5009
+externalPort = 3001

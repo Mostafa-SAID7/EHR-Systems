@@ -1,5 +1,5 @@
 using EHRPlatform.Common.CQRS;
-using EHRPlatform.Services.Patient.Application.Patients.Responses;
+using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Commands;
 
@@ -7,7 +7,7 @@ namespace EHRPlatform.Services.Patient.Features.Patients.Commands;
 /// Update patient command.
 /// Updates an existing patient's profile information.
 /// </summary>
-public record UpdatePatientCommand : ICommand<PatientResponse>
+public record UpdatePatientCommand : ICommand<PatientResponseDto>
 {
     public Guid PatientId { get; init; }
     public string FirstName { get; init; } = string.Empty;

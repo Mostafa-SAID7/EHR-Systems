@@ -53,6 +53,25 @@ public class InvoiceMapper : MappingServiceBase<Invoice, InvoiceResponseDto>
     }
 
     /// <summary>
+    /// Map patient invoices to outstanding balance DTO.
+    /// </summary>
+    public OutstandingBalanceDto MapToOutstandingBalanceDto(Guid patientId, ICollection<Invoice> invoices)
+    {
+        Logger.LogDebug("Calculating outstanding balance for patient {PatientId}", patientId);
+
+        var overdue = invoices.Where(i => i.DueDate < DateTime.UtcNow && i.BalanceDue > 0).ToList();
+
+        return new OutstandingBalanceDto
+        {
+            PatientId = patientId,
+            TotalBalance = invoices.Sum(i => i.BalanceDue),
+            OverdueInvoices = overdue.Count,
+            OverdueAmount = overdue.Sum(i => i.BalanceDue),
+            Invoices = invoices.Adapt<List<InvoiceResponseDto>>()
+        };
+    }
+
+    /// <summary>
     /// Map invoice to command DTO.
     /// </summary>
     public InvoiceCommandDto MapToCommandDto(Invoice invoice)

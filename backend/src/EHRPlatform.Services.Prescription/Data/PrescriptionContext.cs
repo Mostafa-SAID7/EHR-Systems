@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Services.Prescription.Features.Prescriptions.Domain;
+using EHRPlatform.Services.Prescription.Domain.Entities;
 
 namespace EHRPlatform.Services.Prescription.Data;
 
@@ -12,7 +12,7 @@ public class PrescriptionContext : BaseDbContext
 {
     public PrescriptionContext(DbContextOptions<PrescriptionContext> options) : base(options) { }
 
-    public DbSet<Domain.Prescription> Prescriptions { get; set; } = null!;
+    public DbSet<Prescription> Prescriptions { get; set; } = null!;
     public DbSet<PrescriptionRefill> PrescriptionRefills { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

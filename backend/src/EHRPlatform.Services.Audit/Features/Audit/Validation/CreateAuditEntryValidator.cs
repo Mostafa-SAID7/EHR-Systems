@@ -6,7 +6,7 @@ namespace EHRPlatform.Services.Audit.Features.Audit.Validation;
 /// <summary>
 /// Validator for CreateAuditEntryCommand.
 /// </summary>
-public class CreateAuditEntryValidator : AbstractValidator<CreateAuditEntryCommand>
+public class CreateAuditEntryValidator : AbstractValidator<RecordAuditEntryCommand>
 {
     public CreateAuditEntryValidator()
     {

@@ -18,9 +18,9 @@ public static class InvoiceSeed
                 ServiceDate = new DateTime(2024, 1, 1),
                 DueDate = new DateTime(2024, 2, 1),
                 TotalAmount = 1500.00m,
-                Status = InvoiceStatus.Pending,
+                Status = InvoiceStatus.Pending.ToString(),
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = Guid.Empty
             }
         );
 
@@ -33,7 +33,7 @@ public static class InvoiceSeed
                 Description = "Office visit",
                 Amount = 1500.00m,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = Guid.Empty
             }
         );
     }

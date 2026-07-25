@@ -1,7 +1,7 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
-using EHRPlatform.Services.Prescription.Features.Prescriptions.Domain;
+using EHRPlatform.Services.Prescription.Domain.Entities;
 using Mapster;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Queries;
@@ -26,7 +26,7 @@ public class GetPrescriptionQueryHandler : IQueryHandler<GetPrescriptionQuery, P
     {
         _logger.LogInformation("Fetching prescription {PrescriptionId}", request.PrescriptionId);
 
-        var repo = _unitOfWork.Repository<Domain.Prescription>();
+        var repo = _unitOfWork.Repository<Prescription>();
         var prescription = await repo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == request.PrescriptionId),
             cancellationToken);
@@ -68,7 +68,7 @@ public class GetPatientActivePrescriptionsQueryHandler : IQueryHandler<GetPatien
     {
         _logger.LogInformation("Fetching active prescriptions for patient {PatientId}", request.PatientId);
 
-        var repo = _unitOfWork.Repository<Domain.Prescription>();
+        var repo = _unitOfWork.Repository<Prescription>();
         var skip = (request.PageNumber - 1) * request.PageSize;
 
         var total = await repo.CountAsync(
@@ -112,7 +112,7 @@ public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatien
     {
         _logger.LogInformation("Fetching prescription history for patient {PatientId}", request.PatientId);
 
-        var repo = _unitOfWork.Repository<Domain.Prescription>();
+        var repo = _unitOfWork.Repository<Prescription>();
         var skip = (request.PageNumber - 1) * request.PageSize;
 
         var total = await repo.CountAsync(
@@ -156,7 +156,7 @@ public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuer
     {
         _logger.LogInformation("Fetching pending refills for provider {ProviderId}", request.ProviderId);
 
-        var prescriptionRepo = _unitOfWork.Repository<Domain.Prescription>();
+        var prescriptionRepo = _unitOfWork.Repository<Prescription>();
         var prescriptions = await prescriptionRepo.ToListAsync(
             q => q.Where(p => p.ProviderId == request.ProviderId),
             cancellationToken);

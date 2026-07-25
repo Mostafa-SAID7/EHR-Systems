@@ -3,7 +3,7 @@ using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Validation;
 
-public class CreatePrescriptionValidator : AbstractValidator<CreatePrescriptionCommand>
+public class CreatePrescriptionValidator : AbstractValidator<IssuePrescriptionCommand>
 {
     public CreatePrescriptionValidator()
     {
