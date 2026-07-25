@@ -6,7 +6,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 export interface NavItem {
   id: string;
   label: string;
-  icon: string;
+  icon: string;       // SVG path data
   route?: string;
   children?: NavItem[];
   badge?: number;
@@ -14,7 +14,7 @@ export interface NavItem {
 }
 
 /**
- * Sidebar Component — green brand, pill nav items, cinematic collapse
+ * Sidebar — green brand, pill nav, smooth collapse. No inline border hacks.
  */
 @Component({
   selector: 'app-sidebar',
@@ -23,27 +23,27 @@ export interface NavItem {
   template: `
     <aside
       [class.w-64]="!collapsed"
-      [class.w-18]="collapsed"
-      class="flex flex-col h-screen
+      [class.w-16]="collapsed"
+      class="flex flex-col h-screen shrink-0 overflow-hidden
              bg-white dark:bg-surface-900
-             border-r border-surface-200 dark:border-surface-800
-             transition-all duration-300 ease-smooth
-             overflow-hidden shrink-0"
+             transition-all duration-300 ease-smooth"
+      style="border-right: 1px solid rgb(22 163 74 / 0.10);"
     >
-      <!-- Logo header -->
-      <div class="flex items-center gap-3 px-4 py-5 border-b border-surface-100 dark:border-surface-800 shrink-0">
-        <!-- Icon mark -->
-        <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-primary-600 text-white shrink-0 shadow-sm">
+      <!-- ── Logo ─────────────────────────────────── -->
+      <div class="flex items-center gap-3 px-4 py-5 shrink-0">
+        <div class="flex items-center justify-center w-9 h-9 rounded-xl
+                    bg-primary-600 text-white shrink-0 shadow-sm">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/>
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                 M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2
+                 m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"/>
           </svg>
         </div>
         <div *ngIf="!collapsed" class="min-w-0 animate-fade-in">
-          <p class="text-sm font-bold text-gray-900 dark:text-white truncate">EHR Platform</p>
-          <p class="text-2xs text-gray-500 dark:text-gray-400">Healthcare Management</p>
+          <p class="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight">EHR Platform</p>
+          <p class="text-2xs text-gray-400 dark:text-gray-500 truncate">Healthcare Management</p>
         </div>
-        <!-- Collapse toggle -->
         <button
           (click)="toggleCollapse()"
           class="ml-auto flex items-center justify-center w-7 h-7 rounded-lg
@@ -55,34 +55,40 @@ export interface NavItem {
           <svg class="w-4 h-4 transition-transform duration-300"
             [class.rotate-180]="collapsed"
             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
           </svg>
         </button>
       </div>
 
-      <!-- Nav -->
-      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+      <!-- ── Nav ──────────────────────────────────── -->
+      <nav class="flex-1 overflow-y-auto px-2.5 pb-4 space-y-0.5">
         <ng-container *ngFor="let item of navItems">
-          <!-- Main item -->
+
+          <!-- Parent item -->
           <button
-            [routerLink]="item.route"
-            routerLinkActive="bg-primary-50 dark:bg-primary-900/25 text-primary-700 dark:text-primary-400 font-semibold"
+            [routerLink]="item.children ? null : item.route"
+            [routerLinkActive]="item.children ? '' : 'nav-item-active'"
             (click)="toggleItem(item)"
             [title]="collapsed ? item.label : ''"
-            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl
-                   text-sm text-gray-700 dark:text-gray-300 font-medium
-                   hover:bg-surface-100 dark:hover:bg-surface-800
-                   hover:text-gray-900 dark:hover:text-white
-                   transition-all duration-200 group"
+            class="nav-item w-full justify-between"
+            [class.justify-center]="collapsed"
           >
             <div class="flex items-center gap-3 min-w-0">
-              <span class="text-lg leading-none shrink-0 w-5 text-center">{{ item.icon }}</span>
-              <span *ngIf="!collapsed" class="truncate animate-fade-in">{{ item.label }}</span>
+              <!-- SVG icon -->
+              <svg class="w-[18px] h-[18px] shrink-0 text-gray-400 group-hover:text-gray-600
+                           dark:text-gray-500 dark:group-hover:text-gray-300 transition-colors"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                  [attr.d]="item.icon"/>
+              </svg>
+              <span *ngIf="!collapsed" class="truncate animate-fade-in text-sm">{{ item.label }}</span>
             </div>
+
             <div *ngIf="!collapsed" class="flex items-center gap-1.5 shrink-0">
               <span *ngIf="item.badge"
                 class="flex items-center justify-center min-w-[1.25rem] h-5 px-1
-                       text-2xs font-bold rounded-full bg-red-500 text-white">
+                       text-2xs font-bold rounded-full bg-primary-500 text-white">
                 {{ item.badge > 99 ? '99+' : item.badge }}
               </span>
               <svg *ngIf="item.children"
@@ -94,43 +100,45 @@ export interface NavItem {
             </div>
           </button>
 
-          <!-- Sub items -->
+          <!-- Children — clean indent, no border lines -->
           <div
             *ngIf="item.children && item.expanded && !collapsed"
             @expandCollapse
-            class="ml-4 pl-3 mt-0.5 mb-1 space-y-0.5"
-            style="border-left: 2px solid transparent;
-                   background: linear-gradient(#e2fce9, #e2fce9) padding-box,
-                               linear-gradient(to bottom, #86efac, transparent) border-box;"
+            class="ml-7 mt-0.5 mb-1 space-y-0.5 pl-3"
           >
             <button
               *ngFor="let child of item.children"
               [routerLink]="child.route"
               routerLinkActive="text-primary-700 dark:text-primary-400 font-semibold bg-primary-50 dark:bg-primary-900/20"
-              class="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400
+              class="w-full text-left px-3 py-2 text-sm text-gray-500 dark:text-gray-400
                      hover:text-gray-900 dark:hover:text-white
                      hover:bg-surface-100 dark:hover:bg-surface-800
-                     rounded-lg transition-colors duration-150"
+                     rounded-xl transition-all duration-150"
             >
               {{ child.label }}
             </button>
           </div>
+
         </ng-container>
       </nav>
 
-      <!-- Bottom user area -->
-      <div class="shrink-0 px-3 py-3 border-t border-surface-100 dark:border-surface-800">
-        <div [class.justify-center]="collapsed"
-          class="flex items-center gap-3 px-2 py-2 rounded-xl
-                 hover:bg-surface-100 dark:hover:bg-surface-800
+      <!-- ── User area ─────────────────────────────── -->
+      <div class="shrink-0 px-2.5 py-3"
+           style="border-top: 1px solid rgb(22 163 74 / 0.08);">
+        <div
+          [class.justify-center]="collapsed"
+          class="flex items-center gap-3 px-2 py-2.5 rounded-xl
+                 hover:bg-surface-50 dark:hover:bg-surface-800
                  transition-colors duration-200 cursor-pointer">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600
-                      flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div class="w-8 h-8 rounded-xl shrink-0
+                      bg-gradient-to-br from-primary-400 to-primary-700
+                      flex items-center justify-center
+                      text-white text-xs font-bold">
             Dr
           </div>
           <div *ngIf="!collapsed" class="min-w-0 animate-fade-in">
-            <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">Dr. Admin</p>
-            <p class="text-2xs text-gray-500 dark:text-gray-400 truncate">Administrator</p>
+            <p class="text-xs font-semibold text-gray-900 dark:text-white truncate leading-tight">Dr. Admin</p>
+            <p class="text-2xs text-gray-500 dark:text-gray-500 truncate">Administrator</p>
           </div>
         </div>
       </div>
@@ -140,11 +148,11 @@ export interface NavItem {
     trigger('expandCollapse', [
       transition(':enter', [
         style({ opacity: 0, height: 0, overflow: 'hidden' }),
-        animate('200ms ease-out', style({ opacity: 1, height: '*' })),
+        animate('220ms cubic-bezier(0.16, 1, 0.3, 1)', style({ opacity: 1, height: '*' })),
       ]),
       transition(':leave', [
         style({ overflow: 'hidden' }),
-        animate('150ms ease-in', style({ opacity: 0, height: 0 })),
+        animate('160ms ease-in', style({ opacity: 0, height: 0 })),
       ]),
     ]),
   ],
