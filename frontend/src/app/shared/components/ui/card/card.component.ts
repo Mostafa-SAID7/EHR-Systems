@@ -2,11 +2,8 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
-export type CardVariant = 'default' | 'hover' | 'flat' | 'elevated';
+export type CardVariant = 'default' | 'hover' | 'flat' | 'elevated' | 'green';
 
-/**
- * Card Component — uses centralised surface/shadow tokens
- */
 @Component({
   selector: 'app-card',
   standalone: true,
@@ -15,7 +12,8 @@ export type CardVariant = 'default' | 'hover' | 'flat' | 'elevated';
     <div [ngClass]="getClasses()">
       <!-- Optional header -->
       <div *ngIf="title"
-        class="flex items-center justify-between pb-4 mb-4 border-b border-surface-200 dark:border-surface-700">
+        class="flex items-center justify-between pb-4 mb-4
+               border-b border-surface-100 dark:border-surface-700/60">
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ title }}</h3>
         <ng-content select="[card-actions]"></ng-content>
       </div>
@@ -38,10 +36,11 @@ export class CardComponent {
     };
 
     const variantMap: Record<CardVariant, string> = {
-      default:  'bg-white dark:bg-surface-800 rounded-2xl shadow border border-surface-200 dark:border-surface-700',
-      hover:    'bg-white dark:bg-surface-800 rounded-2xl shadow border border-surface-200 dark:border-surface-700 transition-all duration-250 hover:shadow-md hover:-translate-y-0.5',
-      flat:     'bg-surface-50 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700',
-      elevated: 'bg-white dark:bg-surface-800 rounded-2xl shadow-lg border border-surface-200 dark:border-surface-700',
+      default:  'bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-surface-100 dark:border-surface-700/50',
+      hover:    'bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-surface-100 dark:border-surface-700/50 cursor-pointer transition-all duration-250 hover:shadow-card-hover hover:-translate-y-0.5 hover:border-primary-200/60 dark:hover:border-primary-700/40',
+      flat:     'bg-surface-50 dark:bg-surface-900 rounded-2xl border border-surface-200/80 dark:border-surface-700/60',
+      elevated: 'bg-white dark:bg-surface-800 rounded-2xl shadow-lg border border-surface-100 dark:border-surface-700/50',
+      green:    'bg-gradient-to-br from-primary-50 to-primary-100/40 dark:from-primary-950/50 dark:to-primary-900/20 rounded-2xl border border-primary-200/50 dark:border-primary-800/30',
     };
 
     return {
