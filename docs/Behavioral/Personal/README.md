@@ -12,18 +12,18 @@ Your professional identity, positioning, and competitive advantages for TachyHea
 ## Quick Summary
 
 **Role:** Senior Full Stack Developer  
-**Experience:** Enterprise healthcare systems (EHR platform)  
-**Expertise:** Backend (ASP.NET, C#), Frontend (Angular), Microservices, Compliance
+**Experience:** 3 years at We3ds (Multi-Vendor E-Commerce) + Healthcare Systems (EHR platform)  
+**Expertise:** Backend (TypeScript, Node.js, C# .NET, Python), Frontend (Angular, RxJS), Data/Events (PostgreSQL, Kafka, Redis, Docker)
 
 **Why TachyHealth?**
-- Healthcare domain knowledge (not learning during interview)
-- Enterprise-scale microservices experience
+- High-scale e-commerce + healthcare domain knowledge (not learning during interview)
+- Enterprise-scale microservices and event-driven (Kafka) experience
 - Full stack perspective (identify bottlenecks anywhere)
 - MENA market interest (emerging markets > saturated US)
 
 ## Your Story (30 seconds)
 
-"I'm a Senior Full Stack Developer with [X] years building enterprise healthcare systems. I designed microservices architectures, implemented CQRS patterns, and understood that in healthcare, correctness is more important than speed. Now I'm excited about TachyHealth's emerging market focus and medical coding automation solving a real problem I've seen."
+"I'm a Senior Full Stack Developer with 3 years building high-scale multi-vendor e-commerce platforms at We3ds, combined with enterprise healthcare systems experience. I've designed real-time inventory locking, Kafka event-driven architectures, and HIPAA-compliant audit workflows. I'm excited about TachyHealth's Series A stage and bringing scalable, reliable architecture to medical coding automation in the MENA region."
 
 ## Your Competitive Advantages
 

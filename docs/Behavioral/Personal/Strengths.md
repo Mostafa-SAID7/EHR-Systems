@@ -106,20 +106,19 @@ done right."
 
 ---
 
-## Strength 3: Full Stack Perspective
+## Strength 3: Full Stack Perspective & High-Scale Systems (We3ds & Beyond)
 
 ### What It Is
-You understand performance bottlenecks at ANY layer:
-- Database queries (N+1 problem, indexing)
-- Backend processing (algorithms, concurrency)
-- Caching strategy (what to cache, TTL, invalidation)
-- API design (response size, pagination)
-- Frontend rendering (optimize what matters)
+You understand performance bottlenecks and system behavior at ANY layer across frontend, backend, database, and event streams:
+- High-scale multi-vendor e-commerce (inventory locks, payment reconciliation, high peak concurrency)
+- Database queries (indexing, lock contention, N+1 optimization)
+- Backend processing (concurrency, event-driven streaming with Kafka)
+- Caching strategy (Redis invalidation, TTL, multi-layer caching)
+- API & UI design (Angular responsive architectures, async stream processing)
 
 ### Why It Matters for TachyHealth
-- Medical coding performance is full-stack problem (ML model, database, UI)
-- You can identify bottlenecks without siloed thinking
-- You'll make better architectural decisions
+- Medical coding performance is full-stack (AI model inference, database queries, real-time UI updates)
+- Experience handling 1000+ concurrent transactions translates directly to handling high clinic volume
 
 ### How to Communicate
 **In Interview:**

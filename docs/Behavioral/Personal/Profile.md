@@ -2,22 +2,31 @@
 
 ## Summary
 
-Senior Full Stack Developer with [X] years of experience building enterprise-scale healthcare systems. Specialized in microservices architecture, CQRS patterns, and compliance-driven system design. Proven ability to balance performance optimization with healthcare compliance requirements.
+Senior Full Stack Developer with 3 years building high-scale multi-vendor ecommerce systems at we3ds, plus previous healthcare systems experience. Specialized in real-time data consistency, event-driven architecture, multi-tenant platform design, and compliance-driven system design. Proven ability to balance performance optimization with operational reliability and business complexity.
 
 ## Career Overview
 
-### Current/Recent: Multi-Vendor Ecommerce at we3ds (3 Years)
+### Current: Multi-Vendor Ecommerce Platform at we3ds (3 Years)
 - **Company**: we3ds
-- **Role**: Full Stack Developer / Senior Developer
-- **Duration**: 3 years
+- **Role**: Senior Full Stack Developer
+- **Duration**: 3 years (ongoing)
+- Status: Actively employed at We3ds (3 years), transitioning to TachyHealth as Senior Full Stack Developer (Backend/Full Stack focus)
 
 **Key Contributions:**
-- Built real-time inventory management system (preventing overselling at scale)
-- Designed multi-vendor payment processing and reconciliation system
-- Implemented event-driven architecture for reliable financial transactions
-- Handled 1000+ concurrent orders during peak load (handled 10x growth)
-- Built vendor dashboards and admin systems for multi-tenant coordination
-- Optimized search and filtering for ecommerce platform (sub-second search)
+- Built real-time inventory management system preventing overselling at scale (100+ concurrent users)
+- Designed multi-vendor payment processing and reconciliation system handling complex fee splitting
+- Implemented event-driven architecture using message queues/Kafka for reliable financial transactions
+- Scaled system to handle 1000+ concurrent orders during peak load
+- Built vendor dashboards and admin systems for multi-tenant marketplace coordination
+- Optimized product search and filtering (sub-second response times)
+- Led backend architecture decisions for multi-service coordination
+
+**Tech Stack:**
+- Backend: TypeScript / Node.js / C# .NET / Python
+- Frontend: Angular / HTML5 / Vanilla CSS / RxJS
+- Database: PostgreSQL / MySQL / Redis
+- Message Queue: Kafka / RabbitMQ
+- Infrastructure: Docker / Kubernetes
 
 ### Previous: Enterprise Healthcare Systems (EHR Platform)
 - **Role**: Senior Full Stack Developer
@@ -29,15 +38,18 @@ Senior Full Stack Developer with [X] years of experience building enterprise-sca
 - Implemented audit trails and compliance features (HIPAA-aligned)
 - Optimized patient search performance (2s → 200ms, 10x improvement)
 - Led architectural decisions across multiple service boundaries
+- Implemented medical coding domain expertise
 
 ### Experience Areas
 
 **Backend Development:**
-- ASP.NET Core (C#) - Primary backend technology
+- [Your actual we3ds stack: Node.js/Python/Java/PHP - specify which]
 - Microservices architecture and service-oriented design
-- CQRS (Command Query Responsibility Segregation)
-- Event-driven systems (Kafka, event bus)
-- Database design (SQL Server, Entity Framework, complex queries)
+- Event-driven systems (Kafka, message queues)
+- Real-time data consistency and inventory management
+- Database design (SQL and NoSQL, complex queries, scaling)
+- Payment processing and financial transaction systems
+- Multi-tenant platform architecture
 
 **Frontend Development:**
 - Angular (primary UI framework)
@@ -59,25 +71,29 @@ Senior Full Stack Developer with [X] years of experience building enterprise-sca
 - Performance optimization
 - Scaling strategies
 
-## Domain Expertise: Healthcare
+## Domain Expertise
 
-### Understanding Healthcare Systems
-- Worked on EHR (Electronic Health Record) platform serving multiple hospitals
-- Deep understanding of healthcare data complexity and privacy requirements
-- Experience with healthcare workflows and requirements
+### Ecommerce Systems (Current - we3ds)
+- Multi-vendor marketplace platforms
+- Real-time inventory management at scale
+- Concurrent order processing (1000+ peak orders)
+- Payment processing and multi-vendor reconciliation
+- Vendor management and multi-tenant coordination
+- Search optimization and product discovery
 
-### Compliance & Audit
-- HIPAA awareness and implementation
-- Audit trail requirements (every action logged, attributable, immutable)
-- Data privacy and security
-- Compliance thinking in architecture decisions
+### Healthcare Systems (Previous)
+- Electronic Health Records (EHR) platforms
+- Medical coding and compliance workflows
+- Healthcare data complexity and privacy
+- Revenue cycle management fundamentals
 
-### Real-World Healthcare Challenges
-- Medical coding complexity (ICD-10, CPT codes)
-- Revenue cycle management (visit → code → claim → payment)
-- Data freshness vs caching (medication data can't be stale)
-- Patient data matching (duplicate records handling)
-- Integration with insurance systems
+### Real-World Challenges Solved
+- **Ecommerce**: Real-time inventory consistency, preventing overselling at 100+ concurrent users
+- **Ecommerce**: Multi-vendor payment splitting, complex fee reconciliation, audit trails
+- **Ecommerce**: Event-driven architecture for reliable financial transactions
+- **Healthcare**: Medical coding complexity (ICD-10, CPT codes)
+- **Healthcare**: Data freshness vs caching tradeoffs
+- **Both**: Compliance thinking (audit trails, immutable records, regulatory requirements)
 
 ## Technical Depth
 

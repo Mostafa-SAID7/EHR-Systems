@@ -10,7 +10,7 @@ Comprehensive overview of your experience combining healthcare (EHR) + ecommerce
 
 **Role:** Full Stack Developer / Senior Developer  
 **Company Focus:** Multi-vendor ecommerce marketplace  
-**Key Technologies:** [Your tech stack from we3ds]
+**Key Technologies:** TypeScript, Node.js, C# .NET, Angular, PostgreSQL, Redis, Kafka, Docker
 
 **What You Built:**
 - Multi-vendor marketplace (multiple sellers, single platform)

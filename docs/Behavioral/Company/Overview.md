@@ -1,10 +1,16 @@
 # TachyHealth - Company Overview
 
+## Moving TO This Company
+
+**Status:** Target role - Senior Full Stack Developer (Backend/Full Stack)
+
+**Why This Company:** Medical coding automation solves real healthcare problem. Series A validation. MENA emerging market opportunity.
+
 ## What TachyHealth Does
 
 **Core Product:** Medical Coding Automation Platform
 
-Transform visit notes → Automated medical code suggestions
+Transform visit notes → Automated medical code suggestions (AI/ML powered)
 
 **Process:**
 1. Doctor/hospital enters patient visit details
