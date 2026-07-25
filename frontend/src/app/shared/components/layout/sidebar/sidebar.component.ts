@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { filter } from 'rxjs/operators';
 
 export interface NavItem {
   id: string;
@@ -43,6 +44,7 @@ export interface NavItem {
           <p class="text-2xs text-primary-500 dark:text-primary-500 truncate font-medium">Healthcare Management</p>
         </div>
         <button
+          *ngIf="!isMobile"
           (click)="toggleCollapse()"
           class="ml-auto btn-icon-sm shrink-0"
           [attr.aria-label]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
@@ -61,42 +63,69 @@ export interface NavItem {
 
       <!-- ── Nav ───────────────────────────────── -->
       <nav class="flex-1 overflow-y-auto px-2.5 pb-4 space-y-0.5">
-        <ng-container *ngFor="let item of navItems">
+        <ng-container *ngFor="let item of navItems; trackBy: trackById">
 
           <!-- Parent item -->
-          <button
-            [routerLink]="item.children ? null : item.route"
-            [routerLinkActive]="item.children ? '' : 'nav-item-active'"
-            (click)="toggleItem(item)"
-            [title]="collapsed ? item.label : ''"
-            class="nav-item w-full"
-            [class.justify-center]="collapsed"
-            [class.justify-between]="!collapsed"
-          >
-            <div class="flex items-center gap-3 min-w-0">
-              <svg class="w-[18px] h-[18px] shrink-0 transition-colors"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
-                  [attr.d]="item.icon"/>
-              </svg>
-              <span *ngIf="!collapsed" class="truncate animate-fade-in">{{ item.label }}</span>
-            </div>
-
-            <div *ngIf="!collapsed" class="flex items-center gap-1.5 shrink-0">
-              <span *ngIf="item.badge"
+          <div class="flex items-center w-full">
+            <a
+              *ngIf="!item.children"
+              [routerLink]="item.route"
+              routerLinkActive="nav-item-active"
+              (click)="onItemClick(item)"
+              [title]="collapsed ? item.label : ''"
+              class="nav-item w-full"
+              [class.justify-center]="collapsed"
+              [class.justify-between]="!collapsed"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <svg class="w-[18px] h-[18px] shrink-0 transition-colors"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="item.icon"/>
+                </svg>
+                <span *ngIf="!collapsed" class="truncate animate-fade-in">{{ item.label }}</span>
+              </div>
+              <span *ngIf="!collapsed && item.badge"
                 class="flex items-center justify-center min-w-[1.25rem] h-5 px-1
                        text-2xs font-bold rounded-full
-                       bg-primary-500 text-white shadow-sm">
+                       bg-primary-500 text-white shadow-sm shrink-0">
                 {{ item.badge > 99 ? '99+' : item.badge }}
               </span>
-              <svg *ngIf="item.children"
-                class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200"
-                [class.rotate-180]="item.expanded"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </div>
-          </button>
+            </a>
+
+            <!-- Parent item with dropdown children -->
+            <a
+              *ngIf="item.children"
+              [routerLink]="item.route"
+              [routerLinkActiveOptions]="{ exact: false }"
+              (click)="onParentLinkClick(item)"
+              [title]="collapsed ? item.label : ''"
+              class="nav-item flex-1 flex items-center justify-between"
+              [class.nav-item-active]="isParentActive(item)"
+              [class.justify-center]="collapsed"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <svg class="w-[18px] h-[18px] shrink-0 transition-colors"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="item.icon"/>
+                </svg>
+                <span *ngIf="!collapsed" class="truncate animate-fade-in">{{ item.label }}</span>
+              </div>
+
+              <button
+                *ngIf="!collapsed"
+                type="button"
+                (click)="toggleCaret($event, item)"
+                class="p-1 hover:bg-primary-100/50 dark:hover:bg-primary-900/30 rounded-lg shrink-0 transition-colors"
+                [attr.aria-label]="'Toggle ' + item.label + ' menu'"
+              >
+                <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200"
+                  [class.rotate-180]="item.expanded"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+            </a>
+          </div>
 
           <!-- Children — clean indent, no border-line gutters -->
           <div
@@ -104,17 +133,19 @@ export interface NavItem {
             @expandCollapse
             class="ml-7 mt-0.5 mb-1 space-y-0.5 pl-2"
           >
-            <button
-              *ngFor="let child of item.children"
+            <a
+              *ngFor="let child of item.children; trackBy: trackById"
               [routerLink]="child.route"
+              [routerLinkActiveOptions]="{ exact: child.route === '/admin' || child.route === '/reports' }"
               routerLinkActive="text-primary-700 dark:text-primary-300 font-semibold bg-primary-50 dark:bg-primary-900/20"
-              class="w-full text-left px-3 py-2 text-sm text-gray-500 dark:text-gray-400
+              (click)="onChildClick()"
+              class="block w-full text-left px-3 py-2 text-sm text-gray-500 dark:text-gray-400
                      hover:text-primary-700 dark:hover:text-primary-300
                      hover:bg-primary-50/60 dark:hover:bg-primary-900/15
-                     rounded-xl transition-all duration-150"
+                     rounded-xl transition-all duration-150 cursor-pointer"
             >
               {{ child.label }}
-            </button>
+            </a>
           </div>
 
         </ng-container>
@@ -161,10 +192,38 @@ export interface NavItem {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
+  private router = inject(Router);
+
   @Input() navItems: NavItem[] = [];
   @Input() collapsed = false;
+  @Input() isMobile = false;
   @Output() collapsedChange = new EventEmitter<boolean>();
+  @Output() navigate = new EventEmitter<void>();
+
+  ngOnInit(): void {
+    this.autoExpandActiveParents();
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => this.autoExpandActiveParents());
+  }
+
+  autoExpandActiveParents(): void {
+    const currentUrl = this.router.url;
+    for (const item of this.navItems) {
+      if (item.children && item.children.some(c => c.route && currentUrl.startsWith(c.route))) {
+        item.expanded = true;
+      }
+    }
+  }
+
+  isParentActive(item: NavItem): boolean {
+    if (!item.children) return false;
+    const currentUrl = this.router.url;
+    return item.children.some(c => c.route && (c.route === '/admin' ? currentUrl === '/admin' : currentUrl.startsWith(c.route)));
+  }
+
+  trackById(_: number, item: NavItem): string { return item.id; }
 
   toggleCollapse(): void {
     this.collapsed = !this.collapsed;
@@ -173,5 +232,24 @@ export class SidebarComponent {
 
   toggleItem(item: NavItem): void {
     if (item.children) item.expanded = !item.expanded;
+  }
+
+  onParentLinkClick(item: NavItem): void {
+    item.expanded = true;
+    this.navigate.emit();
+  }
+
+  toggleCaret(event: MouseEvent, item: NavItem): void {
+    event.preventDefault();
+    event.stopPropagation();
+    item.expanded = !item.expanded;
+  }
+
+  onItemClick(item: NavItem): void {
+    this.navigate.emit();
+  }
+
+  onChildClick(): void {
+    this.navigate.emit();
   }
 }

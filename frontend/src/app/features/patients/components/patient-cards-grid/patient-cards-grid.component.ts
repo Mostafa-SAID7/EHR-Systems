@@ -21,7 +21,7 @@ export interface PatientCard {
   imports: [CommonModule, RouterModule],
   template: `
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      <div *ngFor="let p of patients" class="card-hover group">
+      <div *ngFor="let p of patients; trackBy: trackById" class="card-hover group">
         <div class="flex items-start gap-3">
           <!-- Avatar -->
           <div class="avatar-custom-lg" [style.background]="p.color">{{ p.initials }}</div>
@@ -67,6 +67,8 @@ export interface PatientCard {
 })
 export class PatientCardsGridComponent {
   @Input() patients: PatientCard[] = [];
+
+  trackById(_: number, p: PatientCard): string { return p.id; }
 
   getStatusClass(status: string): string {
     return status === 'Active' ? 'badge-success' :

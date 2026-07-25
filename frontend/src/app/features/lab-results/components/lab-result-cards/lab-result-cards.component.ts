@@ -21,7 +21,7 @@ export interface LabResult {
   imports: [CommonModule],
   template: `
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      <div *ngFor="let r of results" class="card-hover group">
+      <div *ngFor="let r of results; trackBy: trackById" class="card-hover group">
 
         <!-- Patient header -->
         <div class="flex items-start justify-between gap-3 mb-3">
@@ -69,6 +69,8 @@ export interface LabResult {
 })
 export class LabResultCardsComponent {
   @Input() results: LabResult[] = [];
+
+  trackById(_: number, r: LabResult): string { return r.id; }
 
   getResultStatusClass(status: string): string {
     const map: Record<string, string> = {

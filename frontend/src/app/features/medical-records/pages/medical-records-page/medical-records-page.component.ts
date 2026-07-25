@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MedicalRecordStatsComponent, RecordStat } from '../../components/medical-record-stats/medical-record-stats.component';
@@ -35,10 +35,10 @@ import { MedicalRecordListComponent, MedicalRecord } from '../../components/medi
       </div>
 
       <!-- ── Category filter ──────────────────────── -->
-      <div class="flex gap-2 flex-wrap">
-        <button *ngFor="let cat of categories"
-          (click)="activeCategory = cat"
-          [class]="activeCategory === cat ? 'filter-pill-active' : 'filter-pill'">
+      <div class="filter-bar">
+        <button *ngFor="let cat of categories; trackBy: trackByValue"
+          (click)="setCategory(cat)"
+          [class]="activeCategory() === cat ? 'filter-pill-active' : 'filter-pill'">
           {{ cat }}
         </button>
       </div>
@@ -54,7 +54,9 @@ import { MedicalRecordListComponent, MedicalRecord } from '../../components/medi
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MedicalRecordsPageComponent implements OnInit {
-  activeCategory = 'All';
+  /** Signal-backed active filter — drives computed list without method calls on every CD tick */
+  readonly activeCategory = signal('All');
+
   categories = ['All', 'Clinical Notes', 'Lab Results', 'Imaging', 'Prescriptions', 'Procedures'];
 
   stats: RecordStat[] = [
@@ -64,7 +66,7 @@ export class MedicalRecordsPageComponent implements OnInit {
     { value: '12',  label: 'Draft Records',     icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', iconClass: 'icon-box-teal' },
   ];
 
-  records: MedicalRecord[] = [
+  private readonly _records: MedicalRecord[] = [
     { id: '1', patient: 'Sarah Johnson',  initials: 'SJ', type: 'SOAP Note — General Checkup',    category: 'Clinical Notes', date: new Date(2026, 6, 23), summary: 'Patient presents for routine annual physical. BP 120/80, HR 72 bpm, all vitals within normal limits. Diabetic management reviewed.', provider: 'Dr. Patel',  status: 'Final', color: '#16a34a' },
     { id: '2', patient: 'Robert Davis',   initials: 'RD', type: 'Cardiology Consultation Report',  category: 'Clinical Notes', date: new Date(2026, 6, 22), summary: 'Patient referred for evaluation of chest pain. ECG shows ST-segment changes. Echocardiogram recommended. Carvedilol 6.25mg BID initiated.', provider: 'Dr. Garcia', status: 'Final', color: '#dc2626' },
     { id: '3', patient: 'Emma Williams',  initials: 'EW', type: 'CBC and Metabolic Panel',         category: 'Lab Results',    date: new Date(2026, 6, 21), summary: 'Complete blood count shows mild leukocytosis. Comprehensive metabolic panel within normal range. Cortisol elevated, further evaluation recommended.', provider: 'Lab Team',  status: 'Final', color: '#7c3aed' },
@@ -73,10 +75,15 @@ export class MedicalRecordsPageComponent implements OnInit {
     { id: '6', patient: 'James Wilson',   initials: 'JW', type: 'Spirometry Assessment',          category: 'Procedures',     date: new Date(2026, 6, 18), summary: 'Pulmonary function testing reveals moderate obstructive pattern (FEV1/FVC = 0.58). Consistent with COPD diagnosis. Inhaler technique reviewed.', provider: 'Dr. Smith', status: 'Draft', color: '#d97706' },
   ];
 
-  filteredRecords(): MedicalRecord[] {
-    if (this.activeCategory === 'All') return this.records;
-    return this.records.filter(r => r.category === this.activeCategory);
-  }
+  /** Computed — recalculates ONLY when activeCategory signal changes, not on every CD cycle */
+  readonly filteredRecords = computed(() => {
+    const cat = this.activeCategory();
+    return cat === 'All' ? this._records : this._records.filter(r => r.category === cat);
+  });
+
+  setCategory(cat: string): void { this.activeCategory.set(cat); }
+
+  trackByValue(_: number, val: string): string { return val; }
 
   ngOnInit(): void {}
 }

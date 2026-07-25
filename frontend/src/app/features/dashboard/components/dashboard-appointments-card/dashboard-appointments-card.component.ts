@@ -25,7 +25,7 @@ export interface TodayAppointment {
         </a>
       </div>
       <div class="space-y-1 mt-1">
-        <div *ngFor="let appt of appointments; let i = index"
+        <div *ngFor="let appt of appointments; let i = index; trackBy: trackByPatient"
           class="data-row group"
           [style.animation-delay]="i * 60 + 'ms'">
           <div class="w-2 h-2 rounded-full bg-primary-500 shrink-0 animate-pulse-soft"></div>
@@ -44,4 +44,5 @@ export interface TodayAppointment {
 })
 export class DashboardAppointmentsCardComponent {
   @Input() appointments: TodayAppointment[] = [];
+  trackByPatient(_: number, a: TodayAppointment): string { return a.patient + a.time; }
 }

@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, OnInit, inject, computed, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SidebarComponent, NavItem } from '../../shared/components/layout/sidebar/sidebar.component';
 import { TopbarComponent, TopbarAction } from '../../shared/components/layout/topbar/topbar.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -27,6 +28,7 @@ const ICONS = {
   selector: 'app-main-layout',
   standalone: true,
   imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex h-screen overflow-hidden bg-surface-50 dark:bg-surface-900">
 
@@ -44,8 +46,13 @@ const ICONS = {
         (click)="mobileSidebarOpen = false"
       >
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="relative z-50 h-full" (click)="$event.stopPropagation()">
-          <app-sidebar [navItems]="navItems" [collapsed]="false"/>
+        <div class="relative z-50 h-full w-64" (click)="$event.stopPropagation()">
+          <app-sidebar
+            [navItems]="navItems"
+            [collapsed]="false"
+            [isMobile]="true"
+            (navigate)="mobileSidebarOpen = false"
+          />
         </div>
       </div>
 
@@ -54,8 +61,8 @@ const ICONS = {
         <app-topbar
           [title]="pageTitle"
           [actions]="topbarActions"
-          [userName]="displayName"
-          [userAvatar]="userAvatar"
+          [userName]="displayName()"
+          [userAvatar]="userAvatar()"
           (toggleSidebar)="onToggleSidebar()"
           (logout)="onLogout()"
         />
@@ -71,23 +78,24 @@ const ICONS = {
 export class MainLayoutComponent implements OnInit {
   private authService = inject(AuthService);
   private router      = inject(Router);
+  private destroyRef  = inject(DestroyRef);
 
   sidebarCollapsed  = false;
   mobileSidebarOpen = false;
   pageTitle         = 'Dashboard';
 
-  // ── Reactive user data from AuthService ─────────────────────────────
-  get displayName(): string {
-    const user = this.authService.getCurrentUser();
+  // ── Computed user data — derived from signal, no repeated localStorage reads ─
+  readonly displayName = computed(() => {
+    const user = this.authService.user$();
     if (!user) return 'User';
     const parts = [user.firstName, user.lastName].filter(Boolean);
     return parts.length ? parts.join(' ') : (user.email ?? 'User');
-  }
+  });
 
-  get userAvatar(): string {
-    const user = this.authService.getCurrentUser();
-    return (user as any)?.avatar ?? (user as any)?.profileImage ?? '';
-  }
+  readonly userAvatar = computed(() => {
+    const user = this.authService.user$() as any;
+    return user?.avatar ?? user?.profileImage ?? '';
+  });
 
   // ── Navigation items ─────────────────────────────────────────────────
   navItems: NavItem[] = [
@@ -105,7 +113,7 @@ export class MainLayoutComponent implements OnInit {
     { id: 'prescriptions', label: 'Prescriptions', icon: ICONS.prescriptions, route: '/prescriptions' },
     { id: 'billing',       label: 'Billing',        icon: ICONS.billing,       route: '/billing' },
     {
-      id: 'reports', label: 'Reports', icon: ICONS.reports,
+      id: 'reports', label: 'Reports', icon: ICONS.reports, route: '/reports',
       children: [
         { id: 'reports-main',  label: 'Analytics',        icon: ICONS.reports, route: '/reports' },
         { id: 'pop-health',    label: 'Population Health', icon: ICONS.vitals,  route: '/reports/population-health' },
@@ -113,7 +121,7 @@ export class MainLayoutComponent implements OnInit {
       ],
     },
     {
-      id: 'admin', label: 'Admin', icon: ICONS.admin,
+      id: 'admin', label: 'Admin', icon: ICONS.admin, route: '/admin',
       children: [
         { id: 'admin-dash',  label: 'Overview',       icon: ICONS.dashboard,    route: '/admin' },
         { id: 'admin-users', label: 'Users',           icon: ICONS.patients,     route: '/admin/users' },
@@ -130,10 +138,14 @@ export class MainLayoutComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    // Update page title from route data on navigation
+    // Update page title from route data and close mobile sidebar on navigation
     this.router.events
-      .pipe(filter(e => e instanceof NavigationEnd))
+      .pipe(
+        filter(e => e instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(() => {
+        this.mobileSidebarOpen = false;
         let route = this.router.routerState.snapshot.root;
         while (route.firstChild) route = route.firstChild;
         this.pageTitle = route.data['title'] ?? 'EHR Platform';

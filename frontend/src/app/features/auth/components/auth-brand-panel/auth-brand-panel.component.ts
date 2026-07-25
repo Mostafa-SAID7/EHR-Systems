@@ -40,7 +40,7 @@ export interface AuthHighlight {
 
         <!-- Stat highlights -->
         <div class="grid grid-cols-3 gap-3 mb-10">
-          <div *ngFor="let s of highlights" class="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-4 text-center">
+          <div *ngFor="let s of highlights; trackBy: trackByValue" class="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-4 text-center">
             <p class="text-2xl font-bold text-white">{{ s.value }}</p>
             <p class="text-xs text-primary-200 mt-0.5 font-medium">{{ s.label }}</p>
           </div>
@@ -48,7 +48,7 @@ export interface AuthHighlight {
 
         <!-- Feature pills -->
         <div class="flex flex-wrap justify-center gap-2">
-          <span *ngFor="let f of features" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-sm">
+          <span *ngFor="let f of features; trackBy: trackByValue" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/15 backdrop-blur-sm">
             <svg class="w-3 h-3 text-primary-300" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
             </svg>
@@ -63,4 +63,7 @@ export interface AuthHighlight {
 export class AuthBrandPanelComponent {
   @Input() highlights: AuthHighlight[] = [];
   @Input() features: string[] = [];
+  trackByValue(_: number, val: string | AuthHighlight): string {
+    return typeof val === 'string' ? val : val.value + val.label;
+  }
 }

@@ -110,7 +110,7 @@ body {
   // ── Page layout ──────────────────────────────
 
   .page-container {
-    @apply px-4 sm:px-6 lg:px-8 py-6 max-w-screen-2xl mx-auto;
+    @apply px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-screen-2xl mx-auto;
   }
 
   // ── Typography ───────────────────────────────
@@ -147,7 +147,7 @@ body {
            rounded-2xl
            shadow-card
            border border-green-100/60 dark:border-green-900/20
-           p-5;
+           p-3.5 sm:p-5;
     transition:
       box-shadow var(--duration-base) var(--ease-smooth),
       transform  var(--duration-base) var(--ease-smooth),
@@ -169,7 +169,7 @@ body {
   .card-green {
     @apply bg-gradient-to-br from-primary-50 to-primary-100/40
            dark:from-primary-950/40 dark:to-primary-900/10
-           rounded-2xl p-5
+           rounded-2xl p-3.5 sm:p-5
            border border-primary-200/50 dark:border-primary-800/25;
   }
 
@@ -227,19 +227,42 @@ body {
   // ── Grid layouts ─────────────────────────────
 
   .grid-stats {
-    @apply grid grid-cols-2 lg:grid-cols-4 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4;
   }
   .grid-2 {
-    @apply grid grid-cols-1 lg:grid-cols-2 gap-5;
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5;
   }
   .grid-3 {
-    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5;
+    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5;
   }
   .grid-4 {
-    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4;
   }
   .grid-3-stats {
     @apply grid grid-cols-1 sm:grid-cols-3 gap-3;
+  }
+
+  // Filter bar wrapper — horizontal touch scrollable on small screens with no scrollbar overflow
+  .filter-bar {
+    @apply flex items-center gap-2 overflow-x-auto pb-1 max-w-full;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .filter-pill {
+    @apply min-h-[38px] px-3.5 py-1.5 rounded-full text-xs font-semibold
+           bg-white dark:bg-surface-800
+           text-gray-600 dark:text-gray-300
+           border border-surface-200 dark:border-surface-700
+           hover:border-primary-400 dark:hover:border-primary-600
+           hover:text-primary-600 dark:hover:text-primary-400
+           shrink-0 transition-all duration-150 cursor-pointer;
+  }
+
+  .filter-pill-active {
+    @apply min-h-[38px] px-3.5 py-1.5 rounded-full text-xs font-semibold
+           bg-primary-600 text-white
+           shadow-sm shrink-0 transition-all duration-150 cursor-pointer;
   }
 
   // ── Stagger animation ────────────────────────

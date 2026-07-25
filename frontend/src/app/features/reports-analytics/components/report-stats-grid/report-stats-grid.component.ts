@@ -15,7 +15,7 @@ export interface ReportStat {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="grid-stats">
       <div *ngFor="let s of stats; let i = index" class="stat-card animate-count-up" [style.animation-delay]="i * 70 + 'ms'">
         <div class="flex items-start justify-between gap-2">
           <div>

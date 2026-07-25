@@ -19,7 +19,7 @@ export interface QuickAction {
         <h2>Quick Actions</h2>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <a *ngFor="let action of actions; let i = index"
+        <a *ngFor="let action of actions; let i = index; trackBy: trackByRoute"
           [routerLink]="action.route"
           class="card-hover flex flex-col items-center justify-center gap-3 py-6 text-center"
           [style.animation-delay]="i * 55 + 'ms'">
@@ -37,4 +37,5 @@ export interface QuickAction {
 })
 export class DashboardQuickActionsComponent {
   @Input() actions: QuickAction[] = [];
+  trackByRoute(_: number, a: QuickAction): string { return a.route; }
 }

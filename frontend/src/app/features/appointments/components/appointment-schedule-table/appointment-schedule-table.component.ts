@@ -27,7 +27,7 @@ export interface AppointmentRow {
       </div>
 
       <div class="divide-y divide-surface-100 dark:divide-surface-700/50">
-        <div *ngFor="let a of appointments"
+        <div *ngFor="let a of appointments; trackBy: trackById"
           class="flex items-center gap-4 px-5 py-4
                  hover:bg-primary-50/40 dark:hover:bg-primary-900/10
                  transition-colors duration-150 cursor-pointer">
@@ -81,6 +81,8 @@ export interface AppointmentRow {
 })
 export class AppointmentScheduleTableComponent {
   @Input() appointments: AppointmentRow[] = [];
+
+  trackById(_: number, a: AppointmentRow): string { return a.id; }
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {

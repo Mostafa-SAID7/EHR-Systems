@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { ThemeService } from '../../../../core/services/theme.service';
+import { InitialsPipe } from '../../../pipes/initials/initials.pipe';
 
 export interface TopbarAction {
   id: string;
@@ -14,7 +15,7 @@ export interface TopbarAction {
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, InitialsPipe],
   template: `
     <header class="flex items-center justify-between gap-4 px-4 sm:px-6 h-16 shrink-0
                    bg-white dark:bg-surface-900
@@ -41,7 +42,7 @@ export interface TopbarAction {
 
         <!-- Action buttons -->
         <button
-          *ngFor="let action of actions"
+          *ngFor="let action of actions; trackBy: trackById"
           (click)="actionClick.emit(action)"
           [title]="action.label"
           class="btn-icon relative"
@@ -98,7 +99,7 @@ export interface TopbarAction {
             <ng-template #initials>
               <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-400 to-primary-700
                           flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                {{ getInitials() }}
+                {{ userName | initials }}
               </div>
             </ng-template>
 
@@ -200,12 +201,5 @@ export class TopbarComponent {
     this.themeService.toggleDarkMode();
   }
 
-  getInitials(): string {
-    return this.userName
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(n => n[0].toUpperCase())
-      .join('');
-  }
+  trackById(_: number, action: TopbarAction): string { return action.id; }
 }

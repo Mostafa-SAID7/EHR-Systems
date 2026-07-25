@@ -21,7 +21,7 @@ export interface MedicalRecord {
   imports: [CommonModule, RouterModule],
   template: `
     <div class="space-y-3">
-      <div *ngFor="let r of records" class="card-hover group flex gap-4">
+      <div *ngFor="let r of records; trackBy: trackById" class="card-hover group flex gap-4">
 
         <!-- Category icon -->
         <div [ngClass]="getCategoryIcon(r.category).box" class="icon-box-lg shrink-0 self-start">
@@ -73,6 +73,8 @@ export interface MedicalRecord {
 })
 export class MedicalRecordListComponent {
   @Input() records: MedicalRecord[] = [];
+
+  trackById(_: number, r: MedicalRecord): string { return r.id; }
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {

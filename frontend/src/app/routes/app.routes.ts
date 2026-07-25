@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { AuthLayoutComponent } from '../layouts/auth-layout/auth-layout.component';
 import { MainLayoutComponent } from '../layouts/main-layout/main-layout.component';
 import { authGuard } from '../core/guards/auth.guard';
 import { roleGuard } from '../core/guards/role.guard';
@@ -21,10 +20,14 @@ export const appRoutes: Routes = [
       ),
   },
   
-  // Auth Routes (Public)
+  // Auth Routes (Public) — lazy-loaded so the brand panel & auth components
+  // are excluded from the initial main.js bundle
   {
     path: 'auth',
-    component: AuthLayoutComponent,
+    loadComponent: () =>
+      import('../layouts/auth-layout/auth-layout.component').then(
+        (m) => m.AuthLayoutComponent
+      ),
     children: [
       {
         path: 'login',

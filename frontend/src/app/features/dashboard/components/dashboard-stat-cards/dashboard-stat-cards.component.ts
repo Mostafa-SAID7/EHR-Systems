@@ -17,7 +17,7 @@ export interface DashboardStat {
   imports: [CommonModule],
   template: `
     <div class="grid-stats">
-      <div *ngFor="let stat of stats; let i = index"
+      <div *ngFor="let stat of stats; let i = index; trackBy: trackByLabel"
         class="stat-card animate-count-up"
         [style.animation-delay]="i * 70 + 'ms'">
         <div class="flex items-start justify-between gap-2">
@@ -45,4 +45,5 @@ export interface DashboardStat {
 })
 export class DashboardStatCardsComponent {
   @Input() stats: DashboardStat[] = [];
+  trackByLabel(_: number, s: DashboardStat): string { return s.label; }
 }

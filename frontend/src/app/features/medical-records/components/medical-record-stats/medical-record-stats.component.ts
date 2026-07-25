@@ -13,7 +13,7 @@ export interface RecordStat {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="grid-stats">
       <div *ngFor="let s of stats" class="card flex items-center gap-3 p-3.5">
         <div [ngClass]="s.iconClass" class="icon-box-md shrink-0">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

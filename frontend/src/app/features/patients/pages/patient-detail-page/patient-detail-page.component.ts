@@ -66,8 +66,8 @@ import { PatientVitalsGridComponent } from '../../components/patient-vitals-grid
       </div>
 
       <!-- ── Tab nav ──────────────────────────────────── -->
-      <div class="view-toggle w-full sm:w-auto">
-        <button *ngFor="let t of tabs"
+      <div class="view-toggle w-full sm:w-auto overflow-x-auto">
+        <button *ngFor="let t of tabs; trackBy: trackByKey"
           (click)="activeTab = t.key"
           [class]="activeTab === t.key ? 'view-toggle-btn-active flex-1' : 'view-toggle-btn flex-1'">
           {{ t.label }}
@@ -76,7 +76,7 @@ import { PatientVitalsGridComponent } from '../../components/patient-vitals-grid
 
       <!-- ── Tab: Visits ──────────────────────────────── -->
       <div *ngIf="activeTab === 'visits'" class="space-y-3">
-        <div *ngFor="let v of recentVisits" class="card-hover flex gap-4">
+        <div *ngFor="let v of recentVisits; trackBy: trackByVisit" class="card-hover flex gap-4">
           <div class="icon-box-lg icon-box-primary shrink-0 self-start">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
@@ -96,7 +96,7 @@ import { PatientVitalsGridComponent } from '../../components/patient-vitals-grid
 
       <!-- ── Tab: Prescriptions ──────────────────────── -->
       <div *ngIf="activeTab === 'rx'" class="space-y-3">
-        <div *ngFor="let rx of prescriptions" class="card-hover flex items-center gap-4">
+        <div *ngFor="let rx of prescriptions; trackBy: trackByRx" class="card-hover flex items-center gap-4">
           <div class="icon-box-md icon-box-teal shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
@@ -118,7 +118,7 @@ import { PatientVitalsGridComponent } from '../../components/patient-vitals-grid
 
       <!-- ── Tab: Lab Results ────────────────────────── -->
       <div *ngIf="activeTab === 'labs'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div *ngFor="let l of labResults" class="card-hover">
+        <div *ngFor="let l of labResults; trackBy: trackByLab" class="card-hover">
           <div class="flex items-center justify-between mb-3">
             <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ l.test }}</p>
             <span [ngClass]="l.status === 'Normal' ? 'badge-success' : 'badge-danger'" class="badge text-2xs">{{ l.status }}</span>
@@ -198,6 +198,11 @@ export class PatientDetailPageComponent implements OnInit {
     { test: 'LDL Cholesterol',  value: '94',  unit: 'mg/dL',range: '<100',    status: 'Normal', date: 'Jul 23, 2026' },
     { test: 'eGFR',             value: '78',  unit: 'mL/min',range: '>60',    status: 'Normal', date: 'Jul 23, 2026' },
   ];
+
+  trackByKey(_: number, item: { key: string }): string { return item.key; }
+  trackByVisit(_: number, v: any): string { return v.type + v.date; }
+  trackByRx(_: number, rx: any): string { return rx.drug; }
+  trackByLab(_: number, l: any): string { return l.test; }
 
   ngOnInit(): void {}
   constructor(private route: ActivatedRoute) {}
