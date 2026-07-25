@@ -28,7 +28,7 @@ public class GetPatientQueryHandler : IQueryHandler<GetPatientQuery, PatientResp
     {
         _logger.LogInformation("Fetching patient {PatientId}", request.PatientId);
 
-        var repo = _unitOfWork.Repository<Domain.Patient>();
+        var repo = _unitOfWork.Repository<PatientEntity>();
         var patient = await repo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == request.PatientId),
             cancellationToken);
@@ -61,16 +61,18 @@ public class SearchPatientsQueryHandler : IQueryHandler<SearchPatientsQuery, Sea
     {
         _logger.LogInformation("Searching patients: {SearchTerm}", request.SearchTerm);
 
-        var results = await _searchService.SearchAsync(
-            index: "patients",
-            query: request.SearchTerm,
-            from: (request.PageNumber - 1) * request.PageSize,
-            size: request.PageSize,
-            cancellationToken: cancellationToken);
+        var results = await _searchService.SearchAsync<Dictionary<string, object>>(
+            new EHRPlatform.Common.Search.SearchQuery
+            {
+                QueryText = request.SearchTerm,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            },
+            cancellationToken);
 
-        var patients = results.Items
-            .Select(item => System.Text.Json.JsonSerializer.Deserialize<PatientResponseDto>(
-                System.Text.Json.JsonSerializer.Serialize(item)))
+        var patients = results.Hits
+            .Select(hit => System.Text.Json.JsonSerializer.Deserialize<PatientResponseDto>(
+                System.Text.Json.JsonSerializer.Serialize(hit.Source)))
             .Where(p => p != null)
             .Cast<PatientResponseDto>()
             .ToList();
@@ -78,7 +80,7 @@ public class SearchPatientsQueryHandler : IQueryHandler<SearchPatientsQuery, Sea
         return new SearchResultDto<PatientResponseDto>
         {
             Items = patients,
-            Total = (int)results.Total,
+            Total = (int)results.TotalCount,
             PageNumber = request.PageNumber,
             PageSize = request.PageSize
         };
@@ -106,16 +108,13 @@ public class ListPatientsQueryHandler : IQueryHandler<ListPatientsQuery, SearchR
     {
         _logger.LogInformation("Listing patients page {PageNumber}", request.PageNumber);
 
-        var repo = _unitOfWork.Repository<Domain.Patient>();
+        var repo = _unitOfWork.Repository<PatientEntity>();
 
         var skip = (request.PageNumber - 1) * request.PageSize;
-        var query = repo.Query()
-            .OrderByDescending(p => p.CreatedAt)
-            .Skip(skip)
-            .Take(request.PageSize);
-
-        var total = await repo.CountAsync(cancellationToken);
-        var patients = await repo.ToListAsync(query, cancellationToken);
+        var total = await repo.CountAsync(cancellationToken: cancellationToken);
+        var patients = await repo.ToListAsync(
+            q => q.OrderByDescending(p => p.CreatedAt).Skip(skip).Take(request.PageSize),
+            cancellationToken);
 
         return new SearchResultDto<PatientResponseDto>
         {
@@ -148,7 +147,7 @@ public class GetPatientDetailQueryHandler : IQueryHandler<GetPatientDetailQuery,
     {
         _logger.LogInformation("Fetching patient detail {PatientId}", request.PatientId);
 
-        var repo = _unitOfWork.Repository<Domain.Patient>();
+        var repo = _unitOfWork.Repository<PatientEntity>();
         var patient = await repo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == request.PatientId),
             cancellationToken);

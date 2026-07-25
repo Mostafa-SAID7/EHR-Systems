@@ -18,4 +18,7 @@ public class ClinicalNoteResponseDto
     public string Plan { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? LastModifiedAt { get; set; }
+    public List<VitalSignsDto> VitalSigns { get; set; } = new();
+    public List<DiagnosisDto> Diagnoses { get; set; } = new();
+    public List<ProcedureDto> Procedures { get; set; } = new();
 }

@@ -1,5 +1,6 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Patient.Features.Patients.Commands;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
@@ -35,7 +36,7 @@ public class AddPatientAllergyCommandHandler : ICommandHandler<AddPatientAllergy
     {
         _logger.LogInformation("Adding allergy {Allergen} for patient {PatientId}", command.Allergen, command.PatientId);
 
-        var repo = _unitOfWork.Repository<Domain.Entities.Patient>();
+        var repo = _unitOfWork.Repository<PatientEntity>();
         var patient = await repo.GetByIdAsync(command.PatientId, cancellationToken);
 
         if (patient == null)

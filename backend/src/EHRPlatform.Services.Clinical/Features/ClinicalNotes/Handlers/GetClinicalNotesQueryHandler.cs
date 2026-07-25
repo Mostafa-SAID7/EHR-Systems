@@ -1,7 +1,7 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
-using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
+using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;
 using Microsoft.Extensions.Logging;
 
@@ -33,13 +33,16 @@ public class GetClinicalNotesQueryHandler : IQueryHandler<GetClinicalNotesQuery,
 
         var repo = _unitOfWork.Repository<Domain.Entities.ClinicalNote>();
 
-        var (notes, total) = await repo.GetPagedAsync(
-            pageNumber: query.PageNumber,
-            pageSize: query.PageSize,
-            predicate: n => n.PatientId == query.PatientId && (query.Status == null || n.Status == query.Status),
-            orderBy: n => n.OrderByDescending(x => x.EncounterDate),
-            cancellationToken: cancellationToken
-        );
+        var skip = (query.PageNumber - 1) * query.PageSize;
+        var total = await repo.CountAsync(
+            q => q.Where(n => n.PatientId == query.PatientId && (query.Status == null || n.Status == query.Status)),
+            cancellationToken);
+        var notes = await repo.ToListAsync(
+            q => q.Where(n => n.PatientId == query.PatientId && (query.Status == null || n.Status == query.Status))
+                  .OrderByDescending(x => x.EncounterDate)
+                  .Skip(skip)
+                  .Take(query.PageSize),
+            cancellationToken);
 
         return _mapper.MapToListDto(notes, total, query.PageNumber, query.PageSize);
     }

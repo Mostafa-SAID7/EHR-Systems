@@ -3,8 +3,7 @@ using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
-// Appointment alias comes from GlobalUsings.cs
-using ProviderAvailability = EHRPlatform.Services.Appointment.Features.Appointments.Domain.ProviderAvailability;
+// Appointment alias and ProviderAvailability alias come from GlobalUsings.cs
 
 namespace EHRPlatform.Services.Appointment.Application.AppointmentBooking.Handlers;
 

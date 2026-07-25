@@ -61,8 +61,7 @@ public class GetClinicalNoteQueryHandler : IQueryHandler<GetClinicalNoteQuery, C
             Id = p.Id,
             ProcedureName = p.ProcedureName,
             ProcedureCode = p.ProcedureCode,
-            PerformedAt = p.PerformedAt,
-            Result = p.Result
+            PerformedDate = p.PerformedDate
         }).ToList();
 
         return dto;

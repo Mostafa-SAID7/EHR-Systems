@@ -1,6 +1,9 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
+using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
+using EHRPlatform.Services.Clinical.Domain.Events;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 
@@ -9,7 +12,7 @@ namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;
 /// <summary>
 /// Record vitals handler.
 /// </summary>
-public class RecordVitalsCommandHandler : ICommandHandler<RecordVitalsCommand>
+public class RecordVitalsCommandHandler : ICommandHandler<RecordVitalsCommand, ClinicalNoteResponse>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IOutboxRepository _outbox;
@@ -25,7 +28,7 @@ public class RecordVitalsCommandHandler : ICommandHandler<RecordVitalsCommand>
         _logger = logger;
     }
 
-    public async Task Handle(RecordVitalsCommand command, CancellationToken cancellationToken)
+    public async Task<ClinicalNoteResponse> Handle(RecordVitalsCommand command, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Recording vitals for note {NoteId}", command.ClinicalNoteId);
 
@@ -59,5 +62,7 @@ public class RecordVitalsCommandHandler : ICommandHandler<RecordVitalsCommand>
         }, cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return new ClinicalNoteResponse { Id = note.Id, PatientId = note.PatientId };
     }
 }

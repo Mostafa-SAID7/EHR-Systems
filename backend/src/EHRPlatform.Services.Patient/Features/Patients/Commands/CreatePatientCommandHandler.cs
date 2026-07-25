@@ -1,5 +1,6 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 // Domain entities via GlobalUsings (Domain.Entities)
@@ -33,12 +34,12 @@ public class CreatePatientCommandHandler : ICommandHandler<CreatePatientCommand,
     {
         _logger.LogInformation("Creating patient {FirstName} {LastName}", command.FirstName, command.LastName);
 
-        var patientRepo = _unitOfWork.Repository<Domain.Patient>();
+        var patientRepo = _unitOfWork.Repository<PatientEntity>();
 
         // Generate MRN (Medical Record Number)
         var mrn = GenerateMRN();
 
-        var patient = new Domain.Patient
+        var patient = new PatientEntity
         {
             Id = Guid.NewGuid(),
             FirstName = command.FirstName,
@@ -115,7 +116,7 @@ public class UpdatePatientCommandHandler : ICommandHandler<UpdatePatientCommand,
     {
         _logger.LogInformation("Updating patient {PatientId}", command.PatientId);
 
-        var patientRepo = _unitOfWork.Repository<Domain.Patient>();
+        var patientRepo = _unitOfWork.Repository<PatientEntity>();
         var patient = await patientRepo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == command.PatientId),
             cancellationToken);
@@ -161,7 +162,7 @@ public class AddAllergyCommandHandler : ICommandHandler<AddAllergyCommand>
     {
         _logger.LogInformation("Adding allergy to patient {PatientId}", command.PatientId);
 
-        var patientRepo = _unitOfWork.Repository<Domain.Patient>();
+        var patientRepo = _unitOfWork.Repository<PatientEntity>();
         var patient = await patientRepo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == command.PatientId),
             cancellationToken);
@@ -211,7 +212,7 @@ public class AddConditionCommandHandler : ICommandHandler<AddConditionCommand>
     {
         _logger.LogInformation("Adding condition to patient {PatientId}", command.PatientId);
 
-        var patientRepo = _unitOfWork.Repository<Domain.Patient>();
+        var patientRepo = _unitOfWork.Repository<PatientEntity>();
         var patient = await patientRepo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == command.PatientId),
             cancellationToken);

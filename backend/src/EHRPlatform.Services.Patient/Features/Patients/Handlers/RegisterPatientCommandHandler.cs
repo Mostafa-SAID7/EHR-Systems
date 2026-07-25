@@ -1,5 +1,6 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Patient.Features.Patients.Commands;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
@@ -35,7 +36,7 @@ public class RegisterPatientCommandHandler : ICommandHandler<RegisterPatientComm
     {
         _logger.LogInformation("Registering patient {Email}", command.Email);
 
-        var patient = new Domain.Entities.Patient
+        var patient = new PatientEntity
         {
             Id = Guid.NewGuid(),
             FirstName = command.FirstName,
@@ -51,7 +52,7 @@ public class RegisterPatientCommandHandler : ICommandHandler<RegisterPatientComm
             Status = "Active"
         };
 
-        var repo = _unitOfWork.Repository<Domain.Entities.Patient>();
+        var repo = _unitOfWork.Repository<PatientEntity>();
         await repo.AddAsync(patient, cancellationToken);
 
         // Publish event
