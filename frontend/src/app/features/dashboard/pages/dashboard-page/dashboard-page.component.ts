@@ -69,11 +69,9 @@ import { TimelineComponent, TimelineEvent } from '../../../../shared/components/
         <!-- Today's appointments -->
         <app-card title="Today's Appointments">
           <div card-actions>
-            <a routerLink="/appointments"
-              class="text-xs font-semibold text-primary-600 hover:text-primary-700
-                     dark:text-primary-400 transition-colors">
+            <a routerLink="/appointments" class="link-primary">
               View all
-              <svg class="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
             </a>
@@ -125,9 +123,7 @@ import { TimelineComponent, TimelineEvent } from '../../../../shared/components/
       <div>
         <div class="section-header">
           <h2>Last Patient Vitals</h2>
-          <a routerLink="/clinical/vitals"
-            class="text-sm font-semibold text-primary-600 hover:text-primary-700
-                   dark:text-primary-400 transition-colors flex items-center gap-1">
+          <a routerLink="/clinical/vitals" class="link-sm">
             View details
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>

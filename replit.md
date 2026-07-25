@@ -4,103 +4,77 @@ A production-ready, enterprise-grade Electronic Health Records system built with
 
 ## Stack
 
+- **Frontend**: Angular 18, Tailwind CSS — runs on port **4200** via the `Frontend` workflow
 - **Backend**: ASP.NET Core (.NET 8), EF Core, PostgreSQL, MediatR (CQRS), FluentValidation, Serilog, Mapster
-- **Frontend**: Angular 18, Tailwind CSS (separate `frontend/` directory — not yet wired to a workflow)
 - **Polyglot DB**: PostgreSQL (primary OLTP), Redis (caching), Elasticsearch (search), MongoDB (documents)
+- **Messaging**: Kafka / MassTransit (inter-service events)
+
+## How to Run
+
+### Frontend only (works standalone)
+Start the **Frontend** workflow — Angular dev server on port 4200.  
+Navigate to `/auth/login` to see the login page; the app routes to `/dashboard` after auth.
+
+### Backend services
+Backend services require .NET 8 SDK. Replit currently ships .NET 7; upgrade the SDK via the package-management skill or target `net7.0` in `.csproj` files before starting any backend workflow.
+
+Each service also needs external infrastructure (Postgres, Redis, Elasticsearch, Kafka) — see `.env.development` for connection strings.
 
 ## Project Structure
 
 ```
+frontend/                        # Angular 18 SPA
+  src/
+    app/
+      core/                      # Auth guards, interceptors, services
+      shared/components/         # UI library (card, button, sidebar, topbar, etc.)
+      features/                  # Pages: dashboard, patients, appointments, billing, ...
+      layouts/                   # main-layout, auth-layout
+    styles/styles.scss           # ← SINGLE source of truth for all design tokens + component classes
+
 backend/
   src/
-    EHRPlatform.Common/              # Shared: CQRS, repository, UoW, domain events, security,
-                                     #   caching (Redis), search (Elasticsearch), MongoDB repository
-    EHRPlatform.Services.Identity/   # Auth microservice (running on port 5000)
-    EHRPlatform.Services.Patient/    # Patient microservice (foundation + DB strategy applied)
-    EHRPlatform.Services.Clinical/   # Clinical microservice (foundation only)
-    ... (8 more microservices — foundation scaffolded)
-  docker-compose.yml                 # Full infrastructure: Postgres×4, MongoDB, MySQL, Redis,
-                                     #   Kafka, RabbitMQ, Elasticsearch, Kibana
-  init-scripts/mongo-init.js         # MongoDB collection + index initialization
-frontend/                            # Angular 18 app (complete UI, not yet running on Replit)
-docs/                                # Architecture, API spec, security, DB schema
+    EHRPlatform.Common/          # Shared: CQRS, repo, domain events, Redis, Elasticsearch, MongoDB
+    EHRPlatform.Services.*/      # Individual microservices (Identity, Patient, Clinical, ...)
+  EHRPlatform.sln
+
+devops/                          # Docker, Kubernetes, CI/CD, Terraform, monitoring
+docs/                            # Architecture, API spec, DB schema, security
 ```
 
-## Running the Identity Service
+## Frontend Design System
 
-The workflow **Identity Service** runs the backend auth service:
+All styles are centralized in `frontend/src/styles/styles.scss` and `frontend/tailwind.config.js`.
 
-```
-cd backend && dotnet run --project src/EHRPlatform.Services.Identity
-```
+**Never add one-off Tailwind utilities inline when a design-system class exists.** Key classes:
 
-- Starts on **port 5000**
-- Swagger UI: `/` (root redirects to Swagger)
-- Health check: `/health`
-- On first start: automatically creates all DB tables and seeds default roles
+| Class | Purpose |
+|---|---|
+| `.card`, `.card-hover`, `.card-glass`, `.card-green` | Card variants |
+| `.card-header` | Card top bar (title + action) |
+| `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-danger` | Button variants |
+| `.btn-icon`, `.btn-icon-sm` | Icon-only buttons |
+| `.view-toggle`, `.view-toggle-btn`, `.view-toggle-btn-active` | Tab/view switcher |
+| `.dropdown-item` | Dropdown menu rows |
+| `.link-primary`, `.link-sm` | Green text links with chevron |
+| `.stat-card`, `.mini-stat` | KPI / metric cards |
+| `.grid-stats`, `.grid-2`, `.grid-3`, `.grid-4`, `.grid-3-stats` | Responsive grids |
+| `.badge-*` | Status badges (primary/success/warning/danger/info/neutral) |
+| `.icon-box-*` | Colored icon containers |
+| `.avatar`, `.avatar-*`, `.avatar-custom-*` | Avatar variants |
+| `.stagger` | Entrance animation on child elements |
+| `.animate-fade-in-up`, `.animate-count-up`, etc. | Motion utilities |
+| `.filter-pill`, `.filter-pill-active` | Filter tab buttons |
+| `.progress-bar` / `.progress-fill` | Progress indicator |
+| `.input-base`, `.input-icon`, `.input-error` | Form inputs |
+| `.heading-xl` → `.heading-sm` | Typography scale |
+| `.body-text`, `.caption`, `.label-text`, `.muted` | Text styles |
 
-## Required Environment Variables
-
-| Variable                    | Purpose                                       |
-|-----------------------------|-----------------------------------------------|
-| `JWT_SECRET`                | Signs JWT access tokens (64-char hex)         |
-| `ENCRYPTION_KEY`            | AES-256 key for PHI encryption (32 chars)     |
-| `PGHOST` / `PGDATABASE` etc.| Auto-provided by Replit managed PostgreSQL    |
-| `REDIS_CONNECTION_STRING`   | Optional — Redis caching (graceful fallback)  |
-| `ELASTICSEARCH_URL`         | Optional — Elasticsearch search               |
-| `MONGODB_CONNECTION_STRING` | Optional — MongoDB document store             |
-
-## Database Architecture (Polyglot Persistence)
-
-| Store         | Role                                                       | Services          |
-|---------------|------------------------------------------------------------|-------------------|
-| PostgreSQL    | Primary OLTP — patients, users, clinical records, billing  | All services      |
-| Redis         | Caching, sessions, rate limiting, pub/sub invalidation     | All services      |
-| Elasticsearch | Full-text patient/record/medication search, audit queries  | Patient, Clinical |
-| MongoDB       | Clinical notes, device vitals, scanned docs, audit logs    | Clinical, Patient |
-| MySQL         | Billing/claims integration, legacy insurance systems       | Billing service   |
-
-## Common Library — Key Abstractions
-
-- `IRepository<TEntity>` / `Repository<TEntity>` — EF Core generic CRUD with soft delete
-- `IMongoRepository<TDocument>` / `MongoRepository<TDocument>` — MongoDB CRUD with soft delete
-- `MongoBaseDocument` — base class for MongoDB documents (schemaVersion, soft-delete, tenantId)
-- `IUnitOfWork` — EF Core transaction management + outbox event publishing
-- `ICacheService` / `RedisCacheService` — Redis Cache-Aside pattern
-- `ISearchService` / `ElasticsearchService` — full-text search with medical synonym analyzer
-- `BaseDbContext` — soft delete, audit interceptors, timestamp management
-- `OutboxEvent` — transactional outbox pattern for guaranteed Kafka/RabbitMQ delivery
-
-## DI Registration Helpers (Program.cs)
-
-```csharp
-services.AddPostgresDataAccess<MyContext>(connectionString);   // EF Core + Dapper + UoW
-services.AddRedisCaching(redisConnectionString);               // Redis ICacheService
-services.AddElasticsearchSearch(elasticsearchUrl);             // Elasticsearch ISearchService
-services.AddMongoDataAccess(mongoConnectionString, dbName);    // MongoDB IMongoRepository<T>
-```
-
-All optional stores (Redis, Elasticsearch, MongoDB) degrade gracefully — the service logs a warning and continues without them when they're unavailable.
-
-## Health Checks
-
-Each service exposes `/health` with checks for every configured store:
-- `postgres-<service>` — EF Core DbContext check
-- `redis-<service>` — Cache SET/GET/DELETE round-trip
-- `elasticsearch-<service>` — Cluster ping
-- `mongodb-<service>` — Database ping command
-
-## Identity Service — Endpoints
-
-| Method | Path                     | Auth   | Description                 |
-|--------|--------------------------|--------|-----------------------------|
-| POST   | /api/v1/auth/register    | None   | Self-register a new user    |
-| POST   | /api/v1/auth/login       | None   | Login → JWT + refresh token |
-| POST   | /api/v1/auth/refresh     | None   | Refresh access token        |
-| POST   | /api/v1/auth/logout      | Bearer | Revoke refresh token        |
+**Color palette**: Primary is emerald green (`primary-600` = `#16a34a`). Surface neutrals in `surface-*`. Full token list in `:root` CSS variables.
 
 ## User Preferences
 
-- Deep, thorough implementation preferred — clean up duplicates and legacy patterns
-- Backend-first focus; Identity Service is the running anchor service
-- Follow polyglot database strategy from `attached_assets/` spec document
+- Keep styles centralized — extend `styles.scss` rather than adding inline Tailwind duplicates
+- Green-first cinematic aesthetic: atmospheric gradients, no hard side-border accents
+- All grids must be responsive (always start with `grid-cols-1` on mobile)
+- Animations should feel natural, not jarring — use the existing easing variables

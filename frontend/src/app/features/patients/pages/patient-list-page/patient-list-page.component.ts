@@ -76,7 +76,7 @@ interface Patient {
       </div>
 
       <!-- ── Stats row ────────────────────────────── -->
-      <div class="grid grid-cols-3 gap-3">
+      <div class="grid-3-stats">
         <div *ngFor="let s of summaryStats"
           class="card-green flex items-center gap-3 py-3">
           <div [ngClass]="s.iconClass" class="icon-box-md shrink-0">
@@ -97,9 +97,7 @@ interface Patient {
           class="card-hover group">
           <div class="flex items-start gap-3">
             <!-- Avatar -->
-            <div class="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center
-                        text-white font-bold text-sm shadow-sm"
-              [style.background]="p.color">
+            <div class="avatar-custom-lg" [style.background]="p.color">
               {{ p.initials }}
             </div>
             <!-- Info -->
@@ -130,9 +128,7 @@ interface Patient {
               </svg>
               Last: {{ p.lastVisit | date:'MMM d' }}
             </div>
-            <a [routerLink]="['/patients', p.id]"
-              class="text-xs font-semibold text-primary-600 hover:text-primary-700
-                     dark:text-primary-400 transition-colors flex items-center gap-0.5">
+            <a [routerLink]="['/patients', p.id]" class="link-primary">
               View
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>

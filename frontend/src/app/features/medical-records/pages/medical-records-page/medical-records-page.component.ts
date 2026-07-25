@@ -100,8 +100,7 @@ interface MedicalRecord {
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{{ r.summary }}</p>
             <div class="flex items-center gap-3 mt-3">
-              <button class="text-xs font-semibold text-primary-600 hover:text-primary-700
-                             dark:text-primary-400 transition-colors flex items-center gap-1">
+              <button class="link-primary">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -111,7 +110,7 @@ interface MedicalRecord {
                 View
               </button>
               <button class="text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-200
-                             transition-colors flex items-center gap-1">
+                             transition-colors inline-flex items-center gap-1">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>

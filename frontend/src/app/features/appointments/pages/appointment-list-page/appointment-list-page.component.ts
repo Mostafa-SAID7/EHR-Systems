@@ -29,12 +29,10 @@ interface Appointment {
           <p class="body-text mt-1">{{ todayLabel }} — {{ todayCount }} appointments</p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <div class="flex items-center gap-1 p-1 rounded-xl bg-surface-100 dark:bg-surface-800">
+          <div class="view-toggle">
             <button *ngFor="let v of views"
               (click)="activeView = v.key"
-              [class]="activeView === v.key
-                ? 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-surface-700 text-primary-700 dark:text-primary-300 shadow-xs transition-all duration-200'
-                : 'px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200'">
+              [class]="activeView === v.key ? 'view-toggle-btn-active' : 'view-toggle-btn'">
               {{ v.label }}
             </button>
           </div>
@@ -86,7 +84,7 @@ interface Appointment {
 
       <!-- ── Appointments list ─────────────────────── -->
       <div class="card p-0 overflow-hidden">
-        <div class="px-5 py-4 border-b border-surface-100 dark:border-surface-700/60 flex items-center justify-between">
+        <div class="card-header">
           <h2 class="heading-sm">Schedule</h2>
           <span class="badge-primary">{{ appointments.length }} total</span>
         </div>
@@ -108,9 +106,7 @@ interface Appointment {
               [style.background]="a.color"></div>
 
             <!-- Avatar -->
-            <div class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center
-                        text-white text-xs font-bold shadow-sm"
-              [style.background]="a.color">
+            <div class="avatar-custom-md" [style.background]="a.color">
               {{ a.initials }}
             </div>
 

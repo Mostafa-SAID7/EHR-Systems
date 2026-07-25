@@ -90,7 +90,7 @@ interface Invoice {
 
       <!-- ── Invoices table ────────────────────────── -->
       <div class="card p-0 overflow-hidden">
-        <div class="px-5 py-4 border-b border-surface-100 dark:border-surface-700/60 flex items-center justify-between">
+        <div class="card-header">
           <h2 class="heading-sm">Recent Invoices</h2>
           <div class="flex items-center gap-2">
             <span *ngFor="let f of invoiceFilters"
@@ -115,9 +115,7 @@ interface Invoice {
               <tr *ngFor="let inv of invoices">
                 <td>
                   <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center
-                                text-white text-xs font-bold shadow-sm"
-                      [style.background]="inv.color">
+                    <div class="avatar-custom-md" [style.background]="inv.color">
                       {{ inv.initials }}
                     </div>
                     <span class="font-medium text-gray-900 dark:text-white">{{ inv.patient }}</span>
