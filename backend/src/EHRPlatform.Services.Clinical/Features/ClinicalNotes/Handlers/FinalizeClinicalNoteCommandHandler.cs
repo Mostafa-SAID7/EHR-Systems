@@ -33,13 +33,13 @@ public class FinalizeClinicalNoteCommandHandler : ICommandHandler<FinalizeClinic
 
     public async Task<ClinicalNoteResponse> Handle(FinalizeClinicalNoteCommand command, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Finalizing clinical note {NoteId}", command.NoteId);
+        _logger.LogInformation("Finalizing clinical note {NoteId}", command.ClinicalNoteId);
 
         var repo = _unitOfWork.Repository<Domain.Entities.ClinicalNote>();
-        var note = await repo.GetByIdAsync(command.NoteId, cancellationToken);
+        var note = await repo.GetByIdAsync(command.ClinicalNoteId, cancellationToken);
 
         if (note == null)
-            throw new KeyNotFoundException($"Clinical note {command.NoteId} not found");
+            throw new KeyNotFoundException($"Clinical note {command.ClinicalNoteId} not found");
 
         note.Finalize();
 
@@ -60,7 +60,7 @@ public class FinalizeClinicalNoteCommandHandler : ICommandHandler<FinalizeClinic
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Clinical note finalized {NoteId}", note.Id);
+        _logger.LogInformation("Clinical note finalized {NoteId}", command.ClinicalNoteId);
 
         return _mapper.MapToResponse(note);
     }

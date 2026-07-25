@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
+using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 
 namespace EHRPlatform.Services.Clinical.Controllers;
 
@@ -25,7 +27,7 @@ public class ClinicalNotesController : ControllerBase
     /// Create clinical note (SOAP format, draft status).
     /// </summary>
     [HttpPost("notes")]
-    [ProducesResponseType(typeof(ClinicalNoteResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ClinicalNoteResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateNote(
         [FromBody] CreateClinicalNoteCommand command,
@@ -40,7 +42,7 @@ public class ClinicalNotesController : ControllerBase
     /// Includes vitals, diagnoses, procedures.
     /// </summary>
     [HttpGet("notes/{id}")]
-    [ProducesResponseType(typeof(ClinicalNoteResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ClinicalNoteResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetNote(
         Guid id,
@@ -143,7 +145,7 @@ public class ClinicalNotesController : ControllerBase
     /// Get patient clinical timeline (all notes, paginated, cached).
     /// </summary>
     [HttpGet("patients/{patientId}/timeline")]
-    [ProducesResponseType(typeof(ClinicalTimelineDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ClinicalNoteListDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClinicalTimeline(
         Guid patientId,
         [FromQuery] int page = 1,
@@ -166,7 +168,7 @@ public class ClinicalNotesController : ControllerBase
     /// Optional date range filtering.
     /// </summary>
     [HttpGet("patients/{patientId}/vitals/timeline")]
-    [ProducesResponseType(typeof(VitalSignsTimelineDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetVitalsTimeline(
         Guid patientId,
         [FromQuery] DateTime? from,
@@ -189,7 +191,7 @@ public class ClinicalNotesController : ControllerBase
     /// All ICD-10 diagnoses with dates.
     /// </summary>
     [HttpGet("patients/{patientId}/diagnoses/history")]
-    [ProducesResponseType(typeof(DiagnosisHistoryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDiagnosisHistory(
         Guid patientId,
         CancellationToken cancellationToken = default)

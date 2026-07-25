@@ -3,7 +3,7 @@ using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
-using EHRPlatform.Services.Prescription.Features.Prescriptions.Domain;
+using EHRPlatform.Services.Prescription.Domain.Entities;
 using Mapster;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Handlers;
@@ -35,7 +35,7 @@ public class IssuePrescriptionCommandHandler : ICommandHandler<IssuePrescription
             "Issuing prescription: Patient {PatientId}, Provider {ProviderId}, Medication {Med}",
             command.PatientId, command.ProviderId, command.MedicationName);
 
-        var prescription = new Domain.Prescription
+        var prescription = new Prescription
         {
             Id = Guid.NewGuid(),
             PatientId = command.PatientId,
@@ -55,7 +55,7 @@ public class IssuePrescriptionCommandHandler : ICommandHandler<IssuePrescription
             NDCCode = command.NDCCode
         };
 
-        var repo = _unitOfWork.Repository<Domain.Prescription>();
+        var repo = _unitOfWork.Repository<Prescription>();
         await repo.AddAsync(prescription, cancellationToken);
 
         // Publish event

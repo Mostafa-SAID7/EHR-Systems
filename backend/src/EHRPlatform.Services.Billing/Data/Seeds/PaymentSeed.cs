@@ -18,7 +18,7 @@ public static class PaymentSeed
                 Method = PaymentMethod.CreditCard.ToString(),
                 ReceivedAt = new DateTime(2024, 1, 15),
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = Guid.Empty
             }
         );
     }

@@ -30,6 +30,21 @@ public record GetPatientClinicalTimelineQuery : ICachedQuery<ClinicalNoteListDto
 }
 
 /// <summary>
+/// Get paginated list of clinical notes for a patient.
+/// CACHED query.
+/// </summary>
+public record GetClinicalNotesQuery : ICachedQuery<ClinicalNoteListDto>
+{
+    public Guid PatientId { get; init; }
+    public int PageNumber { get; init; } = 1;
+    public int PageSize { get; init; } = 20;
+    public string? Status { get; init; }
+
+    public string CacheKey => $"clinical_notes_{PatientId}_{Status}_{PageNumber}_{PageSize}";
+    public int CacheDurationSeconds => 300; // 5 minutes
+}
+
+/// <summary>
 /// Get patient vital signs timeline.
 /// Time-series vital records.
 /// CACHED query.

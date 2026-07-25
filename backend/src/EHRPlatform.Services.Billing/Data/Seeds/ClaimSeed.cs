@@ -17,9 +17,9 @@ public static class ClaimSeed
                 ClaimNumber = "CLM-2024-001",
                 InsuranceProvider = "BlueCross",
                 SubmittedAt = new DateTime(2024, 1, 5),
-                Status = ClaimStatus.Submitted,
+                Status = ClaimStatus.Submitted.ToString(),
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = Guid.Empty
             }
         );
     }

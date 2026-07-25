@@ -1,7 +1,7 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
-using EHRPlatform.Services.Prescription.Features.Prescriptions.Domain;
+using EHRPlatform.Services.Prescription.Domain.Entities;
 
 namespace EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Mappers;
 
@@ -11,7 +11,7 @@ namespace EHRPlatform.Services.Prescription.Application.PrescriptionManagement.M
 /// Handles all Prescription-related mappings with optional post-processing.
 /// Part of Application Layer (bridges Domain and Presentation).
 /// </summary>
-public class PrescriptionMapper : MappingServiceBase<Domain.Prescription, PrescriptionResponseDto>
+public class PrescriptionMapper : MappingServiceBase<Prescription, PrescriptionResponseDto>
 {
     public PrescriptionMapper(ILogger<PrescriptionMapper> logger) : base(logger)
     {
@@ -20,7 +20,7 @@ public class PrescriptionMapper : MappingServiceBase<Domain.Prescription, Prescr
     /// <summary>
     /// Map single prescription to response DTO.
     /// </summary>
-    public PrescriptionResponseDto MapToResponseDto(Domain.Prescription prescription)
+    public PrescriptionResponseDto MapToResponseDto(Prescription prescription)
     {
         return MapToDto(prescription);
     }
@@ -28,7 +28,7 @@ public class PrescriptionMapper : MappingServiceBase<Domain.Prescription, Prescr
     /// <summary>
     /// Map prescription to detailed DTO with refills.
     /// </summary>
-    public PrescriptionDetailedDto MapToDetailedDto(Domain.Prescription prescription)
+    public PrescriptionDetailedDto MapToDetailedDto(Prescription prescription)
     {
         Logger.LogDebug("Mapping prescription {PrescriptionId} to detailed DTO", prescription.Id);
 
@@ -62,7 +62,7 @@ public class PrescriptionMapper : MappingServiceBase<Domain.Prescription, Prescr
     /// Map collection of prescriptions to paginated DTO.
     /// </summary>
     public PrescriptionListDto MapToListDto(
-        ICollection<Domain.Prescription> prescriptions,
+        ICollection<Prescription> prescriptions,
         int total,
         int pageNumber,
         int pageSize)
@@ -81,7 +81,7 @@ public class PrescriptionMapper : MappingServiceBase<Domain.Prescription, Prescr
     /// <summary>
     /// Map collection of prescriptions to response DTO list.
     /// </summary>
-    public List<PrescriptionResponseDto> MapToResponseDtoList(ICollection<Domain.Prescription> prescriptions)
+    public List<PrescriptionResponseDto> MapToResponseDtoList(ICollection<Prescription> prescriptions)
     {
         Logger.LogDebug("Mapping {Count} prescriptions to response DTO list", prescriptions.Count);
         return prescriptions.Adapt<List<PrescriptionResponseDto>>();

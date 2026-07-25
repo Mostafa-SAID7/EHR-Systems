@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using FluentValidation;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
@@ -6,7 +7,7 @@ namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 /// <summary>
 /// Record vital signs command.
 /// </summary>
-public record RecordVitalsCommand : ICommand
+public record RecordVitalsCommand : ICommand<ClinicalNoteResponse>
 {
     public Guid ClinicalNoteId { get; init; }
     public decimal Temperature { get; init; } // Celsius

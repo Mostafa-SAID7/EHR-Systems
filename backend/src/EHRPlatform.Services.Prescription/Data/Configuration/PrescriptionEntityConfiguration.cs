@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EHRPlatform.Services.Prescription.Features.Prescriptions.Domain;
+using EHRPlatform.Services.Prescription.Domain.Entities;
 
 namespace EHRPlatform.Services.Prescription.Data.Configuration;
 
@@ -9,9 +9,9 @@ namespace EHRPlatform.Services.Prescription.Data.Configuration;
 /// Single Responsibility: Configure Prescription entity mapping in EF Core.
 /// Part of Data Layer (persistence mapping).
 /// </summary>
-public class PrescriptionEntityConfiguration : IEntityTypeConfiguration<Domain.Prescription>
+public class PrescriptionEntityConfiguration : IEntityTypeConfiguration<Prescription>
 {
-    public void Configure(EntityTypeBuilder<Domain.Prescription> builder)
+    public void Configure(EntityTypeBuilder<Prescription> builder)
     {
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.PatientId);

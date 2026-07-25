@@ -12,7 +12,7 @@ namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;
 /// Record vital signs command handler.
 /// Records vital signs for clinical note.
 /// </summary>
-public class RecordVitalSignsCommandHandler : ICommandHandler<RecordVitalSignsCommand, ClinicalNoteResponse>
+public class RecordVitalSignsCommandHandler : ICommandHandler<RecordVitalsCommand, ClinicalNoteResponse>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IOutboxRepository _outbox;
@@ -31,15 +31,15 @@ public class RecordVitalSignsCommandHandler : ICommandHandler<RecordVitalSignsCo
         _logger = logger;
     }
 
-    public async Task<ClinicalNoteResponse> Handle(RecordVitalSignsCommand command, CancellationToken cancellationToken)
+    public async Task<ClinicalNoteResponse> Handle(RecordVitalsCommand command, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Recording vital signs for clinical note {NoteId}", command.NoteId);
+        _logger.LogInformation("Recording vital signs for clinical note {NoteId}", command.ClinicalNoteId);
 
         var repo = _unitOfWork.Repository<Domain.Entities.ClinicalNote>();
-        var note = await repo.GetByIdAsync(command.NoteId, cancellationToken);
+        var note = await repo.GetByIdAsync(command.ClinicalNoteId, cancellationToken);
 
         if (note == null)
-            throw new KeyNotFoundException($"Clinical note {command.NoteId} not found");
+            throw new KeyNotFoundException($"Clinical note {command.ClinicalNoteId} not found");
 
         note.RecordVitals(
             command.Temperature,
@@ -67,7 +67,7 @@ public class RecordVitalSignsCommandHandler : ICommandHandler<RecordVitalSignsCo
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Vital signs recorded for note {NoteId}", note.Id);
+        _logger.LogInformation("Vital signs recorded for note {NoteId}", command.ClinicalNoteId);
 
         return _mapper.MapToResponse(note);
     }

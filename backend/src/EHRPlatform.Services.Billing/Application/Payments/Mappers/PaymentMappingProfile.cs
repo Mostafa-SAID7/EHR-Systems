@@ -17,8 +17,7 @@ public class PaymentMappingProfile : IRegister
             .Map(dest => dest.InvoiceId, src => src.InvoiceId)
             .Map(dest => dest.Amount, src => src.Amount)
             .Map(dest => dest.Method, src => src.Method)
-            .Map(dest => dest.ReceivedAt, src => src.ReceivedAt)
-            .Map(dest => dest.CreatedAt, src => src.CreatedAt);
+            .Map(dest => dest.ReceivedAt, src => src.ReceivedAt);
 
         // PaymentResponseDto → Payment (for updates/inserts)
         config.NewConfig<PaymentResponseDto, Payment>()
