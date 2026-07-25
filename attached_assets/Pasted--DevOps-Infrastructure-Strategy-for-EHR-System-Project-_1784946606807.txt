@@ -1,0 +1,140 @@
+# DevOps & Infrastructure Strategy for EHR System
+
+**Project**: Electronic Health Records (EHR) Platform  
+**Stack Overview**:
+- Frontend: Angular (large-scale feature-based)
+- Backend: ASP.NET Core Microservices (CQRS, Kafka + RabbitMQ, EF Core + Dapper)
+- Databases: PostgreSQL (primary), MongoDB, MySQL (when needed), Redis (cache), Elasticsearch (search), Snowflake (analytics)
+- Communication: Kafka (main events) + RabbitMQ (background jobs) + SignalR + YARP API Gateway
+
+**Goal**: Create a **production-grade, secure, scalable, observable, and HIPAA-compliant** DevOps infrastructure using Docker, Kubernetes, and Terraform.
+
+## 1. Folder Structure (Mandatory)
+
+Create a top-level `devops/` folder with this structure:
+devops/
+├── docker/
+│   ├── docker-compose.yml              # Full local development stack
+│   ├── docker-compose.override.yml
+│   ├── .env.example
+│   └── services/                       # Individual Dockerfiles if needed
+├── kubernetes/
+│   ├── base/                           # Base manifests (Deployments, Services, ConfigMaps, Secrets)
+│   ├── overlays/                       # Environment-specific (dev, staging, prod)
+│   │   ├── dev/
+│   │   ├── staging/
+│   │   └── prod/
+│   ├── helm/                           # Optional Helm charts for complex services
+│   └── kustomization.yaml
+├── terraform/
+│   ├── environments/
+│   │   ├── dev/
+│   │   ├── staging/
+│   │   └── prod/
+│   ├── modules/
+│   │   ├── networking/
+│   │   ├── kubernetes/
+│   │   ├── databases/
+│   │   ├── messaging/                  # Kafka, RabbitMQ
+│   │   ├── storage/
+│   │   ├── monitoring/
+│   │   └── security/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── backend.tf                      # Remote state (S3 + DynamoDB or Azure Storage)
+├── scripts/                            # Helper scripts (build, deploy, migrate, backup)
+├── monitoring/                         # Prometheus, Grafana, Alertmanager, OpenTelemetry configs
+├── ci-cd/                              # GitHub Actions / Azure DevOps pipelines
+└── README.md                           # Full documentation
+text## 2. Docker Requirements
+
+- Multi-stage Dockerfiles for every microservice and the Angular frontend (optimized for size & security).
+- Non-root users, health checks, proper resource limits.
+- Full `docker-compose.yml` that spins up:
+  - All microservices
+  - PostgreSQL, MongoDB, MySQL, Redis, Elasticsearch + Kibana
+  - Kafka + Zookeeper (or KRaft), RabbitMQ
+  - YARP API Gateway
+  - Seq / ELK for logs
+  - Jaeger / Tempo for tracing
+- Support for hot-reload in development.
+- Secrets via environment variables or Docker secrets.
+
+## 3. Kubernetes Requirements
+
+- Production-ready manifests (or Kustomize / Helm).
+- Deployments with:
+  - Horizontal Pod Autoscaler (HPA)
+  - Resource requests/limits
+  - Liveness, Readiness, Startup probes
+  - Pod Disruption Budgets
+- ConfigMaps + Secrets (use Sealed Secrets or External Secrets Operator).
+- Ingress (NGINX or Traefik) with TLS (cert-manager + Let’s Encrypt).
+- Network Policies for zero-trust between services.
+- Persistent Volumes for databases (StatefulSets for Postgres, MongoDB, Kafka, Elasticsearch).
+- Service Mesh (optional but recommended: Istio or Linkerd) for mTLS, traffic management, observability.
+- Multi-environment support (dev / staging / prod) via overlays.
+
+## 4. Terraform Requirements
+
+- Infrastructure as Code for cloud (prefer AWS / Azure / GCP – make it provider-agnostic where possible).
+- Modules for:
+  - VPC / Networking
+  - EKS / AKS / GKE cluster
+  - Managed databases (RDS PostgreSQL, DocumentDB/MongoDB, ElastiCache Redis, OpenSearch/Elasticsearch)
+  - Kafka (MSK or Confluent Cloud) + RabbitMQ
+  - Object storage (S3/Azure Blob) for backups and documents
+  - Monitoring (Prometheus + Grafana or cloud-native)
+  - Secrets management (AWS Secrets Manager / Azure Key Vault)
+  - IAM roles, security groups, WAF
+- Remote state with locking.
+- Environment separation (dev/staging/prod).
+- Cost-optimized and security-hardened configurations.
+- Output useful values (cluster endpoints, connection strings, etc.).
+
+## 5. Cross-Cutting DevOps Concerns
+
+- **CI/CD**: GitHub Actions pipelines for:
+  - Build → Test → Security scan (Trivy, Snyk) → Push images → Deploy to environments
+  - Database migrations
+  - Blue-green or canary deployments
+- **Observability**:
+  - OpenTelemetry for distributed tracing
+  - Prometheus metrics + Grafana dashboards
+  - Centralized logging (ELK or Loki)
+  - Alerting for critical EHR issues
+- **Security & Compliance (HIPAA focus)**:
+  - Image scanning
+  - Network policies + mTLS
+  - Encryption at rest and in transit
+  - Audit logging of infrastructure changes
+  - Least-privilege IAM
+  - Regular vulnerability scanning
+- **Backup & Disaster Recovery**:
+  - Automated database backups
+  - Point-in-time recovery
+  - Multi-region capability for production
+- **Secrets Management**: Never hardcode secrets. Use sealed-secrets, External Secrets, or cloud secret stores.
+
+## 6. Implementation Order
+
+1. Create the full `devops/` folder structure.
+2. Write optimized multi-stage Dockerfiles for Angular frontend and one sample microservice.
+3. Build complete `docker-compose.yml` for local development (all services + databases + messaging).
+4. Create Kubernetes base manifests + Kustomize overlays for dev/staging/prod.
+5. Write Terraform modules and environment configurations.
+6. Add CI/CD pipelines.
+7. Add monitoring and security configurations.
+8. Document everything thoroughly in `devops/README.md`.
+
+**Quality Standards**:
+- Production-ready from day one.
+- Highly secure and HIPAA-aware.
+- Scalable and cost-efficient.
+- Fully automated and reproducible.
+- Clear documentation and scripts.
+
+Start now by creating the folder structure and delivering the Docker Compose + first Dockerfiles. Then proceed to Kubernetes and Terraform step by step. Show all key files with high-quality, well-commented code.
+
+This is a complete, deep, and enterprise-grade DevOps prompt that ties together everything we have built for the EHR system.

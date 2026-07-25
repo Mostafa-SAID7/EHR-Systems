@@ -1,0 +1,24 @@
+# =============================================================================
+# Shared ConfigMap — non-secret configuration for all EHR microservices
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ehr-common-config
+  namespace: ehr-platform
+  labels:
+    app.kubernetes.io/part-of: ehr-platform
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  Jwt__Issuer: "ehr-platform"
+  Jwt__Audience: "ehr-api"
+  Jwt__ExpirationMinutes: "60"
+  Kafka__BootstrapServers: "kafka:9092"
+  RabbitMQ__Host: "rabbitmq"
+  RabbitMQ__VirtualHost: "/ehr"
+  Elasticsearch__Url: "http://elasticsearch:9200"
+  Redis__ConnectionString: "redis:6379,abortConnect=false"
+  Logging__LogLevel__Default: "Information"
+  Logging__LogLevel__Microsoft: "Warning"
+  OpenTelemetry__OtlpEndpoint: "http://otel-collector:4318"

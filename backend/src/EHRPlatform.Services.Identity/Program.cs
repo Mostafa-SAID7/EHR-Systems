@@ -143,8 +143,8 @@ try
     if (!string.IsNullOrEmpty(esUrl))
         healthBuilder.AddElasticsearchHealthCheck("elasticsearch-identity");
 
-    // ── Kestrel: listen on port 5000 (Replit preview port) ───────────────────
-    builder.WebHost.UseUrls("http://0.0.0.0:5000");
+    // ── Kestrel: listen on port 5001 (Gateway routes identity here) ──────────
+    builder.WebHost.UseUrls("http://0.0.0.0:5001");
 
     // ── Build ─────────────────────────────────────────────────────────────────
     var app = builder.Build();
@@ -174,7 +174,7 @@ try
         Log.Information("Identity database schema verified/created");
     }
 
-    Log.Information("EHR Identity Service starting on http://0.0.0.0:5000");
+    Log.Information("EHR Identity Service starting on http://0.0.0.0:5001");
     await app.RunAsync();
 }
 catch (Exception ex)

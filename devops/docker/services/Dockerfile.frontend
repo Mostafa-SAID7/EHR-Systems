@@ -1,0 +1,51 @@
+# =============================================================================
+# Multi-stage Dockerfile — Angular 18 Frontend
+# =============================================================================
+# Build:
+#   docker build -t ehr/frontend:latest \
+#     --build-arg API_URL=/api \
+#     -f devops/docker/services/Dockerfile.frontend .
+# (run from the repo root)
+# =============================================================================
+
+ARG NODE_VERSION=20-alpine
+
+# ── Stage 1: install dependencies ────────────────────────────────────────────
+FROM node:${NODE_VERSION} AS deps
+WORKDIR /app
+
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci --legacy-peer-deps
+
+# ── Stage 2: build ────────────────────────────────────────────────────────────
+FROM deps AS build
+ARG API_URL=/api
+ARG WS_URL=
+
+WORKDIR /app
+COPY frontend/ .
+
+# Patch environment file with build-time values so the Angular build picks them up
+RUN sed -i "s|apiUrl:.*|apiUrl: '${API_URL}',|g"   src/environments/environment.prod.ts \
+ && sed -i "s|wsUrl:.*|wsUrl: '${WS_URL}',|g"      src/environments/environment.prod.ts
+
+RUN npm run build:prod
+
+# ── Stage 3: serve with Nginx ─────────────────────────────────────────────────
+FROM nginx:1.25-alpine AS runtime
+
+# Remove default nginx content
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy built Angular app
+COPY --from=build /app/dist/ehr-platform /usr/share/nginx/html
+
+# Nginx config: SPA routing, gzip, security headers
+COPY devops/docker/services/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget -qO- http://localhost/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

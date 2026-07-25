@@ -1,0 +1,85 @@
+# =============================================================================
+# OpenTelemetry Collector Configuration — EHR Platform
+# Receives traces from all microservices and exports to Jaeger + Prometheus
+# =============================================================================
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:4318"
+
+  # Pull Prometheus metrics from services that expose them
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: otel-collector-self
+          static_configs:
+            - targets: ["localhost:8888"]
+
+processors:
+  # Batch spans before forwarding (reduces network overhead)
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  # Add resource attributes for HIPAA correlation
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: "${ENVIRONMENT:-development}"
+        action: insert
+      - key: service.namespace
+        value: ehr-platform
+        action: insert
+
+  # Memory limiter prevents OOM
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Redact PHI from span attributes (HIPAA)
+  attributes:
+    actions:
+      - key: patient.ssn
+        action: delete
+      - key: patient.dob
+        action: delete
+      - key: http.request.body
+        action: delete
+
+exporters:
+  # Distributed tracing → Jaeger
+  otlp/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+
+  # Metrics → Prometheus
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: ehr
+
+  # Structured logs → stdout (picked up by log aggregator)
+  logging:
+    verbosity: normal
+
+service:
+  pipelines:
+    traces:
+      receivers:  [otlp]
+      processors: [memory_limiter, resource, attributes, batch]
+      exporters:  [otlp/jaeger, logging]
+
+    metrics:
+      receivers:  [otlp, prometheus]
+      processors: [memory_limiter, batch]
+      exporters:  [prometheus]
+
+    logs:
+      receivers:  [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters:  [logging]
