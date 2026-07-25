@@ -4,13 +4,13 @@ import { CommonModule } from '@angular/common';
 export interface Tab {
   id: string;
   label: string;
+  icon?: string;
+  badge?: number;
   disabled?: boolean;
 }
 
 /**
- * Tabs Component
- * Reusable tab component
- * Usage: <app-tabs [tabs]="tabList" [activeTab]="'tab1'" (tabChange)="onTabChange($event)">...</app-tabs>
+ * Tabs Component — pill-style active indicator, no generic border-line
  */
 @Component({
   selector: 'app-tabs',
@@ -18,23 +18,34 @@ export interface Tab {
   imports: [CommonModule],
   template: `
     <div>
-      <div class="border-b border-gray-200 dark:border-gray-700">
-        <div class="flex gap-4 overflow-x-auto">
-          <button
-            *ngFor="let tab of tabs"
-            (click)="selectTab(tab.id)"
-            [disabled]="tab.disabled"
-            [class.border-b-2]="activeTab === tab.id"
-            [class.border-blue-600]="activeTab === tab.id"
-            [class.text-blue-600]="activeTab === tab.id"
-            class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300 border-b-2 border-transparent hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      <!-- Tab strip -->
+      <div class="flex gap-1 p-1 bg-surface-100 dark:bg-surface-800 rounded-xl overflow-x-auto">
+        <button
+          *ngFor="let tab of tabs"
+          (click)="!tab.disabled && selectTab(tab.id)"
+          [disabled]="tab.disabled"
+          [ngClass]="activeTab === tab.id
+            ? 'bg-white dark:bg-surface-700 text-primary-700 dark:text-primary-400 shadow-sm font-semibold'
+            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-surface-700/50'"
+          class="relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm
+                 transition-all duration-200 whitespace-nowrap
+                 disabled:opacity-40 disabled:pointer-events-none"
+        >
+          <span *ngIf="tab.icon" class="text-base leading-none">{{ tab.icon }}</span>
+          {{ tab.label }}
+          <span
+            *ngIf="tab.badge"
+            class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5
+                   text-2xs font-bold rounded-full
+                   bg-primary-500 text-white"
           >
-            {{ tab.label }}
-          </button>
-        </div>
+            {{ tab.badge > 99 ? '99+' : tab.badge }}
+          </span>
+        </button>
       </div>
 
-      <div class="mt-4">
+      <!-- Content -->
+      <div class="mt-4 animate-fade-in">
         <ng-content></ng-content>
       </div>
     </div>
@@ -44,14 +55,10 @@ export interface Tab {
 export class TabsComponent {
   @Input() tabs: Tab[] = [];
   @Input() activeTab = '';
-
   @Output() tabChange = new EventEmitter<string>();
 
-  selectTab(tabId: string): void {
-    const tab = this.tabs.find((t) => t.id === tabId);
-    if (tab && !tab.disabled) {
-      this.activeTab = tabId;
-      this.tabChange.emit(tabId);
-    }
+  selectTab(id: string): void {
+    this.activeTab = id;
+    this.tabChange.emit(id);
   }
 }

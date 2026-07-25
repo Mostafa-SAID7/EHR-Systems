@@ -6,6 +6,7 @@ export interface TableColumn {
   label: string;
   sortable?: boolean;
   width?: string;
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface SortEvent {
@@ -14,50 +15,70 @@ export interface SortEvent {
 }
 
 /**
- * Table Component
- * Reusable data table with sorting
- * Usage: <app-table [columns]="cols" [data]="rows" />
+ * Table Component — uses .table-base from design system
  */
 @Component({
   selector: 'app-table',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse">
+    <div class="table-container">
+      <table class="table-base">
         <thead>
-          <tr class="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+          <tr>
             <th
               *ngFor="let col of columns"
               [style.width]="col.width || 'auto'"
-              class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white"
+              [class.text-center]="col.align === 'center'"
+              [class.text-right]="col.align === 'right'"
             >
               <button
-                *ngIf="col.sortable"
+                *ngIf="col.sortable; else staticLabel"
                 (click)="onSort(col.key)"
-                class="flex items-center gap-2 hover:text-blue-600"
+                class="inline-flex items-center gap-1.5 group transition-colors duration-150
+                       hover:text-primary-600 dark:hover:text-primary-400"
               >
                 {{ col.label }}
-                <span *ngIf="sortColumn === col.key">
-                  {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                <span class="flex flex-col gap-px opacity-40 group-hover:opacity-100 transition-opacity">
+                  <svg class="w-2.5 h-2.5" [class.text-primary-600]="sortColumn === col.key && sortDirection === 'asc'"
+                    viewBox="0 0 10 6" fill="currentColor">
+                    <path d="M5 0l5 6H0z"/>
+                  </svg>
+                  <svg class="w-2.5 h-2.5" [class.text-primary-600]="sortColumn === col.key && sortDirection === 'desc'"
+                    viewBox="0 0 10 6" fill="currentColor">
+                    <path d="M5 6L0 0h10z"/>
+                  </svg>
                 </span>
               </button>
-              <span *ngIf="!col.sortable">{{ col.label }}</span>
+              <ng-template #staticLabel>{{ col.label }}</ng-template>
             </th>
           </tr>
         </thead>
         <tbody>
+          <!-- Rows -->
           <tr
             *ngFor="let row of data; let i = index"
-            class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+            class="animate-fade-in"
+            [style.animation-delay]="i * 30 + 'ms'"
           >
-            <td *ngFor="let col of columns" class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+            <td
+              *ngFor="let col of columns"
+              [class.text-center]="col.align === 'center'"
+              [class.text-right]="col.align === 'right'"
+            >
               {{ row[col.key] }}
             </td>
           </tr>
+
+          <!-- Empty -->
           <tr *ngIf="data.length === 0">
-            <td [attr.colspan]="columns.length" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-              No data available
+            <td [attr.colspan]="columns.length" class="py-16 text-center">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-2xl opacity-40">
+                  📋
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ emptyMessage }}</span>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -69,6 +90,7 @@ export interface SortEvent {
 export class TableComponent {
   @Input() columns: TableColumn[] = [];
   @Input() data: any[] = [];
+  @Input() emptyMessage = 'No data available';
 
   @Output() sort = new EventEmitter<SortEvent>();
 
