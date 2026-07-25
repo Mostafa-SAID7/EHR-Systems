@@ -1,4 +1,7 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import {
+  Component, Input, Output, EventEmitter,
+  ChangeDetectionStrategy, HostListener
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -7,52 +10,83 @@ export interface DropdownOption {
   label: string;
   icon?: string;
   divider?: boolean;
+  danger?: boolean;
 }
 
 /**
- * Dropdown Component
- * Reusable dropdown menu
- * Usage: <app-dropdown [options]="optionsList" (select)="onSelect($event)">Dropdown</app-dropdown>
+ * Dropdown Component — polished menu, no generic border outlines
  */
 @Component({
   selector: 'app-dropdown',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="relative inline-block">
+    <div class="relative inline-block" #container>
       <button
         (click)="toggleOpen()"
-        class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+        class="inline-flex items-center gap-2 px-4 py-2
+               bg-white dark:bg-surface-800
+               border border-surface-200 dark:border-surface-600
+               rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200
+               hover:bg-surface-50 dark:hover:bg-surface-700
+               transition-all duration-200
+               shadow-xs"
       >
         <ng-content></ng-content>
-        <span>▼</span>
+        <svg
+          class="w-4 h-4 text-gray-400 transition-transform duration-200"
+          [class.rotate-180]="isOpen"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
       </button>
 
       <div
         *ngIf="isOpen"
-        @dropdownAnimation
-        class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50"
+        @dropdownAnim
+        class="absolute top-full left-0 mt-2 min-w-[11rem] w-max
+               bg-white dark:bg-surface-800
+               rounded-2xl shadow-lg
+               border border-surface-200 dark:border-surface-700
+               z-50 overflow-hidden py-1.5"
       >
-        <div class="py-2">
+        <ng-container *ngFor="let option of options">
+          <hr
+            *ngIf="option.divider"
+            class="my-1.5 border-surface-200 dark:border-surface-700"
+          />
           <button
-            *ngFor="let option of options"
             *ngIf="!option.divider"
             (click)="selectOption(option)"
-            class="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-2"
+            [class.text-red-600]="option.danger"
+            [class.dark:text-red-400]="option.danger"
+            [class.hover:bg-red-50]="option.danger"
+            [class.dark:hover:bg-red-900/20]="option.danger"
+            [class.text-gray-700]="!option.danger"
+            [class.dark:text-gray-200]="!option.danger"
+            [class.hover:bg-surface-50]="!option.danger"
+            [class.dark:hover:bg-surface-700]="!option.danger"
+            class="w-full flex items-center gap-2.5 px-4 py-2
+                   text-sm transition-colors duration-150"
           >
-            <span *ngIf="option.icon">{{ option.icon }}</span>
-            <span>{{ option.label }}</span>
+            <span *ngIf="option.icon" class="text-base leading-none w-4 text-center">{{ option.icon }}</span>
+            {{ option.label }}
           </button>
-          <div *ngIf="option.divider" class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-        </div>
+        </ng-container>
       </div>
     </div>
   `,
   animations: [
-    trigger('dropdownAnimation', [
+    trigger('dropdownAnim', [
       transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(-10px)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+        style({ opacity: 0, transform: 'scale(0.96) translateY(-6px)' }),
+        animate('200ms cubic-bezier(0.16, 1, 0.3, 1)',
+          style({ opacity: 1, transform: 'scale(1) translateY(0)' })),
+      ]),
+      transition(':leave', [
+        animate('130ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.96) translateY(-4px)' })),
       ]),
     ]),
   ],
@@ -60,14 +94,11 @@ export interface DropdownOption {
 })
 export class DropdownComponent {
   @Input() options: DropdownOption[] = [];
-
   @Output() select = new EventEmitter<DropdownOption>();
 
   isOpen = false;
 
-  toggleOpen(): void {
-    this.isOpen = !this.isOpen;
-  }
+  toggleOpen(): void { this.isOpen = !this.isOpen; }
 
   selectOption(option: DropdownOption): void {
     this.select.emit(option);
@@ -75,10 +106,7 @@ export class DropdownComponent {
   }
 
   @HostListener('document:click', ['$event'])
-  onClickOutside(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('[appDropdown]')) {
-      this.isOpen = false;
-    }
+  onClickOutside(e: MouseEvent): void {
+    if (!(e.target as HTMLElement).closest('app-dropdown')) this.isOpen = false;
   }
 }

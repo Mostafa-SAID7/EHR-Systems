@@ -1,16 +1,16 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CardComponent } from '../../../../../shared/components/ui/card/card.component';
+import { CardComponent } from '../../../../shared/components/ui/card/card.component';
 
 /**
  * record-detail-page Component
  * Page for record-detail-page
  */
 @Component({
-  selector: 'app-r-ec-or-d-d-et-ai-l-p-ag-e',
+  selector: 'app-record-detail-page',
   standalone: true,
   imports: [CommonModule, CardComponent],
-  template: 
+  template: `
     <app-card title="record-detail-page">
       <div class="text-center py-12">
         <p class="text-gray-600 dark:text-gray-400">
@@ -18,11 +18,11 @@ import { CardComponent } from '../../../../../shared/components/ui/card/card.com
         </p>
       </div>
     </app-card>
-  ,
+  `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class record-detail-pageComponent implements OnInit {
+export class RecordDetailPageComponent implements OnInit {
   ngOnInit(): void {
     // Initialize component
   }

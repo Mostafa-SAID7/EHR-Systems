@@ -13,79 +13,83 @@ export interface LabResult {
 }
 
 /**
- * Lab Results Summary Component
- * Displays lab test results with status
- * Usage: <app-lab-results-summary [results]="labTests" />
+ * Lab Results Summary — clean table, green/amber/red status, no left-border patterns
  */
 @Component({
   selector: 'app-lab-results-summary',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="overflow-x-auto">
-      <table class="w-full">
+    <div class="table-container">
+      <table class="table-base">
         <thead>
-          <tr class="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-              Test Name
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-              Value
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-              Normal Range
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-              Status
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-              Change
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">
-              Date
-            </th>
+          <tr>
+            <th>Test Name</th>
+            <th>Result</th>
+            <th class="hidden sm:table-cell">Normal Range</th>
+            <th>Status</th>
+            <th class="hidden md:table-cell">Trend</th>
+            <th class="hidden lg:table-cell">Date</th>
           </tr>
         </thead>
         <tbody>
-          <tr
-            *ngFor="let result of results"
-            class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-          >
-            <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
-              {{ result.name }}
+          <tr *ngFor="let r of results" class="animate-fade-in">
+            <!-- Name -->
+            <td>
+              <span class="font-medium text-gray-900 dark:text-white">{{ r.name }}</span>
             </td>
-            <td class="px-4 py-3 text-sm" [ngClass]="getValueClasses(result.status)">
-              <strong>{{ result.value }}</strong> {{ result.unit }}
-            </td>
-            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-              {{ result.normal.min }}-{{ result.normal.max }} {{ result.unit }}
-            </td>
-            <td class="px-4 py-3 text-sm">
-              <span
-                class="px-3 py-1 rounded-full text-xs font-semibold"
-                [ngClass]="getStatusBadgeClasses(result.status)"
-              >
-                {{ result.status }}
+
+            <!-- Value -->
+            <td>
+              <span [ngClass]="getValueClasses(r.status)"
+                class="text-base font-bold tabular-nums">
+                {{ r.value }}
+                <span class="text-xs font-normal text-gray-400 ml-0.5">{{ r.unit }}</span>
               </span>
             </td>
-            <td class="px-4 py-3 text-sm">
-              <span *ngIf="result.previousValue !== undefined" [ngClass]="getTrendClasses(result)">
-                {{ getTrendIcon(result) }} {{ getTrendPercent(result) }}%
-              </span>
-              <span *ngIf="result.previousValue === undefined" class="text-gray-400">
-                —
+
+            <!-- Range -->
+            <td class="hidden sm:table-cell text-gray-500 dark:text-gray-400 tabular-nums">
+              {{ r.normal.min }}–{{ r.normal.max }} {{ r.unit }}
+            </td>
+
+            <!-- Status badge -->
+            <td>
+              <span [ngClass]="getBadgeClass(r.status)" class="badge capitalize">
+                {{ r.status }}
               </span>
             </td>
-            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-              {{ result.testDate | dateFormat: 'short' }}
+
+            <!-- Trend -->
+            <td class="hidden md:table-cell">
+              <div *ngIf="r.previousValue" class="flex items-center gap-1.5">
+                <span [ngClass]="getTrendClasses(r)" class="text-sm font-bold">
+                  {{ getTrendIcon(r) }}
+                </span>
+                <span [ngClass]="getTrendClasses(r)" class="text-xs font-medium tabular-nums">
+                  {{ getTrendPercent(r) > 0 ? '+' : '' }}{{ getTrendPercent(r) }}%
+                </span>
+              </div>
+              <span *ngIf="!r.previousValue" class="text-gray-300 dark:text-gray-600 text-xs">—</span>
+            </td>
+
+            <!-- Date -->
+            <td class="hidden lg:table-cell text-gray-500 dark:text-gray-400 text-xs">
+              {{ r.testDate | date:'MMM d, yyyy' }}
+            </td>
+          </tr>
+
+          <tr *ngIf="results.length === 0">
+            <td colspan="6" class="py-16">
+              <div class="empty-state">
+                <div class="empty-icon">🔬</div>
+                <p class="empty-title">No lab results</p>
+                <p class="empty-body">Lab results will appear here once recorded.</p>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
-
-      <div *ngIf="results.length === 0" class="text-center py-8">
-        <p class="text-gray-500 dark:text-gray-400">No lab results available</p>
-      </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -93,41 +97,36 @@ export interface LabResult {
 export class LabResultsSummaryComponent {
   @Input() results: LabResult[] = [];
 
-  getValueClasses(status: string): Record<string, boolean> {
+  getValueClasses(status: string) {
     return {
-      'text-green-600 dark:text-green-400': status === 'normal',
-      'text-orange-600 dark:text-orange-400': status === 'abnormal',
-      'text-red-600 dark:text-red-400': status === 'critical',
+      'text-primary-700 dark:text-primary-400': status === 'normal',
+      'text-yellow-600  dark:text-yellow-400':  status === 'abnormal',
+      'text-red-600     dark:text-red-400':     status === 'critical',
     };
   }
 
-  getStatusBadgeClasses(status: string): Record<string, boolean> {
+  getBadgeClass(status: string): string {
+    return status === 'normal'   ? 'badge-success'
+         : status === 'abnormal' ? 'badge-warning'
+         :                         'badge-danger';
+  }
+
+  getTrendIcon(r: LabResult): string {
+    if (!r.previousValue) return '';
+    return r.value > r.previousValue ? '↑' : r.value < r.previousValue ? '↓' : '→';
+  }
+
+  getTrendPercent(r: LabResult): number {
+    if (!r.previousValue || r.previousValue === 0) return 0;
+    return Math.round(((r.value - r.previousValue) / r.previousValue) * 100);
+  }
+
+  getTrendClasses(r: LabResult) {
+    const delta = r.value - (r.previousValue ?? r.value);
     return {
-      'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200':
-        status === 'normal',
-      'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200':
-        status === 'abnormal',
-      'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200':
-        status === 'critical',
-    };
-  }
-
-  getTrendIcon(result: LabResult): string {
-    if (!result.previousValue) return '';
-    return result.value > result.previousValue ? '📈' : result.value < result.previousValue ? '📉' : '➡️';
-  }
-
-  getTrendPercent(result: LabResult): number {
-    if (!result.previousValue || result.previousValue === 0) return 0;
-    return Math.round(((result.value - result.previousValue) / result.previousValue) * 100);
-  }
-
-  getTrendClasses(result: LabResult): Record<string, boolean> {
-    const change = result.value - (result.previousValue || 0);
-    return {
-      'text-red-600 dark:text-red-400': change > 0,
-      'text-green-600 dark:text-green-400': change < 0,
-      'text-gray-600 dark:text-gray-400': change === 0,
+      'text-red-500     dark:text-red-400':     delta > 0,
+      'text-primary-500 dark:text-primary-400': delta < 0,
+      'text-gray-400':                          delta === 0,
     };
   }
 }

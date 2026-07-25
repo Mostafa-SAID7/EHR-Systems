@@ -1,12 +1,11 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'warning';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'ghost' | 'outline';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 /**
- * Button Component
- * Reusable button with multiple variants and sizes
+ * Button Component — uses centralised .btn-* classes from styles.scss
  */
 @Component({
   selector: 'app-button',
@@ -19,9 +18,16 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
       (click)="onClick()"
       type="button"
     >
-      <span *ngIf="loading" class="mr-2">
-        <span class="inline-block animate-spin">⟳</span>
-      </span>
+      <!-- Spinner -->
+      <svg
+        *ngIf="loading"
+        class="w-4 h-4 animate-spin-slow shrink-0"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none" viewBox="0 0 24 24"
+      >
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+      </svg>
       <ng-content></ng-content>
     </button>
   `,
@@ -35,37 +41,33 @@ export class ButtonComponent {
   @Output() clicked = new EventEmitter<void>();
 
   onClick(): void {
-    if (!this.disabled && !this.loading) {
-      this.clicked.emit();
-    }
+    if (!this.disabled && !this.loading) this.clicked.emit();
   }
 
   getClasses(): Record<string, boolean> {
+    const sizeMap: Record<ButtonSize, string> = {
+      sm: 'px-3 py-1.5 text-sm rounded-lg',
+      md: 'px-4 py-2 text-sm rounded-xl',
+      lg: 'px-6 py-3 text-base rounded-xl',
+    };
+
+    const variantMap: Record<ButtonVariant, string> = {
+      primary:   'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm hover:shadow-md focus-visible:ring-primary-500',
+      secondary: 'bg-surface-100 dark:bg-surface-700 text-gray-800 dark:text-gray-200 hover:bg-surface-200 dark:hover:bg-surface-600 border border-surface-200 dark:border-surface-600 focus-visible:ring-gray-400',
+      danger:    'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm hover:shadow-md focus-visible:ring-red-500',
+      success:   'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md focus-visible:ring-primary-500',
+      warning:   'bg-yellow-500 text-white hover:bg-yellow-600 shadow-sm hover:shadow-md focus-visible:ring-yellow-400',
+      ghost:     'text-gray-700 dark:text-gray-300 hover:bg-surface-100 dark:hover:bg-surface-800 focus-visible:ring-gray-400',
+      outline:   'border border-primary-600 text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 focus-visible:ring-primary-500',
+    };
+
+    const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 select-none';
+
     return {
-      // Base styles
-      'inline-flex items-center justify-center font-semibold rounded-lg transition duration-200':
-        true,
-      'focus:outline-none focus:ring-2 focus:ring-offset-2': true,
-
-      // Variants
-      'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500':
-        this.variant === 'primary',
-      'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500':
-        this.variant === 'secondary',
-      'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500':
-        this.variant === 'danger',
-      'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500':
-        this.variant === 'success',
-      'bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500':
-        this.variant === 'warning',
-
-      // Sizes
-      'px-3 py-1 text-sm': this.size === 'sm',
-      'px-4 py-2 text-base': this.size === 'md',
-      'px-6 py-3 text-lg': this.size === 'lg',
-
-      // States
-      'opacity-50 cursor-not-allowed': this.disabled || this.loading,
+      [base]: true,
+      [sizeMap[this.size]]: true,
+      [variantMap[this.variant]]: true,
+      'opacity-40 pointer-events-none': this.disabled || this.loading,
     };
   }
 }

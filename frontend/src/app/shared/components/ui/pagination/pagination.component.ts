@@ -2,48 +2,72 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 
 /**
- * Pagination Component
- * Reusable pagination controls
- * Usage: <app-pagination [currentPage]="page" [totalPages]="10" (pageChange)="onPageChange($event)" />
+ * Pagination Component — green primary, clean pill buttons
  */
 @Component({
   selector: 'app-pagination',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="flex items-center justify-between">
-      <div class="text-sm text-gray-600 dark:text-gray-400">
-        Page {{ currentPage }} of {{ totalPages }}
-      </div>
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+      <!-- Info -->
+      <span class="text-sm text-gray-500 dark:text-gray-400">
+        Page <span class="font-semibold text-gray-700 dark:text-gray-200">{{ currentPage }}</span>
+        of
+        <span class="font-semibold text-gray-700 dark:text-gray-200">{{ totalPages }}</span>
+      </span>
 
-      <div class="flex gap-2">
+      <!-- Controls -->
+      <div class="flex items-center gap-1">
+        <!-- Prev -->
         <button
           (click)="previousPage()"
           [disabled]="currentPage === 1"
-          class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl
+                 border border-surface-200 dark:border-surface-700
+                 bg-white dark:bg-surface-800
+                 text-gray-700 dark:text-gray-300
+                 hover:bg-surface-50 dark:hover:bg-surface-700
+                 disabled:opacity-40 disabled:pointer-events-none
+                 transition-all duration-200"
         >
-          ← Previous
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <span class="hidden sm:inline">Prev</span>
         </button>
 
+        <!-- Page numbers -->
         <div class="flex gap-1">
           <button
             *ngFor="let page of getPageNumbers()"
             (click)="goToPage(page)"
-            [class.bg-blue-600]="page === currentPage"
-            [class.text-white]="page === currentPage"
-            [class.hover:bg-gray-50]="page !== currentPage"
-            class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600"
+            [ngClass]="page === currentPage
+              ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+              : 'bg-white dark:bg-surface-800 text-gray-700 dark:text-gray-300 border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-700'"
+            class="w-9 h-9 flex items-center justify-center text-sm font-medium rounded-xl
+                   border transition-all duration-200"
           >
             {{ page }}
           </button>
         </div>
 
+        <!-- Next -->
         <button
           (click)="nextPage()"
           [disabled]="currentPage === totalPages"
-          class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl
+                 border border-surface-200 dark:border-surface-700
+                 bg-white dark:bg-surface-800
+                 text-gray-700 dark:text-gray-300
+                 hover:bg-surface-50 dark:hover:bg-surface-700
+                 disabled:opacity-40 disabled:pointer-events-none
+                 transition-all duration-200"
         >
-          Next →
+          <span class="hidden sm:inline">Next</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -57,43 +81,21 @@ export class PaginationComponent {
 
   @Output() pageChange = new EventEmitter<number>();
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.goToPage(this.currentPage + 1);
-    }
-  }
+  previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  nextPage():     void { if (this.currentPage < this.totalPages) this.goToPage(this.currentPage + 1); }
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.pageChange.emit(page);
-    }
+    if (page >= 1 && page <= this.totalPages) this.pageChange.emit(page);
   }
 
   getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const half = Math.floor(this.maxButtons / 2);
-
-    let start = Math.max(1, this.currentPage - half);
-    let end = Math.min(this.totalPages, this.currentPage + half);
-
+    const half  = Math.floor(this.maxButtons / 2);
+    let start   = Math.max(1, this.currentPage - half);
+    let end     = Math.min(this.totalPages, this.currentPage + half);
     if (end - start < this.maxButtons - 1) {
-      if (start === 1) {
-        end = Math.min(this.totalPages, start + this.maxButtons - 1);
-      } else {
-        start = Math.max(1, end - this.maxButtons + 1);
-      }
+      if (start === 1) end   = Math.min(this.totalPages, start + this.maxButtons - 1);
+      else             start = Math.max(1, end - this.maxButtons + 1);
     }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    return pages;
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 }
