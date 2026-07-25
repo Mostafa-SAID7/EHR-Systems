@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ehr-platform-staging
+
+resources:
+  - ../../base
+
+configMapGenerator:
+  - name: ehr-common-config
+    behavior: merge
+    literals:
+      - ASPNETCORE_ENVIRONMENT=Staging
+      - Logging__LogLevel__Default=Information
+
+# Staging uses 2 replicas for all services (production parity without full cost)
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      labelSelector: app.kubernetes.io/part-of=ehr-platform
+
+images:
+  - name: ehr/api-gateway
+    newTag: staging
+  - name: ehr/identity-service
+    newTag: staging
+  - name: ehr/patient-service
+    newTag: staging
+  - name: ehr/clinical-service
+    newTag: staging
+  - name: ehr/appointment-service
+    newTag: staging
+  - name: ehr/notification-service
+    newTag: staging
+  - name: ehr/audit-service
+    newTag: staging
+  - name: ehr/billing-service
+    newTag: staging
+  - name: ehr/prescription-service
+    newTag: staging
+  - name: ehr/analytics-service
+    newTag: staging
+  - name: ehr/frontend
+    newTag: staging

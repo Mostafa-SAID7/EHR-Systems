@@ -1,0 +1,727 @@
+# =============================================================================
+# EHR Platform — Full Local Development Stack
+# =============================================================================
+# Usage:
+#   docker compose -f devops/docker/docker-compose.yml up -d
+#   docker compose -f devops/docker/docker-compose.yml --profile monitoring up -d
+#
+# Copy devops/docker/.env.example to devops/docker/.env before starting.
+# =============================================================================
+
+version: '3.8'
+
+# ---------------------------------------------------------------------------
+# Shared environment injected into every microservice
+# ---------------------------------------------------------------------------
+x-service-env: &service-env
+  ASPNETCORE_ENVIRONMENT: Development
+  ASPNETCORE_URLS: http://+:8080
+  Jwt__Secret: ${JWT_SECRET:-change-me-at-least-32-characters-long!}
+  Jwt__Issuer: ehr-platform
+  Jwt__Audience: ehr-api
+  Redis__ConnectionString: redis:6379,password=${REDIS_PASSWORD:-redis_password},abortConnect=false
+  Kafka__BootstrapServers: kafka:9092
+  RabbitMQ__Host: rabbitmq
+  RabbitMQ__Username: ${RABBITMQ_USER:-ehr_user}
+  RabbitMQ__Password: ${RABBITMQ_PASSWORD:-ehr_password}
+  RabbitMQ__VirtualHost: /ehr
+  Elasticsearch__Url: http://elasticsearch:9200
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-me-32-chars-aes-256-keyxx}
+
+x-service-healthcheck: &service-healthcheck
+  healthcheck:
+    test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
+    interval: 20s
+    timeout: 5s
+    retries: 5
+    start_period: 30s
+
+x-service-restart: &service-restart
+  restart: unless-stopped
+
+# ---------------------------------------------------------------------------
+# Services
+# ---------------------------------------------------------------------------
+services:
+
+  # ── Infrastructure: PostgreSQL ──────────────────────────────────────────
+
+  postgres-identity:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-identity
+    environment:
+      POSTGRES_DB: ehr_identity
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  postgres-patient:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-patient
+    environment:
+      POSTGRES_DB: ehr_patient
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-patient-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  postgres-clinical:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-clinical
+    environment:
+      POSTGRES_DB: ehr_clinical
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-clinical-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  postgres-appointments:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-appointments
+    environment:
+      POSTGRES_DB: ehr_appointments
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres-appointments-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  postgres-audit:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-audit
+    environment:
+      POSTGRES_DB: ehr_audit
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres-audit-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Infrastructure: MongoDB ─────────────────────────────────────────────
+
+  mongodb:
+    image: mongo:7.0
+    container_name: ehr-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-ehr_admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-ehr_mongo_password}
+      MONGO_INITDB_DATABASE: ehr_platform
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Infrastructure: MySQL (billing / legacy) ────────────────────────────
+
+  mysql-billing:
+    image: mysql:8.0
+    container_name: ehr-mysql-billing
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ehr_billing
+      MYSQL_USER: ${MYSQL_USER:-ehr_billing_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-billing_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-billing-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
+             "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Infrastructure: Redis ───────────────────────────────────────────────
+
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_password}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Infrastructure: Kafka + Zookeeper ──────────────────────────────────
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ehr-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ehr-kafka
+    depends_on:
+      zookeeper:
+        condition: service_started
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_CREATE_TOPICS: >
+        patient-created.development:1:1,
+        lab-result-ready.development:1:1,
+        appointment-scheduled.development:1:1,
+        audit-log.development:1:1,
+        prescription-created.development:1:1
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions",
+             "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: ehr-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: ehr-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8090:8080"
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Infrastructure: RabbitMQ ────────────────────────────────────────────
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: ehr-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ehr_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-ehr_password}
+      RABBITMQ_DEFAULT_VHOST: /ehr
+    ports:
+      - "5672:5672"
+      - "15672:15672"   # Management UI → http://localhost:15672
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Infrastructure: Elasticsearch + Kibana ─────────────────────────────
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: ehr-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL",
+             "curl -sf http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: ehr-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Microservices ───────────────────────────────────────────────────────
+
+  api-gateway:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.ApiGateway
+    image: ehr/api-gateway:${IMAGE_TAG:-latest}
+    container_name: ehr-api-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      <<: *service-env
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD:-redis_password}
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  identity-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Identity
+    image: ehr/identity-service:${IMAGE_TAG:-latest}
+    container_name: ehr-identity-service
+    ports:
+      - "5001:8080"
+    environment:
+      <<: *service-env
+      PGHOST: postgres-identity
+      PGPORT: "5432"
+      PGDATABASE: ehr_identity
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres-identity:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  patient-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Patient
+    image: ehr/patient-service:${IMAGE_TAG:-latest}
+    container_name: ehr-patient-service
+    ports:
+      - "5002:8080"
+    environment:
+      <<: *service-env
+      PGHOST: postgres-patient
+      PGPORT: "5432"
+      PGDATABASE: ehr_patient
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      MongoDB__ConnectionString: >
+        mongodb://${MONGO_USER:-ehr_admin}:${MONGO_PASSWORD:-ehr_mongo_password}@mongodb:27017/ehr_platform?authSource=admin
+    depends_on:
+      postgres-patient:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  clinical-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Clinical
+    image: ehr/clinical-service:${IMAGE_TAG:-latest}
+    container_name: ehr-clinical-service
+    ports:
+      - "5003:8080"
+    environment:
+      <<: *service-env
+      PGHOST: postgres-clinical
+      PGPORT: "5432"
+      PGDATABASE: ehr_clinical
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres-clinical:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  appointment-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Appointment
+    image: ehr/appointment-service:${IMAGE_TAG:-latest}
+    container_name: ehr-appointment-service
+    ports:
+      - "5004:8080"
+    environment:
+      <<: *service-env
+      PGHOST: postgres-appointments
+      PGPORT: "5432"
+      PGDATABASE: ehr_appointments
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres-appointments:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  notification-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Notification
+    image: ehr/notification-service:${IMAGE_TAG:-latest}
+    container_name: ehr-notification-service
+    ports:
+      - "5005:8080"
+    environment:
+      <<: *service-env
+      Cors__AllowedOrigins__0: http://localhost:4200
+      Cors__AllowedOrigins__1: http://api-gateway:8080
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  audit-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Audit
+    image: ehr/audit-service:${IMAGE_TAG:-latest}
+    container_name: ehr-audit-service
+    ports:
+      - "5006:8080"
+    environment:
+      <<: *service-env
+      PGHOST: postgres-audit
+      PGPORT: "5432"
+      PGDATABASE: ehr_audit
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres-audit:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  billing-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Billing
+    image: ehr/billing-service:${IMAGE_TAG:-latest}
+    container_name: ehr-billing-service
+    ports:
+      - "5007:8080"
+    environment:
+      <<: *service-env
+      PGHOST: mysql-billing        # billing service uses MySQL
+      ConnectionStrings__DefaultConnection: >
+        Server=mysql-billing;Database=ehr_billing;
+        User=${MYSQL_USER:-ehr_billing_user};
+        Password=${MYSQL_PASSWORD:-billing_password};
+    depends_on:
+      mysql-billing:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  prescription-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Prescription
+    image: ehr/prescription-service:${IMAGE_TAG:-latest}
+    container_name: ehr-prescription-service
+    ports:
+      - "5008:8080"
+    environment:
+      <<: *service-env
+      PGHOST: postgres-patient     # shares patient postgres instance
+      PGPORT: "5432"
+      PGDATABASE: ehr_prescriptions
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres-patient:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  analytics-service:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.backend
+      args:
+        SERVICE: EHRPlatform.Services.Analytics
+    image: ehr/analytics-service:${IMAGE_TAG:-latest}
+    container_name: ehr-analytics-service
+    ports:
+      - "5009:8080"
+    environment:
+      <<: *service-env
+      PGHOST: postgres-clinical    # reads clinical + patient data
+      PGPORT: "5432"
+      PGDATABASE: ehr_clinical
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres-clinical:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    <<: [*service-healthcheck, *service-restart]
+
+  # ── Frontend ────────────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ../..
+      dockerfile: devops/docker/services/Dockerfile.frontend
+      args:
+        API_URL: /api
+    image: ehr/frontend:${IMAGE_TAG:-latest}
+    container_name: ehr-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Monitoring (opt-in via --profile monitoring) ────────────────────────
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: ehr-prometheus
+    profiles: [monitoring]
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: ehr-grafana
+    profiles: [monitoring]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    container_name: ehr-jaeger
+    profiles: [monitoring]
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.86.0
+    container_name: ehr-otel-collector
+    profiles: [monitoring]
+    volumes:
+      - ../monitoring/otel-collector.yml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "4319:4318"
+    depends_on:
+      - jaeger
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+# ---------------------------------------------------------------------------
+# Networks & Volumes
+# ---------------------------------------------------------------------------
+networks:
+  ehr-network:
+    driver: bridge
+    name: ehr-network
+
+volumes:
+  postgres-identity-data:
+  postgres-patient-data:
+  postgres-clinical-data:
+  postgres-appointments-data:
+  postgres-audit-data:
+  mongodb-data:
+  mysql-billing-data:
+  redis-data:
+  zookeeper-data:
+  kafka-data:
+  rabbitmq-data:
+  elasticsearch-data:
+  prometheus-data:
+  grafana-data:

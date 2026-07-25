@@ -1,0 +1,156 @@
+# =============================================================================
+# CD Pipeline — Deploy to dev / staging / prod
+# Triggered after a successful Build & Test run on main, or manually.
+# =============================================================================
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Build & Test"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: dev
+        type: choice
+        options: [dev, staging, prod]
+      image_tag:
+        description: "Image tag to deploy (default: latest)"
+        required: false
+        default: latest
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Run DB migrations before deploying new pods
+  # ---------------------------------------------------------------------------
+  migrate:
+    name: Database Migrations
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    environment: ${{ inputs.environment || 'dev' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: aws-actions/amazon-eks-update-kubeconfig@v1
+        with:
+          cluster-name: ehr-platform-${{ inputs.environment || 'dev' }}-cluster
+          region: us-east-1
+
+      - name: Run EF Core migrations (Identity)
+        run: |
+          kubectl run migrations-identity \
+            --image=ghcr.io/${{ github.repository_owner }}/ehr/identity-service:${{ inputs.image_tag || github.sha }} \
+            --restart=Never \
+            --env="PGHOST=${{ secrets.PGHOST }}" \
+            --env="PGDATABASE=ehr_identity" \
+            --env="PGUSER=${{ secrets.PGUSER }}" \
+            --env="PGPASSWORD=${{ secrets.PGPASSWORD }}" \
+            --command -- dotnet EHRPlatform.Services.Identity.dll migrate
+          kubectl wait --for=condition=complete job/migrations-identity --timeout=120s
+
+  # ---------------------------------------------------------------------------
+  # Deploy to dev (auto on every main push)
+  # ---------------------------------------------------------------------------
+  deploy-dev:
+    name: Deploy → Dev
+    runs-on: ubuntu-latest
+    needs: migrate
+    environment: dev
+    if: ${{ inputs.environment == 'dev' || inputs.environment == '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: aws-actions/amazon-eks-update-kubeconfig@v1
+        with:
+          cluster-name: ehr-platform-dev-cluster
+          region: us-east-1
+
+      - name: Apply Kustomize overlay (dev)
+        run: |
+          cd devops/kubernetes/overlays/dev
+          kustomize edit set image \
+            ehr/api-gateway=ghcr.io/${{ github.repository_owner }}/ehr/api-gateway:${{ inputs.image_tag || github.sha }} \
+            ehr/identity-service=ghcr.io/${{ github.repository_owner }}/ehr/identity-service:${{ inputs.image_tag || github.sha }} \
+            ehr/patient-service=ghcr.io/${{ github.repository_owner }}/ehr/patient-service:${{ inputs.image_tag || github.sha }} \
+            ehr/frontend=ghcr.io/${{ github.repository_owner }}/ehr/frontend:${{ inputs.image_tag || github.sha }}
+          kubectl apply -k .
+
+      - name: Wait for rollout
+        run: |
+          kubectl -n ehr-platform rollout status deployment/api-gateway --timeout=5m
+          kubectl -n ehr-platform rollout status deployment/identity-service --timeout=5m
+
+      - name: Smoke test
+        run: |
+          GATEWAY_URL=$(kubectl -n ehr-platform get svc api-gateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -sf "http://${GATEWAY_URL}/health" || exit 1
+
+  # ---------------------------------------------------------------------------
+  # Deploy to staging (manual trigger or after dev passes)
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy → Staging
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: staging
+    if: ${{ inputs.environment == 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: aws-actions/amazon-eks-update-kubeconfig@v1
+        with:
+          cluster-name: ehr-platform-staging-cluster
+          region: us-east-1
+
+      - name: Apply Kustomize overlay (staging)
+        run: kubectl apply -k devops/kubernetes/overlays/staging
+
+      - name: Wait for rollout
+        run: |
+          for svc in api-gateway identity-service patient-service clinical-service; do
+            kubectl -n ehr-platform rollout status deployment/$svc --timeout=5m
+          done
+
+  # ---------------------------------------------------------------------------
+  # Deploy to production (manual only, with approval gate)
+  # ---------------------------------------------------------------------------
+  deploy-prod:
+    name: Deploy → Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: prod   # GitHub requires a reviewer to approve this environment
+    if: ${{ inputs.environment == 'prod' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: aws-actions/amazon-eks-update-kubeconfig@v1
+        with:
+          cluster-name: ehr-platform-prod-cluster
+          region: us-east-1
+
+      - name: Blue-Green deploy
+        run: |
+          # Tag the current deployment as "blue" before switching to "green"
+          kubectl -n ehr-platform annotate deployment/api-gateway \
+            ehr/previous-image=$(kubectl -n ehr-platform get deployment/api-gateway -o jsonpath='{.spec.template.spec.containers[0].image}') \
+            --overwrite
+
+          kubectl apply -k devops/kubernetes/overlays/prod
+
+      - name: Wait for rollout
+        run: |
+          for svc in api-gateway identity-service patient-service clinical-service appointment-service billing-service; do
+            kubectl -n ehr-platform rollout status deployment/$svc --timeout=10m
+          done
+
+      - name: Production smoke test
+        run: |
+          curl -sf "https://api.ehr-platform.example.com/health" || \
+            (kubectl -n ehr-platform rollout undo deployment/api-gateway && exit 1)

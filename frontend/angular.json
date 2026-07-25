@@ -18,6 +18,24 @@
       "sourceRoot": "src",
       "prefix": "app",
       "architect": {
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "host": "0.0.0.0",
+            "port": 4200,
+            "proxyConfig": "proxy.conf.json",
+            "disableHostCheck": true
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "ehr-platform:build:production"
+            },
+            "development": {
+              "buildTarget": "ehr-platform:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {

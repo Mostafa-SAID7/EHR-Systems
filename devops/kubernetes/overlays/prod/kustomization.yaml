@@ -1,0 +1,70 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ehr-platform
+
+resources:
+  - ../../base
+
+configMapGenerator:
+  - name: ehr-common-config
+    behavior: merge
+    literals:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Logging__LogLevel__Default=Warning
+      - OpenTelemetry__OtlpEndpoint=http://otel-collector:4318
+
+# Production replica counts — tuned for high availability
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: api-gateway
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: identity-service
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: patient-service
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: clinical-service
+
+images:
+  - name: ehr/api-gateway
+    newTag: "1.0.0"
+  - name: ehr/identity-service
+    newTag: "1.0.0"
+  - name: ehr/patient-service
+    newTag: "1.0.0"
+  - name: ehr/clinical-service
+    newTag: "1.0.0"
+  - name: ehr/appointment-service
+    newTag: "1.0.0"
+  - name: ehr/notification-service
+    newTag: "1.0.0"
+  - name: ehr/audit-service
+    newTag: "1.0.0"
+  - name: ehr/billing-service
+    newTag: "1.0.0"
+  - name: ehr/prescription-service
+    newTag: "1.0.0"
+  - name: ehr/analytics-service
+    newTag: "1.0.0"
+  - name: ehr/frontend
+    newTag: "1.0.0"

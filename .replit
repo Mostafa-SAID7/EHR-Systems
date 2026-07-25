@@ -18,8 +18,51 @@ author = "agent"
 task = "workflow.run"
 args = "Identity Service"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "API Gateway"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Patient Service"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Clinical Service"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Appointment Service"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Billing Service"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Prescription Service"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Audit Service"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Analytics Service"
+
 [[workflows.workflow]]
 name = "Identity Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && dotnet run --project src/EHRPlatform.Services.Identity"
+
+[[workflows.workflow]]
+name = "API Gateway"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -27,8 +70,85 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd backend && dotnet run --project src/EHRPlatform.Services.Identity"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5000 dotnet run --project src/EHRPlatform.Services.ApiGateway"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Patient Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5002 dotnet run --project src/EHRPlatform.Services.Patient"
+
+[[workflows.workflow]]
+name = "Clinical Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5003 dotnet run --project src/EHRPlatform.Services.Clinical"
+
+[[workflows.workflow]]
+name = "Appointment Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5004 dotnet run --project src/EHRPlatform.Services.Appointment"
+
+[[workflows.workflow]]
+name = "Billing Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5007 dotnet run --project src/EHRPlatform.Services.Billing"
+
+[[workflows.workflow]]
+name = "Prescription Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5008 dotnet run --project src/EHRPlatform.Services.Prescription"
+
+[[workflows.workflow]]
+name = "Audit Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5006 dotnet run --project src/EHRPlatform.Services.Audit"
+
+[[workflows.workflow]]
+name = "Analytics Service"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5009 dotnet run --project src/EHRPlatform.Services.Analytics"
 
 [userenv]
 

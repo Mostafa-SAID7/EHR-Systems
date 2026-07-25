@@ -1,0 +1,100 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: patient-service
+  namespace: ehr-platform
+  labels:
+    app: patient-service
+    app.kubernetes.io/part-of: ehr-platform
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: patient-service
+  template:
+    metadata:
+      labels:
+        app: patient-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: ehr-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: patient-service
+          image: ehr/patient-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: ehr-common-config
+            - secretRef:
+                name: ehr-secrets
+          env:
+            - name: PGHOST
+              value: postgres-patient
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: ehr_patient
+            - name: PGUSER
+              value: postgres
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ehr-secrets
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "256Mi"
+            limits:
+              cpu: "600m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            failureThreshold: 12
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: patient-service
+  namespace: ehr-platform
+spec:
+  selector:
+    app: patient-service
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: patient-service-pdb
+  namespace: ehr-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: patient-service

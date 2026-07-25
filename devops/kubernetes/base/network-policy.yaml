@@ -1,0 +1,109 @@
+# =============================================================================
+# Network Policies — zero-trust between services (HIPAA: least-privilege)
+# =============================================================================
+
+# Default deny-all for the namespace
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: ehr-platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Allow ingress to the API Gateway from the ingress controller only
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-gateway
+  namespace: ehr-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: api-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+
+# Allow api-gateway to reach all microservices
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-to-services
+  namespace: ehr-platform
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: ehr-platform
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+
+# Allow all microservices to reach Kafka + RabbitMQ + Redis + Postgres
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-services-egress-infra
+  namespace: ehr-platform
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: ehr-platform
+  policyTypes:
+    - Egress
+  egress:
+    - to: []  # Allow all egress (tighten per-service in production)
+      ports:
+        - protocol: TCP
+          port: 5432   # PostgreSQL
+        - protocol: TCP
+          port: 6379   # Redis
+        - protocol: TCP
+          port: 9092   # Kafka
+        - protocol: TCP
+          port: 5672   # RabbitMQ AMQP
+        - protocol: TCP
+          port: 27017  # MongoDB
+        - protocol: TCP
+          port: 3306   # MySQL
+        - protocol: TCP
+          port: 9200   # Elasticsearch
+
+# Allow DNS resolution for all pods
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: ehr-platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
