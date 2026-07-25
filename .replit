@@ -1,4 +1,4 @@
-modules = ["dotnet-7.0", "nodejs-20", "bash"]
+modules = ["nodejs-20", "bash", "dotnet-8.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -160,13 +160,21 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd frontend && node_modules/.bin/ng serve --host 0.0.0.0 --port 4200 --disable-host-check"
+args = "cd frontend && NG_CLI_ANALYTICS=false node_modules/.bin/ng serve --host 0.0.0.0 --port 4200 --disable-host-check"
+waitForPort = 4200
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [userenv]
 
 [userenv.shared]
 ENCRYPTION_KEY = "UpWTA8a9PDllXPOzgYisgV4lX3pZJtcR"
 JWT_SECRET = "2215f77c4386f663c3c8b99e1d2eb752aab7d440c67d181f4287475edca9cca2"
+
+[[ports]]
+localPort = 4200
+externalPort = 4200
 
 [[ports]]
 localPort = 5000

@@ -7,25 +7,21 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 
-/**
- * Login Page — clean form, green brand, no generic AI patterns
- */
 @Component({
   selector: 'app-login-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="stagger">
-      <!-- Heading -->
       <div class="mb-7">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Welcome back</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Sign in to your EHR account</p>
+        <h2 class="heading-lg mb-1">Welcome back</h2>
+        <p class="body-text">Sign in to your EHR account</p>
       </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
 
         <!-- Email -->
-        <div>
+        <div class="form-field">
           <label for="email" class="input-label">Email address</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
@@ -39,19 +35,17 @@ import { NotificationService } from '../../../../core/services/notification.serv
               type="email"
               formControlName="email"
               placeholder="your@email.com"
-              [ngClass]="hasError('email')
-                ? 'w-full pl-10 pr-4 py-2.5 bg-white dark:bg-surface-800 border border-red-500 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-200 dark:text-gray-100'
-                : 'w-full pl-10 pr-4 py-2.5 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-600 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 dark:text-gray-100'"
+              [class]="hasError('email') ? 'input-icon-error' : 'input-icon'"
             />
           </div>
-          <p *ngIf="hasError('email')" class="mt-1.5 text-xs text-red-500 animate-fade-in">
+          <p *ngIf="hasError('email')" class="input-error-msg">
             Please enter a valid email address
           </p>
         </div>
 
         <!-- Password -->
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
+        <div class="form-field">
+          <div class="flex items-center justify-between">
             <label for="password" class="input-label mb-0">Password</label>
             <a routerLink="/auth/forgot-password"
               class="text-xs font-medium text-primary-600 hover:text-primary-700
@@ -71,9 +65,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
               [type]="showPassword ? 'text' : 'password'"
               formControlName="password"
               placeholder="••••••••"
-              [ngClass]="hasError('password')
-                ? 'w-full pl-10 pr-10 py-2.5 bg-white dark:bg-surface-800 border border-red-500 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-200 dark:text-gray-100'
-                : 'w-full pl-10 pr-10 py-2.5 bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-600 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 dark:text-gray-100'"
+              [class]="hasError('password') ? 'input-icon-error' : 'input-icon'"
             />
             <button
               type="button"
@@ -87,15 +79,20 @@ import { NotificationService } from '../../../../core/services/notification.serv
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7
+                     -1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
               </svg>
               <svg *ngIf="showPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7
+                     a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242
+                     M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0
+                     A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7
+                     a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
               </svg>
             </button>
           </div>
-          <p *ngIf="hasError('password')" class="mt-1.5 text-xs text-red-500 animate-fade-in">
+          <p *ngIf="hasError('password')" class="input-error-msg">
             Password must be at least 6 characters
           </p>
         </div>
@@ -114,25 +111,19 @@ import { NotificationService } from '../../../../core/services/notification.serv
         </div>
 
         <!-- Server error -->
-        <div *ngIf="serverError"
-          class="flex items-center gap-3 p-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 animate-scale-in">
-          <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div *ngIf="serverError" class="alert-error animate-scale-in">
+          <svg class="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span class="text-sm text-red-800 dark:text-red-300">{{ serverError }}</span>
+          <span class="text-sm">{{ serverError }}</span>
         </div>
 
         <!-- Submit -->
         <button
           type="submit"
           [disabled]="loginForm.invalid || isLoading"
-          class="w-full flex items-center justify-center gap-2 py-3 px-4
-                 bg-primary-600 hover:bg-primary-700 active:bg-primary-800
-                 text-white text-sm font-semibold rounded-xl
-                 shadow-sm hover:shadow-md
-                 transition-all duration-200
-                 disabled:opacity-50 disabled:pointer-events-none"
+          class="btn-primary w-full py-3"
         >
           <svg *ngIf="isLoading" class="w-4 h-4 animate-spin-slow" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
@@ -142,7 +133,6 @@ import { NotificationService } from '../../../../core/services/notification.serv
         </button>
       </form>
 
-      <!-- Sign up link -->
       <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         Don't have an account?
         <a routerLink="/auth/register"
@@ -198,7 +188,6 @@ export class LoginPageComponent implements OnInit, OnDestroy {
       this.loginForm.markAllAsTouched();
       return;
     }
-
     this.isLoading = true;
     this.serverError = '';
     const { email, password, rememberMe } = this.loginForm.value;
