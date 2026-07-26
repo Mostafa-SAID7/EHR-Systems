@@ -28,6 +28,7 @@ try
 
     // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
     builder.Services.AddOpenTelemetryMetrics("api-gateway");
+    builder.Services.AddApiGatewayMetrics();  // ← Add gateway-specific metrics
 
     // ── YARP Reverse Proxy ────────────────────────────────────────────────────
     builder.Services.AddReverseProxy()
@@ -163,6 +164,9 @@ try
     // ── Middleware pipeline ───────────────────────────────────────────────────
     // 1. Global exception handler — outermost, catches everything
     app.UseEHRGlobalExceptionHandler();
+
+    // 1.5. API Gateway Metrics — collect requests/latency/errors
+    app.UseApiGatewayMetrics();  // ← Collect gateway metrics
 
     // 2. Request tracking — single source of truth for correlation ID in the gateway.
     //    Generates/propagates X-Correlation-ID, measures latency, scrubs PII from paths.
