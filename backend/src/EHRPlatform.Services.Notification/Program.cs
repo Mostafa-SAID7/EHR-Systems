@@ -11,7 +11,7 @@ builder.Host.UseSerilog((ctx, config) =>
     config.ReadFrom.Configuration(ctx.Configuration));
 
 // ── OpenTelemetry Metrics ─────────────────────────────────────────────────────
-builder.Services.AddOpenTelemetryMetrics("notification-service");
+builder.Services.AddOpenTelemetryObservability("notification-service");
 
 // ── SignalR ───────────────────────────────────────────────────────────────────
 builder.Services.AddSignalR(opts =>
@@ -76,6 +76,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<EHRNotificationHub>("/hubs/notifications");
 app.MapHealthChecks("/health");
-app.MapPrometheusMetricsEndpoint();
+// app.MapPrometheusMetricsEndpoint();
 
 await app.RunAsync();
+

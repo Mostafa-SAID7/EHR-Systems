@@ -69,7 +69,7 @@ public static class IdentityMetricsExtensions
             var endpoint = context.Request.Path.Value ?? "unknown";
             var endpointCategory = ExtractEndpointCategoryFromPath(endpoint);
 
-            if (statusCode == StatusCodes.Status401Unauthorized)
+            if (statusCode == 401)
             {
                 var unauthorizedCounter = IdentityMeter.CreateCounter<long>(
                     "identity.unauthorized_requests",
@@ -77,9 +77,9 @@ public static class IdentityMetricsExtensions
                     unit: "{request}");
                 
                 // Low-cardinality endpoint category only (e.g., "patients", "appointments")
-                unauthorizedCounter.Add(1, new("endpoint", endpointCategory));
+                unauthorizedCounter.Add(1, new[] { new KeyValuePair<string, object?>("endpoint", endpointCategory) });
             }
-            else if (statusCode == StatusCodes.Status403Forbidden)
+            else if (statusCode == 403)
             {
                 var forbiddenCounter = IdentityMeter.CreateCounter<long>(
                     "identity.forbidden_requests",
@@ -87,9 +87,11 @@ public static class IdentityMetricsExtensions
                     unit: "{request}");
                 
                 // Low-cardinality labels only
-                forbiddenCounter.Add(1, 
-                    new("endpoint", endpointCategory),
-                    new("role", context.User?.FindFirst("role")?.Value ?? "unknown"));
+                forbiddenCounter.Add(1, new[] 
+                {
+                    new KeyValuePair<string, object?>("endpoint", endpointCategory),
+                    new KeyValuePair<string, object?>("role", context.User?.FindFirst("role")?.Value ?? "unknown")
+                });
             }
         });
 
@@ -152,8 +154,7 @@ public static class IdentityMetricsRecorder
             unit: "{login}");
         
         // Low-cardinality labels only: authentication_method
-        counter.Add(1, 
-            new KeyValuePair<string, object?>("method", authenticationMethod ?? "password"));
+        counter.Add(1, new[] { new KeyValuePair<string, object?>("method", authenticationMethod ?? "password") });
     }
 
     /// <summary>
@@ -171,8 +172,7 @@ public static class IdentityMetricsRecorder
             unit: "{attempt}");
         
         // Low-cardinality label only: reason
-        counter.Add(1, 
-            new KeyValuePair<string, object?>("reason", reason));
+        counter.Add(1, new[] { new KeyValuePair<string, object?>("reason", reason) });
     }
 
     /// <summary>
@@ -244,7 +244,7 @@ public static class IdentityMetricsRecorder
             unit: "{request}");
         
         // Endpoint is low-cardinality (~50 unique values)
-        counter.Add(1, new("endpoint", ExtractEndpointCategory(endpoint)));
+        counter.Add(1, new[] { new KeyValuePair<string, object?>("endpoint", ExtractEndpointCategory(endpoint)) });
     }
 
     /// <summary>
@@ -262,9 +262,11 @@ public static class IdentityMetricsRecorder
             unit: "{request}");
         
         // Low-cardinality labels only
-        counter.Add(1, 
-            new("endpoint", ExtractEndpointCategory(endpoint)),
-            new("role", role ?? "unknown"));
+        counter.Add(1, new[]
+        {
+            new KeyValuePair<string, object?>("endpoint", ExtractEndpointCategory(endpoint)),
+            new KeyValuePair<string, object?>("role", role ?? "unknown")
+        });
     }
 
     /// <summary>
@@ -298,7 +300,7 @@ public static class IdentityMetricsRecorder
     {
         return Meter.CreateObservableGauge<int>(
             "identity.active_sessions",
-            measurement: () => new Measurement<int>(getActiveSessionsCount()),
+            () => new Measurement<int>(getActiveSessionsCount()),
             description: "Number of active authenticated sessions",
             unit: "{session}");
     }
@@ -311,7 +313,7 @@ public static class IdentityMetricsRecorder
     {
         return Meter.CreateObservableGauge<double>(
             "identity.token_lifetime_seconds",
-            measurement: () => new Measurement<double>(getAverageLifetime()),
+            () => new Measurement<double>(getAverageLifetime()),
             description: "Average JWT token lifetime in seconds",
             unit: "s");
     }

@@ -19,7 +19,7 @@ try
         config.ReadFrom.Configuration(ctx.Configuration));
 
     // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
-    builder.Services.AddOpenTelemetryMetrics("clinical-service");
+    builder.Services.AddOpenTelemetryObservability("clinical-service");
 
     // ── Controllers & Swagger ─────────────────────────────────────────────────
     builder.Services.AddControllers();
@@ -90,7 +90,7 @@ try
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");
-    app.MapPrometheusMetricsEndpoint();
+    // app.MapPrometheusMetricsEndpoint();
 
     Log.Information("EHR Clinical Service starting");
     await app.RunAsync();
@@ -104,4 +104,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 

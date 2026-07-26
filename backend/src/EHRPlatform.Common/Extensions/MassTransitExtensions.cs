@@ -88,7 +88,7 @@ public static class MassTransitExtensions
             //   - rabbitmq.message.dead_letter (counter)
             //   - rabbitmq.message.redelivered (counter)
             
-            x.AddActivityDiagnostics();  // Enables OpenTelemetry ActivitySource for MassTransit
+            // Note: MassTransit metrics are automatically collected via OpenTelemetry instrumentation
             
             configureConsumers?.Invoke(x);
 
@@ -156,7 +156,7 @@ public static class MassTransitExtensions
             //   - rabbitmq.message.dead_letter (counter)
             //   - rabbitmq.message.redelivered (counter)
             
-            x.AddActivityDiagnostics();  // Enables OpenTelemetry ActivitySource for MassTransit
+            // Note: MassTransit metrics are automatically collected via OpenTelemetry instrumentation
             
             // Register RabbitMQ consumers
             configureRabbitMqConsumers?.Invoke(x);

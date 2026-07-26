@@ -121,30 +121,30 @@ public static class ApiGatewayMetricsExtensions
                 var routeLabel = ExtractRouteLabel(routeName);
 
                 // Record all metrics
-                _requestsCounter?.Add(1, new("route", routeLabel), new("service", "api-gateway"));
-                _gatewayLatencyHistogram?.Record(latencySeconds, new("route", routeLabel));
-                _routeLatencyHistogram?.Record(latencySeconds, new("route", routeLabel));
+                _requestsCounter?.Add(1, new[] { new KeyValuePair<string, object?>("route", routeLabel), new("service", "api-gateway") });
+                _gatewayLatencyHistogram?.Record(latencySeconds, new KeyValuePair<string, object?>("route", routeLabel));
+                _routeLatencyHistogram?.Record(latencySeconds, new KeyValuePair<string, object?>("route", routeLabel));
 
                 // Record error metrics based on status code
                 var statusCode = context.Response.StatusCode;
                 if (statusCode == 401)
                 {
-                    _authFailuresCounter?.Add(1, new("route", routeLabel));
+                    _authFailuresCounter?.Add(1, new KeyValuePair<string, object?>("route", routeLabel));
                 }
                 else if (statusCode == 403)
                 {
-                    _authzFailuresCounter?.Add(1, new("route", routeLabel));
+                    _authzFailuresCounter?.Add(1, new KeyValuePair<string, object?>("route", routeLabel));
                 }
                 else if (statusCode >= 500)
                 {
                     // Use low-cardinality status label: 5xx (not specific status code)
                     // This prevents unbounded cardinality from future status codes
-                    _errors5xxCounter?.Add(1, new("route", routeLabel), new("status_class", "5xx"));
+                    _errors5xxCounter?.Add(1, new KeyValuePair<string, object?>("route", routeLabel), new("status_class", "5xx"));
                 }
                 else if (statusCode >= 400 && statusCode != 401 && statusCode != 403)
                 {
                     // Use low-cardinality status label: 4xx (not specific status code)
-                    _errors4xxCounter?.Add(1, new("route", routeLabel), new("status_class", "4xx"));
+                    _errors4xxCounter?.Add(1, new KeyValuePair<string, object?>("route", routeLabel), new("status_class", "4xx"));
                 }
             }
         });

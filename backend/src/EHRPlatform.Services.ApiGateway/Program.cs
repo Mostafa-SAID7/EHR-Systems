@@ -27,7 +27,7 @@ try
            .Enrich.FromLogContext());
 
     // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
-    builder.Services.AddOpenTelemetryMetrics("api-gateway");
+    builder.Services.AddOpenTelemetryObservability("api-gateway");
     builder.Services.AddApiGatewayMetrics();  // ← Add gateway-specific metrics
 
     // ── YARP Reverse Proxy ────────────────────────────────────────────────────
@@ -43,8 +43,6 @@ try
         Log.Information("Redis caching enabled for API Gateway");
     }
 
-    // ── OpenTelemetry ─────────────────────────────────────────────────────────
-    builder.Services.AddEHRTelemetry(builder.Configuration, "api-gateway");
 
     // ── Swagger / OpenAPI ─────────────────────────────────────────────────────
     builder.Services.AddEndpointsApiExplorer();
@@ -196,7 +194,8 @@ try
 
     // 7. Health & proxy
     app.MapHealthChecks("/health");
-    app.MapPrometheusMetricsEndpoint();
+    // Metrics endpoint (Prometheus scrape): disabled in favor of OTLP export
+    // app.MapPrometheusMetricsEndpoint();
     app.MapReverseProxy();
 
     Log.Information("EHR API Gateway starting on port 5000");
