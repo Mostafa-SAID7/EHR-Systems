@@ -1,0 +1,75 @@
+# =============================================================================
+# Grafana Datasources — EHR Platform Observability Stack
+# Automatically configures Prometheus, Loki, and Tempo on Grafana startup
+# =============================================================================
+
+apiVersion: 1
+
+datasources:
+  # ── Prometheus (Metrics) ────────────────────────────────────────────────
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: 30s
+    version: 1
+
+  # ── Loki (Logs) ─────────────────────────────────────────────────────────
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: false
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        # Extract trace IDs from logs and link to Tempo traces
+        - name: TraceID
+          matcherRegex: 'trace_id[=:](\w+)'
+          url: '$${__value.raw}'
+          datasourceUid: tempo-uid
+    version: 1
+
+  # ── Tempo (Distributed Traces) ──────────────────────────────────────────
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
+    editable: true
+    uid: tempo-uid
+    jsonData:
+      nodeGraph:
+        enabled: true
+      serviceName: service.name
+      spanStartTimeShift: -1h
+      spanEndTimeShift: 1h
+      localSearchEnabled: true
+      search:
+        enabled: true
+      traceToLogs:
+        # Link traces back to Loki logs
+        datasourceUid: loki-uid
+        tags:
+          - service.name
+          - job
+    version: 1
+
+  # ── Elasticsearch (Document Search, optional) ───────────────────────────
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    database: ehr
+    isDefault: false
+    editable: true
+    jsonData:
+      esVersion: 8.10.0
+      timeField: "@timestamp"
+      logMessageField: message
+      logLevelField: level
+    version: 1

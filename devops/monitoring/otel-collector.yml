@@ -52,18 +52,23 @@ processors:
         action: delete
 
 exporters:
-  # Distributed tracing → Jaeger
-  otlp/jaeger:
-    endpoint: "jaeger:4317"
+  # Distributed tracing → Tempo (replaces Jaeger)
+  otlp/tempo:
+    endpoint: "tempo:4317"
     tls:
       insecure: true
 
-  # Metrics → Prometheus
-  prometheus:
-    endpoint: "0.0.0.0:8889"
-    namespace: ehr
+  # Metrics → Prometheus (push via remote_write or scrape via Prometheus receiver)
+  prometheusremotewrite:
+    endpoint: "http://prometheus:9090/api/v1/write"
+    resource_to_telemetry_conversion:
+      enabled: true
 
-  # Structured logs → stdout (picked up by log aggregator)
+  # Logs → Loki (via JSON exporter)
+  logging/loki:
+    loglevel: debug
+
+  # Fallback logging for debugging
   logging:
     verbosity: normal
 
@@ -72,14 +77,14 @@ service:
     traces:
       receivers:  [otlp]
       processors: [memory_limiter, resource, attributes, batch]
-      exporters:  [otlp/jaeger, logging]
+      exporters:  [otlp/tempo, logging]
 
     metrics:
       receivers:  [otlp, prometheus]
       processors: [memory_limiter, batch]
-      exporters:  [prometheus]
+      exporters:  [prometheusremotewrite, logging]
 
     logs:
       receivers:  [otlp]
       processors: [memory_limiter, resource, batch]
-      exporters:  [logging]
+      exporters:  [logging/loki, logging]

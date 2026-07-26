@@ -665,28 +665,53 @@ services:
       GF_INSTALL_PLUGINS: grafana-clock-panel
     volumes:
       - grafana-data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
     ports:
       - "3001:3000"
     depends_on:
       - prometheus
+      - loki
+      - tempo
     networks:
       - ehr-network
     <<: *service-restart
 
-  jaeger:
-    image: jaegertracing/all-in-one:1.49
-    container_name: ehr-jaeger
+  # ── Observability: Loki (Log Aggregation) ──────────────────────────────
+
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: ehr-loki
     profiles: [monitoring]
-    environment:
-      COLLECTOR_OTLP_ENABLED: "true"
+    volumes:
+      - ../monitoring/loki-config.yml:/etc/loki/local-config.yml:ro
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yml
     ports:
-      - "16686:16686"   # Jaeger UI
-      - "4317:4317"     # OTLP gRPC
-      - "4318:4318"     # OTLP HTTP
+      - "3100:3100"
     networks:
       - ehr-network
     <<: *service-restart
+
+  # ── Observability: Tempo (Distributed Tracing Backend) ────────────────
+
+  tempo:
+    image: grafana/tempo:2.2.1
+    container_name: ehr-tempo
+    profiles: [monitoring]
+    volumes:
+      - ../monitoring/tempo-config.yml:/etc/tempo.yml:ro
+      - tempo-data:/var/tempo
+    command: -config.file=/etc/tempo.yml
+    ports:
+      - "3200:3200"    # Tempo API
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    networks:
+      - ehr-network
+    <<: *service-restart
+
+  # ── Observability: OpenTelemetry Collector (Metrics + Logs + Traces) ────
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.86.0
@@ -695,9 +720,12 @@ services:
     volumes:
       - ../monitoring/otel-collector.yml:/etc/otelcol/config.yaml:ro
     ports:
-      - "4319:4318"
+      - "4319:4318"    # OTLP HTTP (fallback)
+      - "4317:4317"    # OTLP gRPC receiver
     depends_on:
-      - jaeger
+      - prometheus
+      - loki
+      - tempo
     networks:
       - ehr-network
     <<: *service-restart
@@ -725,3 +753,5 @@ volumes:
   elasticsearch-data:
   prometheus-data:
   grafana-data:
+  loki-data:
+  tempo-data:
