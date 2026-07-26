@@ -9,58 +9,7 @@ import { CookieConsentComponent } from '../../shared/components/ui/cookie-consen
   selector: 'app-auth-layout',
   standalone: true,
   imports: [CommonModule, RouterModule, AuthBrandPanelComponent, ToastContainerComponent, CookieConsentComponent],
-  template: `
-    <div class="min-h-screen flex relative">
-
-      <!-- Global Toast Container -->
-      <app-toast-container></app-toast-container>
-
-      <!-- Global Cookie Consent Banner -->
-      <app-cookie-consent></app-cookie-consent>
-
-
-      <!-- ── Left panel — cinematic brand subcomponent ───────── -->
-      <app-auth-brand-panel
-        [highlights]="highlights"
-        [features]="features"
-      ></app-auth-brand-panel>
-
-      <!-- ── Right panel — form ──────────────────── -->
-      <div class="flex-1 flex flex-col items-center justify-center
-                  bg-[#f4f7f4] dark:bg-surface-900
-                  px-4 sm:px-8 py-12">
-
-        <!-- Mobile logo -->
-        <div class="flex items-center gap-3 mb-10 lg:hidden">
-          <div class="w-10 h-10 rounded-xl
-                      bg-gradient-to-br from-primary-500 to-primary-700
-                      flex items-center justify-center text-white shadow-md">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
-                   M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-          </div>
-          <span class="text-xl font-bold text-gray-900 dark:text-white">EHR Platform</span>
-        </div>
-
-        <!-- Form card -->
-        <div class="w-full max-w-md">
-          <div class="bg-white dark:bg-surface-800
-                      rounded-3xl shadow-xl
-                      border border-surface-100 dark:border-surface-700/50
-                      p-8 animate-scale-in">
-            <router-outlet></router-outlet>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <p class="mt-8 text-xs text-gray-400 dark:text-gray-600 text-center leading-relaxed">
-          HIPAA compliant &middot; SOC 2 Type II &middot; 256-bit encryption
-        </p>
-      </div>
-    </div>
-  `,
+  templateUrl: './auth-layout.component.html',
 })
 export class AuthLayoutComponent {
   highlights: AuthHighlight[] = [

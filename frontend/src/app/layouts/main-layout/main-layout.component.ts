@@ -32,57 +32,7 @@ const ICONS = {
   standalone: true,
   imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent, ToastContainerComponent, CookieConsentComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="flex h-screen overflow-hidden bg-surface-50 dark:bg-surface-900">
-
-      <!-- Global Toast Container -->
-      <app-toast-container></app-toast-container>
-
-      <!-- Global Cookie Consent Banner -->
-      <app-cookie-consent></app-cookie-consent>
-
-      <!-- Sidebar (desktop) -->
-      <app-sidebar
-        class="hidden md:flex"
-        [navItems]="navItems"
-        [(collapsed)]="sidebarCollapsed"
-      />
-
-      <!-- Mobile sidebar overlay -->
-      <div
-        *ngIf="mobileSidebarOpen"
-        class="fixed inset-0 z-40 md:hidden"
-        (click)="mobileSidebarOpen = false"
-      >
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="relative z-50 h-full w-64" (click)="$event.stopPropagation()">
-          <app-sidebar
-            [navItems]="navItems"
-            [collapsed]="false"
-            [isMobile]="true"
-            (navigate)="mobileSidebarOpen = false"
-          />
-        </div>
-      </div>
-
-      <!-- Main content area -->
-      <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <app-topbar
-          [title]="pageTitle"
-          [actions]="topbarActions"
-          [userName]="displayName()"
-          [userAvatar]="userAvatar()"
-          (toggleSidebar)="onToggleSidebar()"
-          (logout)="onLogout()"
-        />
-        <main class="flex-1 overflow-y-auto overflow-x-hidden">
-          <div class="page-container animate-fade-in-up">
-            <router-outlet></router-outlet>
-          </div>
-        </main>
-      </div>
-    </div>
-  `,
+  templateUrl: './main-layout.component.html',
 })
 
 export class MainLayoutComponent implements OnInit {

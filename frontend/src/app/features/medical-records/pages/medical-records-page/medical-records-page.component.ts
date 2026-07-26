@@ -8,49 +8,7 @@ import { MedicalRecordListComponent, MedicalRecord } from '../../components/medi
   selector: 'app-medical-records-page',
   standalone: true,
   imports: [CommonModule, RouterModule, MedicalRecordStatsComponent, MedicalRecordListComponent],
-  template: `
-    <div class="space-y-6 stagger">
-
-      <!-- ── Header ──────────────────────────────── -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 class="heading-xl">Medical Records</h1>
-          <p class="body-text mt-1">Patient health records and clinical documentation</p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <button class="btn-secondary btn-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-            </svg>
-            Filter
-          </button>
-          <button class="btn-primary btn-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            New Record
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Category filter ──────────────────────── -->
-      <div class="filter-bar">
-        <button *ngFor="let cat of categories; trackBy: trackByValue"
-          (click)="setCategory(cat)"
-          [class]="activeCategory() === cat ? 'filter-pill-active' : 'filter-pill'">
-          {{ cat }}
-        </button>
-      </div>
-
-      <!-- ── Stats strip (subcomponent) ──────────── -->
-      <app-medical-record-stats [stats]="stats"></app-medical-record-stats>
-
-      <!-- ── Records list (subcomponent) ─────────── -->
-      <app-medical-record-list [records]="filteredRecords()"></app-medical-record-list>
-
-    </div>
-  `,
+  templateUrl: './medical-records-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MedicalRecordsPageComponent implements OnInit {

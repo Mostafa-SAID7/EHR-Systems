@@ -1,0 +1,61 @@
+
+    <div class="space-y-6 stagger">
+
+      <!-- ── Welcome banner ──────────────────────── -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="heading-xl">Good morning, Dr. Admin</h1>
+          <p class="body-text mt-1">Here's what's happening at your practice today.</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="btn-secondary btn-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Schedule
+          </button>
+          <a routerLink="/appointments/new" class="btn-primary btn-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            New Appointment
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Stat cards (subcomponent) ───────────── -->
+      <app-dashboard-stat-cards [stats]="stats"></app-dashboard-stat-cards>
+
+      <!-- ── Two-column layout ───────────────────── -->
+      <div class="grid-2">
+
+        <!-- Today's appointments (subcomponent) -->
+        <app-dashboard-appointments-card [appointments]="appointments">
+        </app-dashboard-appointments-card>
+
+        <!-- Recent activity -->
+        <app-card title="Recent Activity">
+          <app-timeline [events]="recentActivity"></app-timeline>
+        </app-card>
+      </div>
+
+      <!-- ── Quick actions (subcomponent) ─────────── -->
+      <app-dashboard-quick-actions [actions]="quickActions"></app-dashboard-quick-actions>
+
+      <!-- ── Vitals ─────────────────────────────── -->
+      <div>
+        <div class="section-header">
+          <h2>Last Patient Vitals</h2>
+          <a routerLink="/clinical/vitals" class="link-sm">
+            View details
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+        <app-vitals-card [vitals]="sampleVitals"></app-vitals-card>
+      </div>
+
+    </div>
+  

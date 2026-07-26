@@ -1,0 +1,92 @@
+
+    <div class="space-y-6 stagger">
+
+      <!-- ── Header ───────────────────────────────────── -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <a routerLink="/patients" class="btn-icon-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </a>
+          <div>
+            <h1 class="heading-xl">Clinical Timeline</h1>
+            <p class="body-text mt-0.5">Sarah Johnson · MRN 00-1234</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button class="btn-secondary btn-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            </svg>
+            Filter Events
+          </button>
+          <a routerLink="/patients/1" class="btn-ghost btn-sm">Patient Profile</a>
+        </div>
+      </div>
+
+      <!-- ── Event type filter pills ───────────────────── -->
+      <div class="flex flex-wrap gap-2">
+        <button *ngFor="let f of filters"
+          (click)="activeFilter = f.key"
+          [class]="activeFilter === f.key ? 'filter-pill-active' : 'filter-pill'"
+          class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full" [style.background]="f.color"></span>
+          {{ f.label }}
+        </button>
+      </div>
+
+      <!-- ── Timeline ─────────────────────────────────── -->
+      <div class="relative">
+        <!-- Vertical line -->
+        <div class="absolute left-[22px] top-0 bottom-0 w-0.5 bg-primary-100 dark:bg-primary-900/40"></div>
+
+        <div class="space-y-4">
+          <ng-container *ngFor="let event of filteredEvents(); let i = index">
+
+            <!-- Year separator -->
+            <div *ngIf="showYearSeparator(event, i)"
+              class="relative flex items-center gap-3 py-2">
+              <div class="w-11 h-11 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold z-10 shrink-0 shadow-md shadow-primary-600/20">
+                {{ event.date | date:'yyyy' }}
+              </div>
+              <div class="h-px flex-1 bg-primary-100 dark:bg-primary-900/30"></div>
+            </div>
+
+            <!-- Event card -->
+            <div class="flex gap-4 items-start group">
+              <!-- Icon node -->
+              <div class="relative z-10 w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-sm"
+                [ngClass]="getEventStyle(event.type).bg">
+                <svg class="w-5 h-5" [ngClass]="getEventStyle(event.type).icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="getEventStyle(event.type).path"/>
+                </svg>
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 min-w-0 card-hover pb-2">
+                <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
+                  <div>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ event.title }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                      {{ event.date | date:'MMMM d, y' }}
+                      <span *ngIf="event.provider"> &middot; {{ event.provider }}</span>
+                    </p>
+                  </div>
+                  <span class="badge text-2xs shrink-0" [ngClass]="getEventStyle(event.type).badge">
+                    {{ event.type | titlecase }}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{{ event.description }}</p>
+                <div class="flex flex-wrap gap-1.5 mt-3" *ngIf="event.tags && event.tags.length">
+                  <span *ngFor="let t of event.tags" class="badge-neutral text-2xs">{{ t }}</span>
+                </div>
+              </div>
+            </div>
+
+          </ng-container>
+        </div>
+      </div>
+
+    </div>
+  

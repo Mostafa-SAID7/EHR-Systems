@@ -8,8 +8,7 @@ import { ThemeService } from './core/services/theme.service';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, MainLayoutComponent],
-  template: `<router-outlet />`,
-  styles: [],
+  templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
   title = 'Modern EHR Platform';

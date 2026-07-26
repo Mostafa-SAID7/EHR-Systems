@@ -10,16 +10,7 @@ import { CardComponent } from '../../../../shared/components/ui/card/card.compon
   selector: 'app-record-detail-page',
   standalone: true,
   imports: [CommonModule, CardComponent],
-  template: `
-    <app-card title="record-detail-page">
-      <div class="text-center py-12">
-        <p class="text-gray-600 dark:text-gray-400">
-          record-detail-page page - Implementation in progress
-        </p>
-      </div>
-    </app-card>
-  `,
-  styles: [],
+  templateUrl: './record-detail-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecordDetailPageComponent implements OnInit {

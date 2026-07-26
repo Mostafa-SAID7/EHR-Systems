@@ -97,35 +97,67 @@ else
 }
 
 // ── Kafka raw publisher + resilience decorator (outbox uses this) ─────────────
-var kafkaServers = builder.Configuration["Kafka:BootstrapServers"] ?? "localhost:9092";
-builder.Services.AddKafkaMessaging(kafkaServers, builder.Environment.EnvironmentName);
-builder.Services.AddResilientEventPublisher();
+var kafkaServers = builder.Configuration["Kafka:BootstrapServers"]
+    ?? Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS");
+
+if (!string.IsNullOrWhiteSpace(kafkaServers))
+{
+    builder.Services.AddKafkaMessaging(kafkaServers, builder.Environment.EnvironmentName);
+    builder.Services.AddResilientEventPublisher();
+    Log.Information("Kafka messaging enabled for Patient Service");
+}
+else
+{
+    Log.Warning("Kafka:BootstrapServers not configured — event publishing disabled");
+}
 
 // ── MassTransit: Kafka (domain events) + RabbitMQ (background jobs + saga) ───
-builder.Services.AddMassTransitHybrid(
-    builder.Configuration,
-    configureRabbitMqConsumers: x =>
+var rabbitHost = builder.Configuration["RabbitMQ:Host"]
+    ?? Environment.GetEnvironmentVariable("RABBITMQ_HOST");
+var messagingTransportsConfigured =
+    !string.IsNullOrWhiteSpace(kafkaServers) &&
+    !string.IsNullOrWhiteSpace(rabbitHost);
+
+if (messagingTransportsConfigured)
+{
+    builder.Services.AddMassTransitHybrid(
+        builder.Configuration,
+        configureRabbitMqConsumers: x =>
+        {
+            x.AddConsumer<WelcomeNotificationConsumer>();
+            x.AddConsumer<PatientIndexConsumer>();
+            x.AddSagaStateMachine<PatientRegistrationSaga, PatientRegistrationSagaState>()
+                .EntityFrameworkRepository(r =>
+                {
+                    r.ExistingDbContext<PatientContext>();
+                    r.UsePostgres();
+                });
+        },
+        configureKafkaRider: rider =>
+        {
+            rider.AddConsumer<PatientCreatedKafkaConsumer>();
+            rider.AddProducer<EHRPlatform.Services.Patient.Domain.Events.PatientCreatedEvent>(
+                "patient-created-event");
+        });
+}
+else
+{
+    // Keep the service usable locally when external brokers are not provisioned.
+    builder.Services.AddMassTransit(x =>
     {
-        // RabbitMQ consumers
         x.AddConsumer<WelcomeNotificationConsumer>();
         x.AddConsumer<PatientIndexConsumer>();
-
-        // Saga
         x.AddSagaStateMachine<PatientRegistrationSaga, PatientRegistrationSagaState>()
             .EntityFrameworkRepository(r =>
             {
                 r.ExistingDbContext<PatientContext>();
                 r.UsePostgres();
             });
-    },
-    configureKafkaRider: rider =>
-    {
-        // Kafka consumer for PatientCreatedEvent (self-subscription for side effects)
-        rider.AddConsumer<PatientCreatedKafkaConsumer>();
-
-        rider.AddProducer<EHRPlatform.Services.Patient.Domain.Events.PatientCreatedEvent>(
-            "patient-created-event");
+        x.UsingInMemory((ctx, cfg) => cfg.ConfigureEndpoints(ctx));
     });
+    builder.Services.AddScoped<IMessageBus, EHRMessageBus>();
+    Log.Warning("Kafka/RabbitMQ not configured — Patient Service messaging is in-memory only");
+}
 
 // ── OpenTelemetry ─────────────────────────────────────────────────────────────
 builder.Services.AddEHRTelemetry(builder.Configuration, "patient-service");

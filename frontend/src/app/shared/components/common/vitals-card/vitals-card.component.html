@@ -1,0 +1,64 @@
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger">
+      <div
+        *ngFor="let vital of vitals"
+        [ngClass]="getCardClasses(vital.status)"
+        class="relative overflow-hidden rounded-2xl p-4
+               transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 cursor-default"
+      >
+        <!-- Ambient glow blob — no hard edges -->
+        <div [ngClass]="getGlowClasses(vital.status)"
+          class="absolute -top-6 -right-6 w-24 h-24 rounded-full
+                 opacity-20 blur-2xl pointer-events-none"></div>
+
+        <!-- Header -->
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-widest opacity-70">{{ vital.name }}</p>
+            <p class="text-2xs opacity-50 mt-0.5 font-medium">{{ vital.unit }}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- Status dot -->
+            <span [ngClass]="getDotClasses(vital.status)"
+              class="w-2 h-2 rounded-full animate-pulse-soft shrink-0"></span>
+            <!-- Trend SVG icon -->
+            <svg *ngIf="vital.trend"
+              [ngClass]="getTrendClasses(vital.trend)"
+              class="w-3.5 h-3.5"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                [attr.d]="getTrendPath(vital.trend)"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Value -->
+        <div class="mb-4">
+          <span [ngClass]="getValueClasses(vital.status)"
+            class="text-3xl font-bold tabular-nums tracking-tight">
+            {{ vital.value }}
+          </span>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="mb-3">
+          <div class="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+            <div [ngClass]="getBarClasses(vital.status)"
+              [style.width.%]="getProgress(vital)"
+              class="h-full rounded-full transition-all duration-700 ease-smooth"></div>
+          </div>
+        </div>
+
+        <!-- Status + range -->
+        <div class="flex items-center justify-between">
+          <span [ngClass]="getBadgeClasses(vital.status)"
+            class="px-2.5 py-0.5 rounded-full text-2xs font-bold capitalize">
+            {{ vital.status }}
+          </span>
+          <span class="text-2xs opacity-50 font-medium">
+            {{ vital.normal.min }}–{{ vital.normal.max }}
+          </span>
+        </div>
+      </div>
+    </div>
+  

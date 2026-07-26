@@ -16,7 +16,7 @@ Start the **Frontend** workflow — Angular dev server on port 4200.
 Navigate to `/auth/login` to see the login page; the app routes to `/dashboard` after auth.
 
 ### Backend services
-Backend services require .NET 8 SDK. Replit currently ships .NET 7; upgrade the SDK via the package-management skill or target `net7.0` in `.csproj` files before starting any backend workflow.
+Backend services require the .NET 8 SDK, which is declared in `.replit` for this project.
 
 Each service also needs external infrastructure (Postgres, Redis, Elasticsearch, Kafka) — see `.env.development` for connection strings.
 

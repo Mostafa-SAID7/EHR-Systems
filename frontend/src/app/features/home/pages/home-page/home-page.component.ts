@@ -27,34 +27,7 @@ import { HomeFooterComponent } from '../../components/home-footer/home-footer.co
     HomeComplianceComponent,
     HomeFooterComponent,
   ],
-  template: `
-    <div class="min-h-screen text-gray-900 dark:text-gray-100 font-sans selection:bg-primary-500 selection:text-white">
-      <app-home-nav
-        [isLoggedIn]="isLoggedIn"
-        [isDark]="isDark"
-        (scrollTo)="scrollTo($event)"
-        (toggleTheme)="toggleTheme()"
-      ></app-home-nav>
-
-      <app-home-hero
-        (quickLogin)="quickLogin($event)"
-      ></app-home-hero>
-
-      <app-home-stats></app-home-stats>
-
-      <app-home-features></app-home-features>
-
-      <app-home-solutions></app-home-solutions>
-
-      <app-home-workflows></app-home-workflows>
-
-      <app-home-compliance></app-home-compliance>
-
-      <app-home-footer
-        (quickLogin)="quickLogin($event)"
-      ></app-home-footer>
-    </div>
-  `,
+  templateUrl: './home-page.component.html',
 })
 export class HomePageComponent implements OnInit {
   isLoggedIn = false;

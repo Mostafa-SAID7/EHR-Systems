@@ -9,64 +9,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
   selector: 'app-reset-password-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
-  template: `
-    <div class="stagger">
-      <div class="mb-7">
-        <h2 class="heading-lg mb-1">Set new password</h2>
-        <p class="body-text">Choose a strong password for your account.</p>
-      </div>
-
-      <div *ngIf="success" class="alert-success mb-6">
-        <p class="text-sm font-medium">Password reset successful! Redirecting to login…</p>
-      </div>
-
-      <form *ngIf="!success" [formGroup]="resetForm" (ngSubmit)="onSubmit()" class="space-y-4">
-        <div class="form-field">
-          <label for="newPassword" class="input-label">New password</label>
-          <input
-            id="newPassword"
-            type="password"
-            formControlName="newPassword"
-            placeholder="At least 8 characters"
-            [class]="hasError('newPassword') ? 'input-error' : 'input'"
-          />
-          <p *ngIf="hasError('newPassword')" class="input-error-msg">
-            Password must be at least 8 characters
-          </p>
-        </div>
-
-        <div class="form-field">
-          <label for="confirmPassword" class="input-label">Confirm new password</label>
-          <input
-            id="confirmPassword"
-            type="password"
-            formControlName="confirmPassword"
-            placeholder="Repeat your new password"
-            [class]="hasError('confirmPassword') || mismatch ? 'input-error' : 'input'"
-          />
-          <p *ngIf="mismatch" class="input-error-msg">Passwords do not match</p>
-        </div>
-
-        <div *ngIf="serverError" class="alert-error animate-scale-in">
-          <span class="text-sm">{{ serverError }}</span>
-        </div>
-
-        <button
-          type="submit"
-          [disabled]="resetForm.invalid || isLoading"
-          class="btn-primary w-full py-3"
-        >
-          {{ isLoading ? 'Resetting password…' : 'Reset Password' }}
-        </button>
-      </form>
-
-      <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-        <a routerLink="/auth/login" class="font-semibold text-primary-600 hover:text-primary-700">
-          Return to login
-        </a>
-      </p>
-    </div>
-  `,
+  templateUrl: './reset-password-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResetPasswordPageComponent {
