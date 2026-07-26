@@ -9,16 +9,33 @@ A production-ready, enterprise-grade Electronic Health Records system built with
 - **Polyglot DB**: PostgreSQL (primary OLTP), Redis (caching), Elasticsearch (search), MongoDB (documents)
 - **Messaging**: Kafka / MassTransit (inter-service events)
 
-## How to Run
+## How to Run on Replit
 
-### Frontend only (works standalone)
-Start the **Frontend** workflow — Angular dev server on port 4200.  
-Navigate to `/auth/login` to see the login page; the app routes to `/dashboard` after auth.
+All 10 workflows start automatically. The full stack is live once every workflow shows **running**.
 
-### Backend services
-Backend services require the .NET 8 SDK, which is declared in `.replit` for this project.
+| Workflow | Port | Notes |
+|---|---|---|
+| Frontend | 4200 | Angular dev server — preview pane |
+| API Gateway | 5000 | YARP reverse proxy — routes `/api/v1/*` to services |
+| Identity Service | 5001 | Auth / JWT |
+| Patient Service | 5002 | — |
+| Clinical Service | 5003 | — |
+| Appointment Service | 5004 | — |
+| Audit Service | 5006 | — |
+| Billing Service | 5007 | — |
+| Prescription Service | 5008 | — |
+| Analytics Service | 5009 | — |
 
-Each service also needs external infrastructure (Postgres, Redis, Elasticsearch, Kafka) — see `.env.development` for connection strings.
+**Database**: Replit's managed PostgreSQL is used automatically — each service reads `PGHOST`/`PGPORT`/`PGUSER`/`PGPASSWORD`/`PGDATABASE` from the environment and creates its own schema tables on first boot. No manual DB setup needed.
+
+**Optional services** (Redis, Elasticsearch, MongoDB, Kafka, RabbitMQ) are not available in this environment; all services degrade gracefully — caching and search are disabled, messaging falls back to in-process loopback.
+
+### Frontend install
+If `node_modules` are missing (fresh clone), run:
+```bash
+cd frontend && npm install --legacy-peer-deps
+```
+The `--legacy-peer-deps` flag is required due to a peer dependency conflict between `ng2-charts@4` and `@angular/cdk@22`.
 
 ## Project Structure
 

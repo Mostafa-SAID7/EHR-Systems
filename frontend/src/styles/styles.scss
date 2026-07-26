@@ -242,6 +242,25 @@ body {
     @apply grid grid-cols-1 sm:grid-cols-3 gap-3;
   }
 
+  // Page header — title/subtitle left + actions right, stacks on mobile
+  .page-header {
+    @apply flex flex-col sm:flex-row sm:items-center justify-between gap-4;
+  }
+
+  // Search row — search input + filter pills, stacks on mobile
+  .search-row {
+    @apply flex flex-col sm:flex-row gap-3;
+  }
+
+  // Detail item — small label + value block (used in detail grids)
+  .detail-item {
+    @apply p-3 rounded-xl
+           bg-surface-50 dark:bg-surface-800/60
+           border border-surface-100 dark:border-surface-700/40;
+    p:first-child { @apply text-2xs font-semibold text-gray-400 uppercase tracking-wider mb-1; }
+    p:last-child  { @apply text-sm font-semibold text-gray-900 dark:text-white; }
+  }
+
   // Filter bar wrapper — horizontal touch scrollable on small screens with no scrollbar overflow
   .filter-bar {
     @apply flex items-center gap-2 overflow-x-auto pb-1 max-w-full;

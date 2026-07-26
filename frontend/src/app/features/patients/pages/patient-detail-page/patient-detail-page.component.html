@@ -2,7 +2,7 @@
     <div class="space-y-6 stagger">
 
       <!-- ── Back + header ──────────────────────────── -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="page-header">
         <div class="flex items-center gap-3">
           <a routerLink="/patients" class="btn-icon-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@
             <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ l.test }}</p>
             <span [ngClass]="l.status === 'Normal' ? 'badge-success' : 'badge-danger'" class="badge text-2xs">{{ l.status }}</span>
           </div>
-          <div class="card-green p-3">
+          <div class="card-green">
             <div class="flex items-end justify-between">
               <span [ngClass]="l.status === 'Normal' ? 'text-primary-600 dark:text-primary-400' : 'text-red-600 dark:text-red-400'"
                 class="text-2xl font-bold tabular-nums">{{ l.value }}</span>
