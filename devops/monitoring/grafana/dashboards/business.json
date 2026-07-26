@@ -1,0 +1,327 @@
+{
+  "__inputs": [],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }
+  ],
+  "annotations": { "list": [] },
+  "description": "Business metrics — Patients, Appointments, Doctors, Prescriptions, Admissions, Insurance Claims",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": 0 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "expr": "sum(ehr_patient_total)",
+          "legendFormat": "Active Patients",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Patients",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": 0 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "id": 2,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "expr": "sum(ehr_appointments_total)",
+          "legendFormat": "Total Appointments",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Appointments",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": 0 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "expr": "sum(ehr_doctors_total)",
+          "legendFormat": "Active Doctors",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Doctors",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": 0 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "expr": "sum(ehr_prescriptions_total)",
+          "legendFormat": "Active Prescriptions",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Prescriptions",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": 0 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "id": 5,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "expr": "sum(ehr_admissions_total)",
+          "legendFormat": "Active Admissions",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Admissions",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": 0 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "id": 6,
+      "options": {
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "expr": "sum(ehr_insurance_claims_total)",
+          "legendFormat": "Insurance Claims",
+          "refId": "A"
+        }
+      ],
+      "title": "Insurance Claims",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "sum(increase(ehr_patient_created_total[1d])) by (day)",
+          "legendFormat": "New Patients (daily)",
+          "refId": "A"
+        }
+      ],
+      "title": "New Patients (Daily)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 8,
+      "targets": [
+        {
+          "expr": "sum(increase(ehr_appointments_scheduled_total[1d])) by (status)",
+          "legendFormat": "{{ status }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Appointments Scheduled (Daily)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "ehr_appointments_total by (status)",
+          "legendFormat": "{{ status }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Appointments by Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "currency" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "sum(increase(ehr_revenue_total[1d]))",
+          "legendFormat": "Daily Revenue",
+          "refId": "A"
+        }
+      ],
+      "title": "Revenue Tracking (Daily)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "sum by (specialty) (ehr_doctors_total)",
+          "legendFormat": "{{ specialty }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Doctors by Specialty",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "id": 12,
+      "targets": [
+        {
+          "expr": "sum by (status) (ehr_insurance_claims_total)",
+          "legendFormat": "{{ status }}",
+          "refId": "A"
+        }
+      ],
+      "title": "Insurance Claims by Status",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 38,
+  "tags": ["ehr", "business", "kpi"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Business — Patients, Appointments, Doctors, Prescriptions, Admissions, Claims",
+  "uid": "ehr-business",
+  "version": 1
+}
