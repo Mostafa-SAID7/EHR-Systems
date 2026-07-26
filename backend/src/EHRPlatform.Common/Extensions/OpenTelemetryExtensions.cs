@@ -67,6 +67,18 @@ public static class OpenTelemetryExtensions
                     .AddMeter("MassTransit.RabbitMQ")  // RabbitMQ-specific metrics
                     .AddMeter("System.Net.NameResolution")  // DNS metrics
 
+                    // Identity/JWT: authentication and authorization metrics
+                    // - identity.login_success (counter)
+                    // - identity.login_failure (counter)
+                    // - identity.refresh_token_usage (counter)
+                    // - identity.expired_token_attempts (counter)
+                    // - identity.account_lockout (counter)
+                    // - identity.unauthorized_requests (counter)
+                    // - identity.forbidden_requests (counter)
+                    // - identity.active_sessions (gauge)
+                    // - identity.token_lifetime_seconds (gauge)
+                    .AddMeter("EHRPlatform.Identity")  // JWT/Identity metrics
+
                     // Runtime: CLR (Common Language Runtime) metrics
                     // - dotnet.gc.collections.count (counter)
                     // - dotnet.gc.objects.collected (histogram)
