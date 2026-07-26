@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
@@ -29,7 +29,7 @@ public class ResumePrescriptionCommandHandler : ICommandHandler<ResumePrescripti
     {
         _logger.LogInformation("Resuming prescription {PrescriptionId}", command.PrescriptionId);
 
-        var repo = _unitOfWork.Repository<Prescription>();
+        var repo = _unitOfWork.Repository<PrescriptionEntity>();
         var prescription = await repo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == command.PrescriptionId),
             cancellationToken);
@@ -54,3 +54,4 @@ public class ResumePrescriptionCommandHandler : ICommandHandler<ResumePrescripti
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+

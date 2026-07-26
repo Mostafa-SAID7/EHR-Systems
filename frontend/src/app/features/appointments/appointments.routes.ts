@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-import { AppointmentListPageComponent } from './pages/appointment-list-page/appointment-list-page.component';
-import { AppointmentSchedulePageComponent } from './pages/appointment-schedule-page/appointment-schedule-page.component';
-import { AppointmentDetailPageComponent } from './pages/appointment-detail-page/appointment-detail-page.component';
 
 /**
  * Appointments Feature Routes
@@ -9,17 +6,26 @@ import { AppointmentDetailPageComponent } from './pages/appointment-detail-page/
 export const appointmentsRoutes: Routes = [
   {
     path: '',
-    component: AppointmentListPageComponent,
+    loadComponent: () =>
+      import('./pages/appointment-list-page/appointment-list-page.component').then(
+        (m) => m.AppointmentListPageComponent
+      ),
     data: { title: 'Appointments', breadcrumb: 'Appointments' },
   },
   {
     path: 'schedule',
-    component: AppointmentSchedulePageComponent,
+    loadComponent: () =>
+      import('./pages/appointment-schedule-page/appointment-schedule-page.component').then(
+        (m) => m.AppointmentSchedulePageComponent
+      ),
     data: { title: 'Schedule Appointment', breadcrumb: 'Schedule' },
   },
   {
     path: ':id',
-    component: AppointmentDetailPageComponent,
+    loadComponent: () =>
+      import('./pages/appointment-detail-page/appointment-detail-page.component').then(
+        (m) => m.AppointmentDetailPageComponent
+      ),
     data: { title: 'Appointment Details', breadcrumb: 'Details' },
   },
 ];

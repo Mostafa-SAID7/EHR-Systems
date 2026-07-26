@@ -7,6 +7,9 @@ import { SidebarComponent, NavItem } from '../../shared/components/layout/sideba
 import { TopbarComponent, TopbarAction } from '../../shared/components/layout/topbar/topbar.component';
 import { AuthService } from '../../core/services/auth.service';
 
+import { ToastContainerComponent } from '../../shared/components/ui/toast/toast.component';
+import { CookieConsentComponent } from '../../shared/components/ui/cookie-consent/cookie-consent.component';
+
 // SVG path constants — centralised so icons are consistent across sidebar + topbar
 const ICONS = {
   dashboard:     'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
@@ -27,10 +30,16 @@ const ICONS = {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent],
+  imports: [CommonModule, RouterModule, SidebarComponent, TopbarComponent, ToastContainerComponent, CookieConsentComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex h-screen overflow-hidden bg-surface-50 dark:bg-surface-900">
+
+      <!-- Global Toast Container -->
+      <app-toast-container></app-toast-container>
+
+      <!-- Global Cookie Consent Banner -->
+      <app-cookie-consent></app-cookie-consent>
 
       <!-- Sidebar (desktop) -->
       <app-sidebar
@@ -75,6 +84,7 @@ const ICONS = {
     </div>
   `,
 })
+
 export class MainLayoutComponent implements OnInit {
   private authService = inject(AuthService);
   private router      = inject(Router);

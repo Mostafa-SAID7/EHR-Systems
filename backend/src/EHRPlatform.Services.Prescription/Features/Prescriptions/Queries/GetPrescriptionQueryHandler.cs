@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
@@ -27,7 +27,7 @@ public class GetPrescriptionQueryHandler : IQueryHandler<GetPrescriptionQuery, P
     {
         _logger.LogInformation("Fetching prescription {PrescriptionId}", request.PrescriptionId);
 
-        var repo = _unitOfWork.Repository<Prescription>();
+        var repo = _unitOfWork.Repository<PrescriptionEntity>();
         var prescription = await repo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == request.PrescriptionId),
             cancellationToken);
@@ -48,3 +48,4 @@ public class GetPrescriptionQueryHandler : IQueryHandler<GetPrescriptionQuery, P
         return dto;
     }
 }
+

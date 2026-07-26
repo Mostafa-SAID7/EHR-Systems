@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
@@ -30,7 +30,7 @@ public class ApproveRefillCommandHandler : ICommandHandler<ApproveRefillCommand>
         _logger.LogInformation("Approving refill {RefillId} for prescription {PrescriptionId}",
             command.RefillId, command.PrescriptionId);
 
-        var repo = _unitOfWork.Repository<Prescription>();
+        var repo = _unitOfWork.Repository<PrescriptionEntity>();
         var prescription = await repo.FirstOrDefaultAsync(
             q => q.Where(p => p.Id == command.PrescriptionId),
             cancellationToken);
@@ -55,3 +55,4 @@ public class ApproveRefillCommandHandler : ICommandHandler<ApproveRefillCommand>
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+

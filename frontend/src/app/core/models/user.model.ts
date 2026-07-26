@@ -42,7 +42,7 @@ export interface Permission {
 }
 
 /**
- * AuthToken Response
+ * Auth Token Response — nested token object from backend login response.
  */
 export interface AuthTokenResponse {
   accessToken: string;
@@ -61,9 +61,16 @@ export interface LoginRequest {
 }
 
 /**
- * Login Response
+ * Login Response — backend returns flat tokens plus nested token/user objects.
  */
 export interface LoginResponse {
-  user: User;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  tokenType: string;
+  mfaRequired: boolean;
+  mfaSessionId?: string;
+  // Nested convenience objects matching frontend expectations
   token: AuthTokenResponse;
+  user: User;
 }

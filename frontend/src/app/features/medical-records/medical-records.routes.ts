@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router';
-import { MedicalRecordsPageComponent } from './pages/medical-records-page/medical-records-page.component';
-import { RecordDetailPageComponent } from './pages/record-detail-page/record-detail-page.component';
 
 /**
  * Medical Records Feature Routes
@@ -8,12 +6,18 @@ import { RecordDetailPageComponent } from './pages/record-detail-page/record-det
 export const medicalRecordsRoutes: Routes = [
   {
     path: '',
-    component: MedicalRecordsPageComponent,
+    loadComponent: () =>
+      import('./pages/medical-records-page/medical-records-page.component').then(
+        (m) => m.MedicalRecordsPageComponent
+      ),
     data: { title: 'Medical Records', breadcrumb: 'Medical Records' },
   },
   {
     path: ':id',
-    component: RecordDetailPageComponent,
+    loadComponent: () =>
+      import('./pages/record-detail-page/record-detail-page.component').then(
+        (m) => m.RecordDetailPageComponent
+      ),
     data: { title: 'Record Details', breadcrumb: 'Details' },
   },
 ];

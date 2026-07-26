@@ -2,13 +2,22 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthBrandPanelComponent, AuthHighlight } from '../../features/auth/components/auth-brand-panel/auth-brand-panel.component';
+import { ToastContainerComponent } from '../../shared/components/ui/toast/toast.component';
+import { CookieConsentComponent } from '../../shared/components/ui/cookie-consent/cookie-consent.component';
 
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, AuthBrandPanelComponent],
+  imports: [CommonModule, RouterModule, AuthBrandPanelComponent, ToastContainerComponent, CookieConsentComponent],
   template: `
-    <div class="min-h-screen flex">
+    <div class="min-h-screen flex relative">
+
+      <!-- Global Toast Container -->
+      <app-toast-container></app-toast-container>
+
+      <!-- Global Cookie Consent Banner -->
+      <app-cookie-consent></app-cookie-consent>
+
 
       <!-- ── Left panel — cinematic brand subcomponent ───────── -->
       <app-auth-brand-panel

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
@@ -26,7 +26,7 @@ public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuer
     {
         _logger.LogInformation("Fetching pending refills for provider {ProviderId}", request.ProviderId);
 
-        var prescriptionRepo = _unitOfWork.Repository<Prescription>();
+        var prescriptionRepo = _unitOfWork.Repository<PrescriptionEntity>();
         var prescriptions = await prescriptionRepo.ToListAsync(
             q => q.Where(p => p.ProviderId == request.ProviderId),
             cancellationToken);
@@ -59,3 +59,4 @@ public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuer
         };
     }
 }
+

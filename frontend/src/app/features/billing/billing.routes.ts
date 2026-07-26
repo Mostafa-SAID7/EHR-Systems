@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router';
-import { BillingPageComponent } from './pages/billing-page/billing-page.component';
-import { InvoiceListPageComponent } from './pages/invoice-list-page/invoice-list-page.component';
 
 /**
  * Billing Feature Routes
@@ -8,12 +6,18 @@ import { InvoiceListPageComponent } from './pages/invoice-list-page/invoice-list
 export const billingRoutes: Routes = [
   {
     path: '',
-    component: BillingPageComponent,
+    loadComponent: () =>
+      import('./pages/billing-page/billing-page.component').then(
+        (m) => m.BillingPageComponent
+      ),
     data: { title: 'Billing & Claims', breadcrumb: 'Billing' },
   },
   {
     path: 'invoices',
-    component: InvoiceListPageComponent,
+    loadComponent: () =>
+      import('./pages/invoice-list-page/invoice-list-page.component').then(
+        (m) => m.InvoiceListPageComponent
+      ),
     data: { title: 'Invoices', breadcrumb: 'Invoices' },
   },
 ];

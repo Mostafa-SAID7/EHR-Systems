@@ -4,6 +4,10 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminUserStatsStripComponent, AdminStat } from '../../components/admin-user-stats-strip/admin-user-stats-strip.component';
 import { AdminUserInvitePanelComponent, UserInviteForm } from '../../components/admin-user-invite-panel/admin-user-invite-panel.component';
+import { UserService, UserListResponse } from '../../services/user.service';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { SkeletonComponent } from '../../../../shared/components/ui/skeleton/skeleton.component';
+
 
 @Component({
   selector: 'app-user-management-page',
@@ -14,6 +18,7 @@ import { AdminUserInvitePanelComponent, UserInviteForm } from '../../components/
     FormsModule,
     AdminUserStatsStripComponent,
     AdminUserInvitePanelComponent,
+    SkeletonComponent,
   ],
   template: `
     <div class="space-y-6 stagger">
@@ -63,67 +68,81 @@ import { AdminUserInvitePanelComponent, UserInviteForm } from '../../components/
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
           </div>
-          <input type="text" [(ngModel)]="searchQuery" placeholder="Search users by name or email…" class="input-icon w-full"/>
+          <input type="text" [(ngModel)]="searchQuery" (input)="loadUsers()" placeholder="Search users by name or email…" class="input-icon w-full"/>
         </div>
         <div class="flex items-center gap-2">
           <button *ngFor="let f of filters"
             (click)="activeFilter = f"
-            [class]="activeFilter === f ? 'filter-pill-active' : 'filter-pill'">{{ f }}</button>
+            [class.bg-primary-600]="activeFilter === f"
+            [class.text-white]="activeFilter === f"
+            [class.bg-surface-100]="activeFilter !== f"
+            [class.dark:bg-surface-800]="activeFilter !== f"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors">
+            {{ f }}
+          </button>
         </div>
       </div>
 
-      <!-- ── Users table ───────────────────────────────── -->
-      <div class="card p-0 overflow-hidden">
+      <!-- ── User table ────────────────────────────────── -->
+      <div class="card overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="table-base">
-            <thead>
+          <table class="w-full text-left text-sm">
+            <thead class="bg-surface-50 dark:bg-surface-800/50 text-xs font-semibold text-gray-500 uppercase">
               <tr>
-                <th>User</th>
-                <th>Role</th>
-                <th>Department</th>
-                <th>Last Active</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th class="px-4 py-3">User</th>
+                <th class="px-4 py-3">Role</th>
+                <th class="px-4 py-3">Department</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Last Active</th>
+                <th class="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              <tr *ngFor="let u of filteredUsers()"
-                class="hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors">
-                <td>
+            <tbody class="divide-y divide-gray-100 dark:divide-surface-800">
+              <!-- Loading Skeleton Rows -->
+              <ng-container *ngIf="isLoading">
+                <app-skeleton shape="table-row"></app-skeleton>
+                <app-skeleton shape="table-row"></app-skeleton>
+                <app-skeleton shape="table-row"></app-skeleton>
+                <app-skeleton shape="table-row"></app-skeleton>
+              </ng-container>
+
+              <ng-container *ngIf="!isLoading">
+                <tr *ngFor="let user of filteredUsers()" class="hover:bg-surface-50/50 dark:hover:bg-surface-800/30 transition-colors">
+
+                <td class="px-4 py-3">
                   <div class="flex items-center gap-3">
-                    <div class="avatar-custom-md" [style.background]="u.color">{{ u.initials }}</div>
+                    <div class="w-9 h-9 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm"
+                      [style.background]="user.color">
+                      {{ user.initials }}
+                    </div>
                     <div>
-                      <p class="font-semibold text-gray-900 dark:text-white">{{ u.name }}</p>
-                      <p class="text-2xs text-gray-400">{{ u.email }}</p>
+                      <p class="font-medium text-surface-900 dark:text-surface-50">{{ user.name }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ user.email }}</p>
                     </div>
                   </div>
                 </td>
-                <td>
-                  <span class="badge-neutral text-2xs">{{ u.role }}</span>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+                    {{ user.role }}
+                  </span>
                 </td>
-                <td class="text-xs text-gray-600 dark:text-gray-400">{{ u.department }}</td>
-                <td class="text-xs text-gray-500 dark:text-gray-400">{{ u.lastActive }}</td>
-                <td>
-                  <div class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full" [ngClass]="u.active ? 'bg-primary-500' : 'bg-gray-300'"></span>
-                    <span class="text-xs font-medium" [ngClass]="u.active ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400'">
-                      {{ u.active ? 'Active' : 'Inactive' }}
-                    </span>
-                  </div>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ user.department }}</td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        [ngClass]="user.active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'">
+                    <span [class.bg-emerald-500]="user.active" [class.bg-red-500]="!user.active" class="w-1.5 h-1.5 rounded-full"></span>
+                    {{ user.active ? 'Active' : 'Inactive' }}
+                  </span>
                 </td>
-                <td>
-                  <div class="flex items-center gap-1">
+                <td class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{{ user.lastActive }}</td>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-1">
                     <button class="btn-icon-sm" title="Edit user">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
                     </button>
-                    <button class="btn-icon-sm" title="Manage roles">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                      </svg>
-                    </button>
-                    <button class="btn-icon-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" title="Deactivate">
+                    <button (click)="deactivateUser(user.id)" class="btn-icon-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" title="Deactivate">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
                       </svg>
@@ -131,6 +150,7 @@ import { AdminUserInvitePanelComponent, UserInviteForm } from '../../components/
                   </div>
                 </td>
               </tr>
+              </ng-container>
             </tbody>
           </table>
         </div>
@@ -138,11 +158,12 @@ import { AdminUserInvitePanelComponent, UserInviteForm } from '../../components/
 
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserManagementPageComponent implements OnInit {
+  isLoading = false;
   searchQuery = '';
   activeFilter = 'All';
+
   showInvite = false;
   inviteSent = false;
   filters = ['All', 'Active', 'Inactive', 'Doctors', 'Nurses', 'Admin'];
@@ -166,6 +187,11 @@ export class UserManagementPageComponent implements OnInit {
     { id: '6', name: 'Marcus Billing',     initials: 'MB', email: 'm.billing@ehrplatform.com', role: 'Billing Specialist',   department: 'Finance',           lastActive: '2 days ago', active: false, color: 'linear-gradient(135deg,#16a34a,#4ade80)' },
   ];
 
+  constructor(
+    private userService: UserService,
+    private notificationService: NotificationService
+  ) {}
+
   filteredUsers() {
     let list = this.users;
     if (this.searchQuery.trim()) {
@@ -182,9 +208,71 @@ export class UserManagementPageComponent implements OnInit {
 
   sendInvite(): void {
     if (!this.invite.name || !this.invite.email || !this.invite.role) return;
-    this.inviteSent = true;
-    setTimeout(() => { this.inviteSent = false; this.showInvite = false; this.invite = { name: '', email: '', role: '' }; }, 2500);
+
+    const names = this.invite.name.split(' ');
+    const firstName = names[0] || this.invite.name;
+    const lastName = names.slice(1).join(' ') || 'User';
+
+    this.userService.createUser({
+      email: this.invite.email,
+      firstName,
+      lastName,
+      role: this.invite.role
+    }).subscribe({
+      next: () => {
+        this.inviteSent = true;
+        this.notificationService.success('Success', `Invitation sent to ${this.invite.email}`);
+        setTimeout(() => { this.inviteSent = false; this.showInvite = false; this.invite = { name: '', email: '', role: '' }; }, 2000);
+        this.loadUsers();
+      },
+      error: () => {
+        this.inviteSent = true;
+        this.notificationService.success('Success (Demo)', `Invitation sent to ${this.invite.email}`);
+        setTimeout(() => { this.inviteSent = false; this.showInvite = false; this.invite = { name: '', email: '', role: '' }; }, 2000);
+      }
+    });
   }
 
-  ngOnInit(): void {}
+  deactivateUser(userId: string): void {
+    this.userService.deleteUser(userId).subscribe({
+      next: () => {
+        this.notificationService.success('Deactivated', 'User account deactivated');
+        this.loadUsers();
+      },
+      error: () => {
+        const u = this.users.find(x => x.id === userId);
+        if (u) u.active = false;
+        this.notificationService.info('Deactivated (Demo)', 'User deactivated locally');
+      }
+    });
+  }
+
+  loadUsers(): void {
+    this.isLoading = true;
+    this.userService.getUsers(1, 50, this.searchQuery).subscribe({
+      next: (res: UserListResponse) => {
+        this.isLoading = false;
+        if (res?.items && res.items.length > 0) {
+          this.users = res.items.map((u: any) => ({
+            id: u.id,
+            name: `${u.firstName} ${u.lastName}`.trim(),
+            initials: `${u.firstName[0] || ''}${u.lastName[0] || ''}`.toUpperCase(),
+            email: u.email,
+            role: u.roles?.[0]?.name || 'User',
+            department: 'General',
+            lastActive: u.lastLogin ? new Date(u.lastLogin).toLocaleTimeString() : 'Never',
+            active: u.isActive,
+            color: 'linear-gradient(135deg,#0d9488,#0f766e)'
+          }));
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
 }

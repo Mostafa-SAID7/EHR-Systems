@@ -6,33 +6,48 @@ import { User, Role, Permission } from '../../core/models';
 export const MOCK_ROLES: Role[] = [
   {
     id: 'role-doctor',
-    name: 'doctor',
+    name: 'Doctor',
     description: 'Physician with full access to patient records',
     permissions: [],
     isActive: true,
   },
   {
     id: 'role-nurse',
-    name: 'nurse',
+    name: 'Nurse',
     description: 'Nursing staff with limited write access',
     permissions: [],
     isActive: true,
   },
   {
     id: 'role-admin',
-    name: 'admin',
+    name: 'Admin',
     description: 'System administrator with full access',
     permissions: [],
     isActive: true,
   },
   {
     id: 'role-pharmacist',
-    name: 'pharmacist',
+    name: 'Pharmacist',
     description: 'Pharmacy staff',
     permissions: [],
     isActive: true,
   },
+  {
+    id: 'role-nurse-2',
+    name: 'Receptionist',
+    description: 'Front-desk reception staff',
+    permissions: [],
+    isActive: true,
+  },
+  {
+    id: 'role-lab',
+    name: 'LabTechnician',
+    description: 'Laboratory technician',
+    permissions: [],
+    isActive: true,
+  },
 ];
+
 
 /**
  * Mock Permissions

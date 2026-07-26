@@ -96,6 +96,7 @@ export interface NavItem {
             <a
               *ngIf="item.children"
               [routerLink]="item.route"
+              routerLinkActive
               [routerLinkActiveOptions]="{ exact: false }"
               (click)="onParentLinkClick(item)"
               [title]="collapsed ? item.label : ''"

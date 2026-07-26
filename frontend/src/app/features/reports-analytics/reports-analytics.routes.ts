@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-import { ReportsPageComponent } from './pages/reports-page/reports-page.component';
-import { PopulationHealthPageComponent } from './pages/population-health-page/population-health-page.component';
-import { CompliancePageComponent } from './pages/compliance-page/compliance-page.component';
 
 /**
  * Reports & Analytics Feature Routes
@@ -9,17 +6,26 @@ import { CompliancePageComponent } from './pages/compliance-page/compliance-page
 export const reportsAnalyticsRoutes: Routes = [
   {
     path: '',
-    component: ReportsPageComponent,
+    loadComponent: () =>
+      import('./pages/reports-page/reports-page.component').then(
+        (m) => m.ReportsPageComponent
+      ),
     data: { title: 'Reports & Analytics', breadcrumb: 'Reports' },
   },
   {
     path: 'population-health',
-    component: PopulationHealthPageComponent,
+    loadComponent: () =>
+      import('./pages/population-health-page/population-health-page.component').then(
+        (m) => m.PopulationHealthPageComponent
+      ),
     data: { title: 'Population Health', breadcrumb: 'Population Health' },
   },
   {
     path: 'compliance',
-    component: CompliancePageComponent,
+    loadComponent: () =>
+      import('./pages/compliance-page/compliance-page.component').then(
+        (m) => m.CompliancePageComponent
+      ),
     data: { title: 'Compliance Reports', breadcrumb: 'Compliance' },
   },
 ];

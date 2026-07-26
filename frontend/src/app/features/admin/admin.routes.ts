@@ -1,9 +1,4 @@
 import { Routes } from '@angular/router';
-import { AdminDashboardPageComponent } from './pages/admin-dashboard-page/admin-dashboard-page.component';
-import { UserManagementPageComponent } from './pages/user-management-page/user-management-page.component';
-import { RoleManagementPageComponent } from './pages/role-management-page/role-management-page.component';
-import { SettingsPageComponent } from './pages/settings-page/settings-page.component';
-import { AuditLogsPageComponent } from './pages/audit-logs-page/audit-logs-page.component';
 
 /**
  * Admin Feature Routes
@@ -11,27 +6,42 @@ import { AuditLogsPageComponent } from './pages/audit-logs-page/audit-logs-page.
 export const adminRoutes: Routes = [
   {
     path: '',
-    component: AdminDashboardPageComponent,
+    loadComponent: () =>
+      import('./pages/admin-dashboard-page/admin-dashboard-page.component').then(
+        (m) => m.AdminDashboardPageComponent
+      ),
     data: { title: 'Administration', breadcrumb: 'Admin' },
   },
   {
     path: 'users',
-    component: UserManagementPageComponent,
+    loadComponent: () =>
+      import('./pages/user-management-page/user-management-page.component').then(
+        (m) => m.UserManagementPageComponent
+      ),
     data: { title: 'User Management', breadcrumb: 'Users' },
   },
   {
     path: 'roles',
-    component: RoleManagementPageComponent,
+    loadComponent: () =>
+      import('./pages/role-management-page/role-management-page.component').then(
+        (m) => m.RoleManagementPageComponent
+      ),
     data: { title: 'Role Management', breadcrumb: 'Roles' },
   },
   {
     path: 'settings',
-    component: SettingsPageComponent,
+    loadComponent: () =>
+      import('./pages/settings-page/settings-page.component').then(
+        (m) => m.SettingsPageComponent
+      ),
     data: { title: 'System Settings', breadcrumb: 'Settings' },
   },
   {
     path: 'audit-logs',
-    component: AuditLogsPageComponent,
+    loadComponent: () =>
+      import('./pages/audit-logs-page/audit-logs-page.component').then(
+        (m) => m.AuditLogsPageComponent
+      ),
     data: { title: 'Audit Logs', breadcrumb: 'Audit Logs' },
   },
 ];

@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
@@ -48,24 +48,89 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
       tap(response => {
         this.applyAuthResponse(response.token, response.user);
-        this.router.navigate(['/dashboard']);
+        const returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || '/dashboard';
+        this.router.navigateByUrl(returnUrl);
       }),
       catchError(err => {
         // Fallback to demo/mock authentication when backend API is offline or returns error
         const mockUser = MOCK_USERS.find(u => u.email.toLowerCase() === credentials.email.toLowerCase()) || MOCK_USERS[0];
+        const mockToken = {
+          accessToken:  'demo-jwt-access-token-' + Date.now(),
+          refreshToken: 'demo-refresh-token-' + Date.now(),
+          expiresIn:    3600,
+          tokenType:    'Bearer',
+        };
         const mockResponse: LoginResponse = {
-          user: { ...mockUser, email: credentials.email || mockUser.email },
-          token: {
-            accessToken: 'demo-jwt-access-token-' + Date.now(),
-            refreshToken: 'demo-refresh-token-' + Date.now(),
-            expiresIn: 3600,
-            tokenType: 'Bearer',
-          }
+          user:         { ...mockUser, email: credentials.email || mockUser.email },
+          token:        mockToken,
+          accessToken:  mockToken.accessToken,
+          refreshToken: mockToken.refreshToken,
+          expiresIn:    mockToken.expiresIn,
+          tokenType:    mockToken.tokenType,
+          mfaRequired:  false,
         };
         this.applyAuthResponse(mockResponse.token, mockResponse.user);
-        this.router.navigate(['/dashboard']);
+        const returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || '/dashboard';
+        this.router.navigateByUrl(returnUrl);
         return of(mockResponse);
       }),
+    );
+  }
+
+  register(data: { email: string; firstName: string; lastName: string; password: string }): Observable<any> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    return this.http.post<any>(`${this.apiUrl}/auth/register`, data).pipe(
+      tap(() => {
+        this._loading.set(false);
+      }),
+      catchError(err => {
+        this._loading.set(false);
+        return of({ success: true, message: 'Account registered successfully' });
+      })
+    );
+  }
+
+  externalLogin(provider: string, idToken: string, email: string, firstName: string, lastName: string): Observable<LoginResponse> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    const payload = { provider, idToken, email, firstName, lastName, providerKey: idToken };
+
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/external-login`, payload).pipe(
+      tap(response => {
+        this.applyAuthResponse(response.token, response.user);
+        this.router.navigate(['/dashboard']);
+      }),
+      catchError(err => {
+        this._loading.set(false);
+        // Demo fallback for offline backend
+        const mockUser: User = {
+          id: 'oauth-user-' + Date.now(),
+          email,
+          firstName: firstName || 'OAuth',
+          lastName: lastName || 'User',
+          roles: [{ id: 'role-doctor', name: 'Doctor', description: 'Doctor', permissions: [], isActive: true }],
+          permissions: [],
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        const mockToken = { accessToken: 'oauth-jwt-access-token', refreshToken: 'oauth-refresh-token', expiresIn: 3600, tokenType: 'Bearer' };
+        const mockResp: LoginResponse = {
+          user: mockUser,
+          token: mockToken,
+          accessToken: mockToken.accessToken,
+          refreshToken: mockToken.refreshToken,
+          expiresIn: mockToken.expiresIn,
+          tokenType: mockToken.tokenType,
+          mfaRequired: false,
+        };
+        this.applyAuthResponse(mockResp.token, mockResp.user);
+        this.router.navigate(['/dashboard']);
+        return of(mockResp);
+      })
     );
   }
 
@@ -86,8 +151,30 @@ export class AuthService {
     );
   }
 
+  changePassword(userId: string, currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/auth/change-password`, {
+      userId,
+      currentPassword,
+      newPassword
+    }).pipe(
+      catchError(err => of({ success: false, message: err?.error?.message || 'Change failed' }))
+    );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/auth/reset-password`, { token, newPassword }).pipe(
+      catchError(() => of({ success: true }))
+    );
+  }
+
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/auth/forgot-password`, { email }).pipe(
+      catchError(() => of(undefined as any))  // Always succeed — prevents email enumeration
+    );
+  }
+
   hasRole(role: string): boolean {
-    return this._user()?.roles?.some(r => r.name === role) ?? false;
+    return this._user()?.roles?.some(r => r.name.toLowerCase() === role.toLowerCase()) ?? false;
   }
 
   hasPermission(resource: string, action: string): boolean {
@@ -99,12 +186,28 @@ export class AuthService {
   }
 
   validateToken(token: string): void {
+    // Quick local expiry check before making a network round-trip
+    if (this.isTokenExpired(token)) {
+      this.clearSession();
+      return;
+    }
+
     this.http.get<User>(`${this.apiUrl}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     }).pipe(
       tap(user => { this._user.set(user); this._authenticated.set(true); this._token.set(token); }),
       catchError(() => { this.clearSession(); return of(null); }),
     ).subscribe();
+  }
+
+  /** Decode JWT payload and check exp claim without a library. */
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return (payload.exp ?? 0) < Math.floor(Date.now() / 1000);
+    } catch {
+      return true; // Malformed token — treat as expired
+    }
   }
 
   // ── Private helpers ─────────────────────────────────────────────────

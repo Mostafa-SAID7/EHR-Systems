@@ -21,6 +21,7 @@ global using EHRPlatform.Services.Prescription.Domain.Enums;
 // Type alias: resolves 'Prescription' ambiguity between namespace 'EHRPlatform.Services.Prescription'
 // and class 'EHRPlatform.Services.Prescription.Domain.Entities.Prescription'
 global using PrescriptionEntity = EHRPlatform.Services.Prescription.Domain.Entities.Prescription;
+global using EHRPlatform.Services.Prescription.Domain.Events;
 
 // Application layer
 global using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;

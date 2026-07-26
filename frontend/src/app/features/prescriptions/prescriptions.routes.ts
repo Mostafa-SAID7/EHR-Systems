@@ -1,7 +1,4 @@
 import { Routes } from '@angular/router';
-import { PrescriptionListPageComponent } from './pages/prescription-list-page/prescription-list-page.component';
-import { PrescriptionCreatePageComponent } from './pages/prescription-create-page/prescription-create-page.component';
-import { PrescriptionDetailPageComponent } from './pages/prescription-detail-page/prescription-detail-page.component';
 
 /**
  * Prescriptions Feature Routes
@@ -9,17 +6,26 @@ import { PrescriptionDetailPageComponent } from './pages/prescription-detail-pag
 export const prescriptionsRoutes: Routes = [
   {
     path: '',
-    component: PrescriptionListPageComponent,
+    loadComponent: () =>
+      import('./pages/prescription-list-page/prescription-list-page.component').then(
+        (m) => m.PrescriptionListPageComponent
+      ),
     data: { title: 'Prescriptions', breadcrumb: 'Prescriptions' },
   },
   {
     path: 'new',
-    component: PrescriptionCreatePageComponent,
+    loadComponent: () =>
+      import('./pages/prescription-create-page/prescription-create-page.component').then(
+        (m) => m.PrescriptionCreatePageComponent
+      ),
     data: { title: 'New Prescription', breadcrumb: 'New' },
   },
   {
     path: ':id',
-    component: PrescriptionDetailPageComponent,
+    loadComponent: () =>
+      import('./pages/prescription-detail-page/prescription-detail-page.component').then(
+        (m) => m.PrescriptionDetailPageComponent
+      ),
     data: { title: 'Prescription Details', breadcrumb: 'Details' },
   },
 ];

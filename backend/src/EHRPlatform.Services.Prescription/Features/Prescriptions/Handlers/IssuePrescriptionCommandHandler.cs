@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
@@ -35,8 +35,7 @@ public class IssuePrescriptionCommandHandler : ICommandHandler<IssuePrescription
             "Issuing prescription: Patient {PatientId}, Provider {ProviderId}, Medication {Med}",
             command.PatientId, command.ProviderId, command.MedicationName);
 
-        var prescription = new Prescription
-        {
+        var prescription = new PrescriptionEntity {
             Id = Guid.NewGuid(),
             PatientId = command.PatientId,
             ProviderId = command.ProviderId,
@@ -55,7 +54,7 @@ public class IssuePrescriptionCommandHandler : ICommandHandler<IssuePrescription
             NDCCode = command.NDCCode
         };
 
-        var repo = _unitOfWork.Repository<Prescription>();
+        var repo = _unitOfWork.Repository<PrescriptionEntity>();
         await repo.AddAsync(prescription, cancellationToken);
 
         // Publish event
@@ -79,3 +78,4 @@ public class IssuePrescriptionCommandHandler : ICommandHandler<IssuePrescription
         return prescription.Adapt<PrescriptionResponseDto>();
     }
 }
+

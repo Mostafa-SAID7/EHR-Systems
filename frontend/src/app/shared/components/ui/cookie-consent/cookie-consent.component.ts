@@ -1,0 +1,114 @@
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CookieService, CookieConsentPreferences } from '../../../../core/services/cookie.service';
+
+@Component({
+  selector: 'app-cookie-consent',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <div
+      *ngIf="!cookieService.hasConsented$()"
+      class="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-50 animate-slide-up"
+    >
+      <!-- Main Banner -->
+      <div
+        class="bg-white/95 dark:bg-surface-800/95 backdrop-blur-md rounded-2xl p-5 shadow-2xl border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-surface-100"
+      >
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Cookie & Privacy Preferences</h3>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+              We use essential cookies to ensure security and optional analytics cookies to optimize your healthcare workflows.
+            </p>
+          </div>
+        </div>
+
+        <!-- Custom Preferences Panel (Expanded) -->
+        <div *ngIf="showDetails()" class="mt-4 pt-3 border-t border-surface-200 dark:border-surface-700 space-y-3 animate-fade-in">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-gray-900 dark:text-white">Strictly Necessary</p>
+              <p class="text-[11px] text-gray-500">Required for authentication, HIPAA compliance & security</p>
+            </div>
+            <span class="text-xs font-bold text-primary-600 dark:text-primary-400">Always Active</span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-gray-900 dark:text-white">Analytics & Performance</p>
+              <p class="text-[11px] text-gray-500">Anonymous system performance and diagnostic metrics</p>
+            </div>
+            <input type="checkbox" [(ngModel)]="customPrefs.analytics" class="w-4 h-4 rounded accent-primary-600 cursor-pointer" />
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-gray-900 dark:text-white">User Preferences</p>
+              <p class="text-[11px] text-gray-500">Remembers layout settings, dark mode & table filters</p>
+            </div>
+            <input type="checkbox" [(ngModel)]="customPrefs.preferences" class="w-4 h-4 rounded accent-primary-600 cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-4 flex flex-col sm:flex-row items-center gap-2">
+          <ng-container *ngIf="!showDetails()">
+            <button (click)="onAcceptAll()" class="btn-primary btn-sm w-full sm:flex-1 py-2">
+              Accept All
+            </button>
+            <button (click)="onDecline()" class="btn-secondary btn-sm w-full sm:w-auto py-2">
+              Essential Only
+            </button>
+            <button (click)="showDetails.set(true)" class="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 px-2 py-1">
+              Customize
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="showDetails()">
+            <button (click)="onSaveCustom()" class="btn-primary btn-sm w-full flex-1 py-2">
+              Save Preferences
+            </button>
+            <button (click)="showDetails.set(false)" class="btn-secondary btn-sm w-full sm:w-auto py-2">
+              Back
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  `,
+})
+export class CookieConsentComponent {
+  readonly cookieService = inject(CookieService);
+  readonly showDetails = signal(false);
+
+  customPrefs = {
+    analytics: true,
+    preferences: true,
+    marketing: false,
+  };
+
+  onAcceptAll(): void {
+    this.cookieService.acceptAll();
+  }
+
+  onDecline(): void {
+    this.cookieService.rejectNonEssential();
+  }
+
+  onSaveCustom(): void {
+    this.cookieService.saveConsent({
+      essential: true,
+      analytics: this.customPrefs.analytics,
+      preferences: this.customPrefs.preferences,
+      marketing: this.customPrefs.marketing,
+    });
+  }
+}

@@ -98,7 +98,19 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
             AccessToken  = accessToken,
             RefreshToken = refreshToken,
             ExpiresIn    = _jwtTokenService.ExpiresInSeconds,
-            MfaRequired  = false
+            MfaRequired  = false,
+            User         = new UserResponseDto
+            {
+                Id             = user.Id,
+                Email          = user.Email,
+                FirstName      = user.FirstName,
+                LastName       = user.LastName,
+                IsActive       = user.IsActive,
+                EmailConfirmed = user.EmailConfirmed,
+                MfaEnabled     = user.MfaEnabled,
+                LastLogin      = user.LastLogin,
+                CreatedAt      = user.CreatedAt
+            }
         };
     }
 

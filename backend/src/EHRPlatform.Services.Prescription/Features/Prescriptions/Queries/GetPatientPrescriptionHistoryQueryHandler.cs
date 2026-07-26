@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
@@ -27,7 +27,7 @@ public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatien
     {
         _logger.LogInformation("Fetching prescription history for patient {PatientId}", request.PatientId);
 
-        var repo = _unitOfWork.Repository<Prescription>();
+        var repo = _unitOfWork.Repository<PrescriptionEntity>();
         var skip = (request.PageNumber - 1) * request.PageSize;
 
         var total = await repo.CountAsync(
@@ -50,3 +50,4 @@ public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatien
         };
     }
 }
+
