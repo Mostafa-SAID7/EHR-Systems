@@ -1,4 +1,5 @@
 using EHRPlatform.Common.Extensions;
+using EHRPlatform.Common.Security;
 using EHRPlatform.Services.Prescription.Data;
 using Serilog;
 

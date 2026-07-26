@@ -14,7 +14,7 @@ public class PrescriptionMappingProfile : IRegister
     public void Register(TypeAdapterConfig config)
     {
         // Prescription → PrescriptionResponse
-        config.NewConfig<Prescription, PrescriptionResponse>()
+        config.NewConfig<PrescriptionEntity, PrescriptionResponse>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.PatientId, src => src.PatientId)
             .Map(dest => dest.ProviderId, src => src.ProviderId)

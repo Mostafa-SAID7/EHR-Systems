@@ -33,6 +33,6 @@ public class GetAccessLogsQueryHandler : IQueryHandler<GetAccessLogsQuery, Acces
         var accessLogs = new List<Domain.Entities.AccessLog>();
         var total = 0;
 
-        return _mapper.MapToListDto(accessLogs, total, query.PageNumber, query.PageSize);
+        return _mapper.MapToAccessLogListDto(accessLogs, total, query.PageNumber, query.PageSize);
     }
 }

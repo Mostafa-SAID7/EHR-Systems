@@ -21,7 +21,7 @@ public class ClinicalNoteMapper : MappingServiceBase<ClinicalNote, ClinicalNoteR
     /// </summary>
     public ClinicalNoteResponseDto MapToResponseDto(ClinicalNote clinicalNote)
     {
-        return MapToDto(clinicalNote);
+        return MapSingleToDto(clinicalNote);
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class ClinicalNoteMapper : MappingServiceBase<ClinicalNote, ClinicalNoteR
             Diagnoses = clinicalNote.Diagnoses.Adapt<List<DiagnosisDto>>(),
             Procedures = clinicalNote.Procedures.Adapt<List<ProcedureDto>>(),
             CreatedAt = clinicalNote.CreatedAt,
-            LastModifiedAt = clinicalNote.LastModifiedAt
+            LastModifiedAt = clinicalNote.UpdatedAt
         };
     }
 

@@ -13,15 +13,15 @@ public static class NotificationSeed
         var notificationId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var recipientId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
-        modelBuilder.Entity<Notification>().HasData(
-            new Notification
+        modelBuilder.Entity<NotificationEntity>().HasData(
+            new NotificationEntity
             {
                 Id = notificationId,
                 RecipientId = recipientId,
                 Channel = "Email",
                 NotificationType = "AppointmentReminder",
                 Subject = "Appointment Reminder",
-                Message = "You have an upcoming appointment tomorrow at 10:00 AM",
+                Body = "You have an upcoming appointment tomorrow at 10:00 AM",
                 Status = "Sent",
                 CreatedAt = DateTime.UtcNow,
                 SentAt = DateTime.UtcNow

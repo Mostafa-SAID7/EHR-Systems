@@ -21,7 +21,7 @@ public class AuditMapper : MappingServiceBase<AuditEntry, AuditEntryResponse>
     /// </summary>
     public AuditEntryResponse MapToResponseDto(AuditEntry auditEntry)
     {
-        return MapToDto(auditEntry);
+        return MapSingleToDto(auditEntry);
     }
 
     /// <summary>

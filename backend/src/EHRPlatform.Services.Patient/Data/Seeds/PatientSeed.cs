@@ -9,8 +9,8 @@ public static class PatientSeed
 {
     public static void SeedPatients(this ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Entities.Patient>().HasData(
-            new Entities.Patient
+        modelBuilder.Entity<PatientEntity>().HasData(
+            new PatientEntity
             {
                 Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                 FirstName = "John",

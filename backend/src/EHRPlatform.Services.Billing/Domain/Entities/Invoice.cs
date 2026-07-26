@@ -1,6 +1,7 @@
 using EHRPlatform.Common.Entities;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Billing.Domain.Events;
+using EHRPlatform.Services.Billing.Domain.Enums;
 
 namespace EHRPlatform.Services.Billing.Domain.Entities;
 
@@ -96,7 +97,7 @@ public class Invoice : AuditableEntity
             InsuranceProvider = provider,
             ClaimNumber = GenerateClaimNumber(),
             SubmittedAt = DateTime.UtcNow,
-            Status = "Submitted",
+            Status = ClaimStatus.Submitted,
             Amount = InsuranceResponsibility
         };
         InsuranceClaims.Add(claim);

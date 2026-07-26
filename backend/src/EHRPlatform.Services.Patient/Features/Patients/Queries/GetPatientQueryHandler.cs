@@ -72,7 +72,7 @@ public class SearchPatientsQueryHandler : IQueryHandler<SearchPatientsQuery, Sea
 
         var patients = results.Hits
             .Select(hit => System.Text.Json.JsonSerializer.Deserialize<PatientResponseDto>(
-                System.Text.Json.JsonSerializer.Serialize(hit.Source)))
+                System.Text.Json.JsonSerializer.Serialize(hit.Document)))
             .Where(p => p != null)
             .Cast<PatientResponseDto>()
             .ToList();
@@ -173,7 +173,7 @@ public class GetPatientDetailQueryHandler : IQueryHandler<GetPatientDetailQuery,
             EmergencyPhone = patient.EmergencyPhone,
             Status = patient.Status,
             CreatedAt = patient.CreatedAt,
-            LastModifiedAt = patient.LastModifiedAt,
+            LastModifiedAt = patient.UpdatedAt,
             Allergies = patient.Allergies.Select(a => new AllergyDetailDto
             {
                 Id = a.Id,

@@ -31,7 +31,7 @@ public class MarkNotificationFailedCommandHandler : ICommandHandler<MarkNotifica
         _logger.LogInformation("Marking notification {NotificationId} as failed: {Reason}",
             command.NotificationId, command.Reason);
 
-        var repo = _unitOfWork.Repository<Notification>();
+        var repo = _unitOfWork.Repository<NotificationEntity>();
         var notification = await repo.FirstOrDefaultAsync(
             q => q.Where(n => n.Id == command.NotificationId),
             cancellationToken);

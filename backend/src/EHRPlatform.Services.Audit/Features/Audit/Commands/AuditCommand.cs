@@ -1,5 +1,4 @@
 using EHRPlatform.Common.CQRS;
-using FluentValidation;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Commands;
 
@@ -21,20 +20,6 @@ public record RecordAuditEntryCommand : ICommand
     public string? PiiIndicators { get; init; }
     public int AccessLevel { get; init; } = 1;
     public string? ChangeDetails { get; init; }
-}
-
-public class RecordAuditEntryCommandValidator : AbstractValidator<RecordAuditEntryCommand>
-{
-    public RecordAuditEntryCommandValidator()
-    {
-        RuleFor(x => x.UserId).NotEmpty();
-        RuleFor(x => x.UserEmail).EmailAddress();
-        RuleFor(x => x.Action).NotEmpty().Must(a => 
-            new[] { "Create", "Read", "Update", "Delete", "Export", "Print" }.Contains(a));
-        RuleFor(x => x.ResourceType).NotEmpty();
-        RuleFor(x => x.ResourceId).NotEmpty();
-        RuleFor(x => x.AccessLevel).GreaterThanOrEqualTo(1).LessThanOrEqualTo(4);
-    }
 }
 
 /// <summary>

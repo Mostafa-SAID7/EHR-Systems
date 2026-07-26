@@ -1,6 +1,5 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
-using FluentValidation;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 
@@ -24,21 +23,4 @@ public record IssuePrescriptionCommand : ICommand<PrescriptionResponseDto>
     public string? SpecialInstructions { get; init; }
     public bool IsControlledSubstance { get; init; }
     public string? NDCCode { get; init; }
-}
-
-public class IssuePrescriptionCommandValidator : AbstractValidator<IssuePrescriptionCommand>
-{
-    public IssuePrescriptionCommandValidator()
-    {
-        RuleFor(x => x.PatientId).NotEmpty();
-        RuleFor(x => x.ProviderId).NotEmpty();
-        RuleFor(x => x.MedicationName).NotEmpty().MaximumLength(255);
-        RuleFor(x => x.Strength).NotEmpty();
-        RuleFor(x => x.Dosage).NotEmpty();
-        RuleFor(x => x.Frequency).NotEmpty();
-        RuleFor(x => x.Quantity).GreaterThan(0);
-        RuleFor(x => x.RefillsAllowed).GreaterThanOrEqualTo(0);
-        RuleFor(x => x.StartDate).LessThanOrEqualTo(DateTime.UtcNow);
-        RuleFor(x => x.EndDate).GreaterThan(x => x.StartDate).When(x => x.EndDate.HasValue);
-    }
 }

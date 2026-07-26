@@ -5,6 +5,7 @@ using EHRPlatform.Services.Billing.Features.Invoicing.Commands;
 using EHRPlatform.Services.Billing.Features.Invoicing.Queries;
 using EHRPlatform.Services.Billing.Features.Payments.Commands;
 using EHRPlatform.Services.Billing.Features.Claims.Commands;
+using EHRPlatform.Services.Billing.Features.Claims.Queries;
 using EHRPlatform.Services.Billing.Features.Reports.Queries;
 
 namespace EHRPlatform.Services.Billing.Controllers;
@@ -127,6 +128,36 @@ public class BillingController : ControllerBase
         command = command with { InvoiceId = id };
         await _mediator.Send(command, cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Request Prior Authorization for procedure/medication.
+    /// Evaluates CPT/ICD necessity with payer pre-approval rules.
+    /// </summary>
+    [HttpPost("prior-auth")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RequestPriorAuth(
+        [FromBody] RequestPriorAuthorizationCommand command,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(command, cancellationToken);
+        return Ok(new { message = "Prior Authorization request submitted successfully." });
+    }
+
+    /// <summary>
+    /// Get insurance claim status by claim ID.
+    /// Returns full claim lifecycle including fraud score, prior auth, and denial codes.
+    /// </summary>
+    [HttpGet("claims/{id}")]
+    [ProducesResponseType(typeof(ClaimStatusDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetClaimStatus(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetClaimStatusQuery(id), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;
+using EHRPlatform.Services.Clinical.Domain.Events;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;
@@ -33,13 +34,13 @@ public class AddDiagnosisCommandHandler : ICommandHandler<AddDiagnosisCommand, C
 
     public async Task<ClinicalNoteResponse> Handle(AddDiagnosisCommand command, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Adding diagnosis to clinical note {NoteId}", command.NoteId);
+        _logger.LogInformation("Adding diagnosis to clinical note {NoteId}", command.ClinicalNoteId);
 
         var repo = _unitOfWork.Repository<Domain.Entities.ClinicalNote>();
-        var note = await repo.GetByIdAsync(command.NoteId, cancellationToken);
+        var note = await repo.GetByIdAsync(command.ClinicalNoteId, cancellationToken);
 
         if (note == null)
-            throw new KeyNotFoundException($"Clinical note {command.NoteId} not found");
+            throw new KeyNotFoundException($"Clinical note {command.ClinicalNoteId} not found");
 
         note.AddDiagnosis(command.DiagnosisCode, command.DiagnosisText, command.DiagnosisType);
 

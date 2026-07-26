@@ -9,6 +9,6 @@ public class SendNotificationValidator : AbstractValidator<SendNotificationComma
     {
         RuleFor(x => x.RecipientId).NotEmpty();
         RuleFor(x => x.Channel).NotEmpty();
-        RuleFor(x => x.Message).NotEmpty();
+        RuleFor(x => x.Body).NotEmpty();
     }
 }

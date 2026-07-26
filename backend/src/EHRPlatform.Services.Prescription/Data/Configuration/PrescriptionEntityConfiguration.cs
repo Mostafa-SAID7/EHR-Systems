@@ -9,9 +9,9 @@ namespace EHRPlatform.Services.Prescription.Data.Configuration;
 /// Single Responsibility: Configure Prescription entity mapping in EF Core.
 /// Part of Data Layer (persistence mapping).
 /// </summary>
-public class PrescriptionEntityConfiguration : IEntityTypeConfiguration<Prescription>
+public class PrescriptionEntityConfiguration : IEntityTypeConfiguration<PrescriptionEntity>
 {
-    public void Configure(EntityTypeBuilder<Prescription> builder)
+    public void Configure(EntityTypeBuilder<PrescriptionEntity> builder)
     {
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.PatientId);

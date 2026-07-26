@@ -48,22 +48,10 @@ public sealed class PatientRegistrationSaga :
         InstanceState(x => x.CurrentState);
 
         // ── Correlate all events by PatientId ──────────────────────────────
-        Event(() => PatientCreated,
-            x => x.CorrelateBy(state => state.PatientId,
-                ctx => ctx.Message.PatientId)
-            .SelectId(ctx => ctx.Message.EventId));
-
-        Event(() => NotificationSent,
-            x => x.CorrelateBy(state => state.PatientId,
-                ctx => ctx.Message.PatientId));
-
-        Event(() => PatientIndexed,
-            x => x.CorrelateBy(state => state.PatientId,
-                ctx => ctx.Message.PatientId));
-
-        Event(() => RegistrationFailed,
-            x => x.CorrelateBy(state => state.PatientId,
-                ctx => ctx.Message.PatientId));
+        Event(() => PatientCreated, x => x.CorrelateById(ctx => ctx.Message.PatientId));
+        Event(() => NotificationSent, x => x.CorrelateById(ctx => ctx.Message.PatientId));
+        Event(() => PatientIndexed, x => x.CorrelateById(ctx => ctx.Message.PatientId));
+        Event(() => RegistrationFailed, x => x.CorrelateById(ctx => ctx.Message.PatientId));
 
         // ── State Machine Definition ───────────────────────────────────────
         Initially(

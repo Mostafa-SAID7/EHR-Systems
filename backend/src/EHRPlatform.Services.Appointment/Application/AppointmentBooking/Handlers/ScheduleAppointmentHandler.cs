@@ -1,9 +1,10 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
-// Appointment alias and ProviderAvailability alias come from GlobalUsings.cs
+using ApptEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
 
 namespace EHRPlatform.Services.Appointment.Application.AppointmentBooking.Handlers;
 
@@ -50,7 +51,7 @@ public class ScheduleAppointmentHandler : ICommandHandler<ScheduleAppointmentCom
         if (availSlot == null || !availSlot.HasAvailability())
             throw new InvalidOperationException("Provider slot not available at requested time");
 
-        var appointment = new Appointment
+        var appointment = new ApptEntity
         {
             Id = Guid.NewGuid(),
             PatientId = command.PatientId,
@@ -68,7 +69,7 @@ public class ScheduleAppointmentHandler : ICommandHandler<ScheduleAppointmentCom
         appointment.AddReminder(command.ScheduledStart.AddHours(-2), "SMS");
         availSlot.BookSlot();
 
-        var appointmentRepo = _unitOfWork.Repository<Appointment>();
+        var appointmentRepo = _unitOfWork.Repository<ApptEntity>();
         await appointmentRepo.AddAsync(appointment, cancellationToken);
         await availRepo.UpdateAsync(availSlot, cancellationToken);
 

@@ -24,8 +24,8 @@ public static class ClinicalSeed
                 ProviderId = providerId,
                 EncounterDate = DateTime.UtcNow,
                 EncounterType = "Office Visit",
-                ChiefComplaint = "Annual physical examination",
-                Status = "Completed",
+                Subjective = "Annual physical examination",
+                Status = "Finalized",
                 CreatedAt = DateTime.UtcNow
             }
         );
@@ -36,10 +36,11 @@ public static class ClinicalSeed
                 Id = vitalSignsId,
                 ClinicalNoteId = clinicalNoteId,
                 Temperature = 98.6m,
-                BloodPressure = "120/80",
+                SystolicBP = 120,
+                DiastolicBP = 80,
                 HeartRate = 72,
                 RespiratoryRate = 16,
-                BloodOxygen = 98,
+                RecordedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow
             }
         );
@@ -50,7 +51,7 @@ public static class ClinicalSeed
                 Id = diagnosisId,
                 ClinicalNoteId = clinicalNoteId,
                 DiagnosisCode = "Z00.00",
-                DiagnosisDescription = "Encounter for general adult medical examination",
+                DiagnosisText = "Encounter for general adult medical examination",
                 DiagnosisType = "Primary",
                 CreatedAt = DateTime.UtcNow
             }

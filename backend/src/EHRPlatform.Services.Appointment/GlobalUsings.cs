@@ -1,4 +1,7 @@
 global using Microsoft.Extensions.Logging;
+global using EHRPlatform.Common.Events;
+global using EHRPlatform.Common.Messaging;
+global using EHRPlatform.Common.Security;
 global using EHRPlatform.Services.Appointment.Data;
 global using EHRPlatform.Services.Appointment.Data.Configuration;
 global using EHRPlatform.Services.Appointment.Data.Seeds;

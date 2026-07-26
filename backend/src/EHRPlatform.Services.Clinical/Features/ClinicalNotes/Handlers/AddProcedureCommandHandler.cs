@@ -3,6 +3,7 @@ using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Domain.Entities;
+using EHRPlatform.Services.Clinical.Domain.Events;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;
 

@@ -26,7 +26,7 @@ public class ClinicalNoteMappingProfile : IRegister
             .Map(dest => dest.Assessment, src => src.Assessment)
             .Map(dest => dest.Plan, src => src.Plan)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt)
-            .Map(dest => dest.LastModifiedAt, src => src.LastModifiedAt);
+            .Map(dest => dest.LastModifiedAt, src => src.UpdatedAt);
 
         // ClinicalNote → ClinicalNoteTimelineItemDto
         config.NewConfig<ClinicalNote, ClinicalNoteTimelineItemDto>()
@@ -89,7 +89,6 @@ public class ClinicalNoteMappingProfile : IRegister
             .Map(dest => dest.ProcedureCode, src => src.ProcedureCode)
             .Map(dest => dest.ProcedureName, src => src.ProcedureName)
             .Map(dest => dest.PerformedDate, src => src.PerformedAt)
-            .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ClinicalNoteId, src => src.ClinicalNoteId);
 
         // ClinicalNoteResponseDto → ClinicalNote (for updates)

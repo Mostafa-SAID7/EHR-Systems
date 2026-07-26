@@ -14,7 +14,10 @@ public class NotificationResponseDto
     public string Body { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public int RetryCount { get; set; }
+    public DateTime? ScheduledFor { get; set; }
     public DateTime? SentAt { get; set; }
+    public string? MessageId { get; set; }
+    public string? Recipient { get; set; }
     public string? FailureReason { get; set; }
     public DateTime CreatedAt { get; set; }
 }

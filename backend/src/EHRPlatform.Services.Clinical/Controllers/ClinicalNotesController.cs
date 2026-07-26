@@ -203,6 +203,25 @@ public class ClinicalNotesController : ControllerBase
     }
 
     /// <summary>
+    /// Export clinical note/encounter as FHIR R4 Bundle JSON.
+    /// Interoperability endpoint for HL7 FHIR integration.
+    /// </summary>
+    [HttpGet("{id}/fhir")]
+    [Produces("application/fhir+json")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ExportFhir(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var fhirJson = await _mediator.Send(
+            new Features.ClinicalNotes.Queries.ExportFhirEncounterQuery(id),
+            cancellationToken);
+
+        return Content(fhirJson, "application/fhir+json");
+    }
+
+    /// <summary>
     /// Health check.
     /// </summary>
     [HttpGet("health")]
@@ -213,3 +232,4 @@ public class ClinicalNotesController : ControllerBase
         return Ok(new { status = "healthy", service = "clinical-service" });
     }
 }
+

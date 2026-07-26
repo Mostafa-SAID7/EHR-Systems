@@ -2,6 +2,7 @@ using EHRPlatform.Common.Mapping;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using Microsoft.Extensions.Logging;
+using VitalSignsDto = EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses.VitalSignsDto;
 
 namespace EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;
 
@@ -78,7 +79,15 @@ public class ClinicalNoteMapper : MappingServiceBase<Domain.Entities.ClinicalNot
 
         return new ClinicalNoteListDto
         {
-            Items = notes.Select(MapToResponse).ToList(),
+            PatientId = notes.FirstOrDefault()?.PatientId ?? Guid.Empty,
+            Notes = notes.Select(n => new ClinicalNoteTimelineItemDto
+            {
+                Id = n.Id,
+                EncounterDate = n.EncounterDate,
+                EncounterType = n.EncounterType,
+                Status = n.Status,
+                ProviderId = n.ProviderId
+            }).ToList(),
             Total = total,
             PageNumber = pageNumber,
             PageSize = pageSize

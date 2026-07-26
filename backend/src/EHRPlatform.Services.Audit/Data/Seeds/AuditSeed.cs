@@ -21,11 +21,11 @@ public static class AuditSeed
                 UserEmail = "admin@ehrs.local",
                 Action = "LOGIN",
                 ResourceType = "User",
-                ResourceId = userId.ToString(),
+                ResourceId = userId,
                 Status = "Success",
-                Timestamp = DateTime.UtcNow,
+                Timestamp = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IntegrityHash = "hash_value",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
 
@@ -36,9 +36,9 @@ public static class AuditSeed
                 UserId = userId,
                 UserEmail = "admin@ehrs.local",
                 ResourceType = "Patient",
-                ResourceId = Guid.Parse("44444444-4444-4444-4444-444444444444").ToString(),
-                AccessedAt = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
+                ResourceId = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                AccessedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
     }

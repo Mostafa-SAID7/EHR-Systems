@@ -1,5 +1,5 @@
 using EHRPlatform.Common.CQRS;
-using FluentValidation;
+using EHRPlatform.Services.Notification.Features.Notifications.Dtos.Responses;
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Commands;
 
@@ -16,16 +16,4 @@ public record SendNotificationCommand : ICommand<NotificationResponseDto>
     public Dictionary<string, string>? TemplateVars { get; init; }
     public string? Recipient { get; init; } // Email, phone, device token
     public DateTime? ScheduledFor { get; init; }
-}
-
-public class SendNotificationCommandValidator : AbstractValidator<SendNotificationCommand>
-{
-    public SendNotificationCommandValidator()
-    {
-        RuleFor(x => x.RecipientId).NotEmpty();
-        RuleFor(x => x.Channel).Must(c => new[] { "Email", "SMS", "Push", "InApp" }.Contains(c));
-        RuleFor(x => x.NotificationType).NotEmpty();
-        RuleFor(x => x.Subject).NotEmpty().MaximumLength(255);
-        RuleFor(x => x.Body).NotEmpty();
-    }
 }

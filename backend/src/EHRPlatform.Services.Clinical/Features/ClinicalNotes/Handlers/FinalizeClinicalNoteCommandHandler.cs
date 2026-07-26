@@ -4,6 +4,7 @@ using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;
+using EHRPlatform.Services.Clinical.Domain.Events;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;

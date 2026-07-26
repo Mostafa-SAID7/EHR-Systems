@@ -1,7 +1,6 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
-using PrescriptionEntity = EHRPlatform.Services.Prescription.Domain.Entities.Prescription;
 using PrescriptionRefillEntity = EHRPlatform.Services.Prescription.Domain.Entities.PrescriptionRefill;
 
 namespace EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Mappers;
@@ -23,7 +22,7 @@ public class PrescriptionMapper : MappingServiceBase<PrescriptionEntity, Prescri
     /// </summary>
     public PrescriptionResponseDto MapToResponseDto(PrescriptionEntity prescription)
     {
-        return MapToDto(prescription);
+        return MapSingleToDto(prescription);
     }
 
     /// <summary>
@@ -55,7 +54,7 @@ public class PrescriptionMapper : MappingServiceBase<PrescriptionEntity, Prescri
             NDCCode = prescription.NDCCode,
             Refills = prescription.Refills.Adapt<List<RefillDetailDto>>(),
             CreatedAt = prescription.CreatedAt,
-            LastModifiedAt = prescription.LastModifiedAt
+            LastModifiedAt = prescription.UpdatedAt
         };
     }
 

@@ -1,6 +1,9 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
+using EHRPlatform.Common.Security;
+using EHRPlatform.Services.Billing.Domain.Entities;
+using EHRPlatform.Services.Billing.Domain.Enums;
 using EHRPlatform.Services.Billing.Features.Claims.Commands;
 using Microsoft.Extensions.Logging;
 
@@ -8,21 +11,24 @@ namespace EHRPlatform.Services.Billing.Features.Claims.Handlers;
 
 /// <summary>
 /// Submit to insurance handler.
-/// Pure business logic - no mapping responsibility.
+/// Performs fraud detection scoring and prior authorization check before claim submission.
 /// </summary>
 public class SubmitToInsuranceCommandHandler : ICommandHandler<SubmitToInsuranceCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IOutboxRepository _outbox;
+    private readonly IFraudDetectionService _fraudService;
     private readonly ILogger<SubmitToInsuranceCommandHandler> _logger;
 
     public SubmitToInsuranceCommandHandler(
         IUnitOfWork unitOfWork,
         IOutboxRepository outbox,
+        IFraudDetectionService fraudService,
         ILogger<SubmitToInsuranceCommandHandler> logger)
     {
         _unitOfWork = unitOfWork;
         _outbox = outbox;
+        _fraudService = fraudService;
         _logger = logger;
     }
 
@@ -39,7 +45,33 @@ public class SubmitToInsuranceCommandHandler : ICommandHandler<SubmitToInsurance
         if (invoice == null)
             throw new InvalidOperationException($"Invoice {command.InvoiceId} not found");
 
+        var procedureCodes = invoice.LineItems.Select(l => l.CPTCode).Where(c => !string.IsNullOrEmpty(c));
+
+        // Evaluate claim fraud score
+        var fraudResult = await _fraudService.EvaluateClaimAsync(
+            command.InvoiceId,
+            invoice.TotalAmount,
+            command.InsuranceProvider,
+            procedureCodes,
+            cancellationToken);
+
         invoice.SubmitToInsurance(command.InsuranceProvider, command.PolicyNumber);
+        
+        var claim = invoice.InsuranceClaims.LastOrDefault();
+        if (claim != null)
+        {
+            claim.FraudScore = fraudResult.RiskScore;
+            claim.FraudFlags = string.Join("; ", fraudResult.Flags);
+            claim.MemberId = command.PolicyNumber;
+
+            if (fraudResult.IsHighRisk)
+            {
+                _logger.LogWarning("High fraud risk score {Score} detected for invoice {InvoiceId}. Claim placed on hold.",
+                    fraudResult.RiskScore, command.InvoiceId);
+                claim.PlaceOnHold($"High Fraud Risk ({fraudResult.RiskScore}): {string.Join(", ", fraudResult.Flags)}");
+            }
+        }
+
         await repo.UpdateAsync(invoice, cancellationToken);
 
         // Publish event
@@ -55,6 +87,8 @@ public class SubmitToInsuranceCommandHandler : ICommandHandler<SubmitToInsurance
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Invoice submitted to insurance {Provider}", command.InsuranceProvider);
+        _logger.LogInformation("Invoice {InvoiceId} processed for insurance submission with FraudScore {Score}",
+            command.InvoiceId, fraudResult.RiskScore);
     }
 }
+

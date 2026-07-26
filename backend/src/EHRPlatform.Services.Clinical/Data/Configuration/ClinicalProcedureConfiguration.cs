@@ -32,8 +32,5 @@ public class ClinicalProcedureConfiguration : IEntityTypeConfiguration<ClinicalP
 
         builder.Property(e => e.Result)
             .HasMaxLength(4000);
-
-        builder.Property(e => e.Status)
-            .HasMaxLength(50);
     }
 }

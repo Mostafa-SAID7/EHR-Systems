@@ -1,5 +1,6 @@
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Health;
+using EHRPlatform.Common.Security;
 using EHRPlatform.Services.Audit.Data;
 using Serilog;
 

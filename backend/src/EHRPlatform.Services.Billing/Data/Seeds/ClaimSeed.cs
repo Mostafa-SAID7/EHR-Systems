@@ -1,3 +1,5 @@
+using EHRPlatform.Services.Billing.Domain.Entities;
+using EHRPlatform.Services.Billing.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EHRPlatform.Services.Billing.Data.Seeds;
@@ -17,7 +19,7 @@ public static class ClaimSeed
                 ClaimNumber = "CLM-2024-001",
                 InsuranceProvider = "BlueCross",
                 SubmittedAt = new DateTime(2024, 1, 5),
-                Status = ClaimStatus.Submitted.ToString(),
+                Status = ClaimStatus.Submitted,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = Guid.Empty
             }

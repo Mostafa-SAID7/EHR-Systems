@@ -14,7 +14,7 @@ public class AppointmentMapper : MappingServiceBase<ApptEntity, AppointmentRespo
 {
     public AppointmentMapper(ILogger<AppointmentMapper> logger) : base(logger) { }
 
-    public AppointmentResponseDto MapToResponseDto(ApptEntity appointment) => MapToDto(appointment);
+    public AppointmentResponseDto MapToResponseDto(ApptEntity appointment) => MapSingleToDto(appointment);
 
     public List<AppointmentResponseDto> MapToResponseDtoList(ICollection<ApptEntity> appointments)
     {

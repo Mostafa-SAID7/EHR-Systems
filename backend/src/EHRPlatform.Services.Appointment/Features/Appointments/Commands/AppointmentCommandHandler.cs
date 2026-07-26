@@ -1,5 +1,7 @@
+using Mapster;
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Mappers;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;

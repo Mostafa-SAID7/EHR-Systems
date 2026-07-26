@@ -12,7 +12,7 @@ public class PrescriptionContext : BaseDbContext
 {
     public PrescriptionContext(DbContextOptions<PrescriptionContext> options) : base(options) { }
 
-    public DbSet<Prescription> Prescriptions { get; set; } = null!;
+    public DbSet<PrescriptionEntity> Prescriptions { get; set; } = null!;
     public DbSet<PrescriptionRefill> PrescriptionRefills { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -49,7 +49,7 @@ public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCo
         if (preference?.IsEnabled == false)
             throw new InvalidOperationException("User has disabled this notification type");
 
-        var notification = new Domain.Notification
+        var notification = new NotificationEntity
         {
             Id = Guid.NewGuid(),
             RecipientId = command.RecipientId,
@@ -62,7 +62,7 @@ public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCo
             TemplateVars = command.TemplateVars ?? new()
         };
 
-        var repo = _unitOfWork.Repository<Notification>();
+        var repo = _unitOfWork.Repository<NotificationEntity>();
         await repo.AddAsync(notification, cancellationToken);
 
         // Publish event

@@ -13,8 +13,8 @@ public class NotificationMappingProfile : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        // Notification → NotificationResponseDto
-        config.NewConfig<Notification, NotificationResponseDto>()
+        // NotificationEntity → NotificationResponseDto
+        config.NewConfig<NotificationEntity, NotificationResponseDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.RecipientId, src => src.RecipientId)
             .Map(dest => dest.Channel, src => src.Channel)
@@ -39,8 +39,8 @@ public class NotificationMappingProfile : IRegister
             .Map(dest => dest.BodyTemplate, src => src.BodyTemplate)
             .Map(dest => dest.IsActive, src => src.IsActive);
 
-        // NotificationResponseDto → Notification (for updates)
-        config.NewConfig<NotificationResponseDto, Notification>()
+        // NotificationResponseDto → NotificationEntity (for updates)
+        config.NewConfig<NotificationResponseDto, NotificationEntity>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.RecipientId, src => src.RecipientId)
             .Map(dest => dest.Channel, src => src.Channel)
