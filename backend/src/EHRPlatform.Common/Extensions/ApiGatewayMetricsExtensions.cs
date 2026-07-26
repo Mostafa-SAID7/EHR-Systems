@@ -137,11 +137,14 @@ public static class ApiGatewayMetricsExtensions
                 }
                 else if (statusCode >= 500)
                 {
-                    _errors5xxCounter?.Add(1, new("route", routeLabel), new("status", statusCode.ToString()));
+                    // Use low-cardinality status label: 5xx (not specific status code)
+                    // This prevents unbounded cardinality from future status codes
+                    _errors5xxCounter?.Add(1, new("route", routeLabel), new("status_class", "5xx"));
                 }
                 else if (statusCode >= 400 && statusCode != 401 && statusCode != 403)
                 {
-                    _errors4xxCounter?.Add(1, new("route", routeLabel), new("status", statusCode.ToString()));
+                    // Use low-cardinality status label: 4xx (not specific status code)
+                    _errors4xxCounter?.Add(1, new("route", routeLabel), new("status_class", "4xx"));
                 }
             }
         });

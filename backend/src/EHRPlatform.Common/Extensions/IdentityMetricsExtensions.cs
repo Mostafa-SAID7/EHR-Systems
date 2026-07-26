@@ -50,9 +50,12 @@ public static class IdentityMetricsExtensions
     /// Middleware to track authentication and authorization metrics.
     /// Intercepts HTTP responses and records 401/403 status codes.
     /// 
+    /// IMPORTANT: Uses low-cardinality labels only (endpoint category, not full path).
+    /// This prevents unbounded cardinality growth from user IDs, session IDs, etc.
+    /// 
     /// Metrics recorded:
-    ///   - identity.unauthorized_requests (401 responses)
-    ///   - identity.forbidden_requests (403 responses)
+    ///   - identity.unauthorized_requests (401 responses) with endpoint label
+    ///   - identity.forbidden_requests (403 responses) with endpoint and role labels
     /// </summary>
     public static IApplicationBuilder UseIdentityMetricsMiddleware(this IApplicationBuilder app)
     {
@@ -63,6 +66,8 @@ public static class IdentityMetricsExtensions
 
             // Record metrics based on response status code
             var statusCode = context.Response.StatusCode;
+            var endpoint = context.Request.Path.Value ?? "unknown";
+            var endpointCategory = ExtractEndpointCategoryFromPath(endpoint);
 
             if (statusCode == StatusCodes.Status401Unauthorized)
             {
@@ -71,7 +76,8 @@ public static class IdentityMetricsExtensions
                     description: "Number of unauthorized requests (401)",
                     unit: "{request}");
                 
-                unauthorizedCounter.Add(1, new KeyValuePair<string, object?>("endpoint", context.Request.Path.Value ?? "unknown"));
+                // Low-cardinality endpoint category only (e.g., "patients", "appointments")
+                unauthorizedCounter.Add(1, new("endpoint", endpointCategory));
             }
             else if (statusCode == StatusCodes.Status403Forbidden)
             {
@@ -80,11 +86,45 @@ public static class IdentityMetricsExtensions
                     description: "Number of forbidden requests (403)",
                     unit: "{request}");
                 
-                forbiddenCounter.Add(1, new KeyValuePair<string, object?>("endpoint", context.Request.Path.Value ?? "unknown"));
+                // Low-cardinality labels only
+                forbiddenCounter.Add(1, 
+                    new("endpoint", endpointCategory),
+                    new("role", context.User?.FindFirst("role")?.Value ?? "unknown"));
             }
         });
 
         return app;
+    }
+
+    /// <summary>
+    /// Extract low-cardinality endpoint category from path.
+    /// 
+    /// Examples:
+    ///   /api/patients/123          → patients
+    ///   /api/appointments/456      → appointments
+    ///   /api/clinical/records/789  → clinical
+    ///   /health                    → health
+    /// 
+    /// This prevents high-cardinality explosion from specific IDs.
+    /// </summary>
+    private static string ExtractEndpointCategoryFromPath(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return "unknown";
+
+        var segments = path.TrimStart('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        
+        if (segments.Length == 0)
+            return "unknown";
+
+        // For /api/category/id/action, return category (2nd segment)
+        if (segments.Length >= 2 && segments[0] == "api")
+        {
+            return segments[1]; // patients, appointments, clinical, etc.
+        }
+
+        // For /health, /metrics, /swagger, etc.
+        return segments[0];
     }
 }
 
@@ -99,22 +139,29 @@ public static class IdentityMetricsRecorder
     /// <summary>
     /// Record a successful login.
     /// Increments: identity.login_success counter
+    /// 
+    /// NOTE: Do NOT use email or user_id as labels — these are high-cardinality (unique per user).
+    /// Use only low-cardinality labels: tenant, authentication_method, environment.
+    /// For user-specific debugging, correlate via trace IDs and span attributes instead.
     /// </summary>
-    public static void RecordLoginSuccess(string userId, string email)
+    public static void RecordLoginSuccess(string userId, string email, string? authenticationMethod = "password")
     {
         var counter = Meter.CreateCounter<long>(
             "identity.login_success",
             description: "Number of successful login attempts",
             unit: "{login}");
         
+        // Low-cardinality labels only: authentication_method
         counter.Add(1, 
-            new KeyValuePair<string, object?>("user_id", userId),
-            new KeyValuePair<string, object?>("email", email));
+            new KeyValuePair<string, object?>("method", authenticationMethod ?? "password"));
     }
 
     /// <summary>
     /// Record a failed login.
     /// Increments: identity.login_failure counter
+    /// 
+    /// NOTE: Do NOT use email as a label — this is high-cardinality (unique).
+    /// Use only low-cardinality reason label (invalid_credentials, account_locked, etc.)
     /// </summary>
     public static void RecordLoginFailure(string email, string reason = "invalid_credentials")
     {
@@ -123,14 +170,17 @@ public static class IdentityMetricsRecorder
             description: "Number of failed login attempts",
             unit: "{attempt}");
         
+        // Low-cardinality label only: reason
         counter.Add(1, 
-            new KeyValuePair<string, object?>("email", email),
             new KeyValuePair<string, object?>("reason", reason));
     }
 
     /// <summary>
     /// Record a refresh token usage.
     /// Increments: identity.refresh_token_usage counter
+    /// 
+    /// NOTE: Do NOT use user_id as a label — this is high-cardinality (unique per user).
+    /// Use low-cardinality labels only for aggregation.
     /// </summary>
     public static void RecordRefreshTokenUsage(string userId)
     {
@@ -139,12 +189,16 @@ public static class IdentityMetricsRecorder
             description: "Number of refresh token requests",
             unit: "{request}");
         
-        counter.Add(1, new KeyValuePair<string, object?>("user_id", userId));
+        // No user-specific labels (low-cardinality only)
+        counter.Add(1);
     }
 
     /// <summary>
     /// Record an expired token attempt.
     /// Increments: identity.expired_token_attempts counter
+    /// 
+    /// NOTE: Do NOT use email as a label — this is high-cardinality (unique).
+    /// Token expiration is already tracked by token lifetime gauge.
     /// </summary>
     public static void RecordExpiredTokenAttempt(string email)
     {
@@ -153,12 +207,16 @@ public static class IdentityMetricsRecorder
             description: "Number of requests with expired tokens",
             unit: "{attempt}");
         
-        counter.Add(1, new KeyValuePair<string, object?>("email", email));
+        // No user-specific labels
+        counter.Add(1);
     }
 
     /// <summary>
     /// Record account lockout due to failed login attempts.
     /// Increments: identity.account_lockout counter
+    /// 
+    /// NOTE: Do NOT use email as a label — this is high-cardinality (unique).
+    /// Use only low-cardinality labels.
     /// </summary>
     public static void RecordAccountLockout(string email, int failedAttempts)
     {
@@ -167,14 +225,16 @@ public static class IdentityMetricsRecorder
             description: "Number of account lockouts",
             unit: "{lockout}");
         
-        counter.Add(1, 
-            new KeyValuePair<string, object?>("email", email),
-            new KeyValuePair<string, object?>("failed_attempts", failedAttempts));
+        // Only count, no user-specific labels (low-cardinality)
+        counter.Add(1);
     }
 
     /// <summary>
     /// Record unauthorized request.
     /// Increments: identity.unauthorized_requests counter
+    /// 
+    /// NOTE: Low-cardinality endpoint label is acceptable (limited to ~50-100 unique values).
+    /// Do NOT add user_id, email, or JWT tokens as labels.
     /// </summary>
     public static void RecordUnauthorizedRequest(string endpoint)
     {
@@ -183,12 +243,16 @@ public static class IdentityMetricsRecorder
             description: "Number of unauthorized requests (401)",
             unit: "{request}");
         
-        counter.Add(1, new KeyValuePair<string, object?>("endpoint", endpoint));
+        // Endpoint is low-cardinality (~50 unique values)
+        counter.Add(1, new("endpoint", ExtractEndpointCategory(endpoint)));
     }
 
     /// <summary>
     /// Record forbidden request.
     /// Increments: identity.forbidden_requests counter
+    /// 
+    /// NOTE: Low-cardinality labels only: role (Admin, Doctor, Patient, etc.)
+    /// Do NOT use user_id, email, or any PII.
     /// </summary>
     public static void RecordForbiddenRequest(string endpoint, string? role = null)
     {
@@ -197,9 +261,33 @@ public static class IdentityMetricsRecorder
             description: "Number of forbidden requests (403)",
             unit: "{request}");
         
+        // Low-cardinality labels only
         counter.Add(1, 
-            new KeyValuePair<string, object?>("endpoint", endpoint),
-            new KeyValuePair<string, object?>("role", role ?? "unknown"));
+            new("endpoint", ExtractEndpointCategory(endpoint)),
+            new("role", role ?? "unknown"));
+    }
+
+    /// <summary>
+    /// Extract endpoint category from path (low-cardinality).
+    /// Examples:
+    ///   /api/patients/123/records → patients
+    ///   /api/appointments/456     → appointments
+    ///   /api/clinical/diagnoses   → clinical
+    /// </summary>
+    private static string ExtractEndpointCategory(string endpoint)
+    {
+        if (string.IsNullOrEmpty(endpoint))
+            return "unknown";
+
+        var segments = endpoint.TrimStart('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        
+        // For /api/resource/action, return resource (2nd segment)
+        if (segments.Length >= 2)
+        {
+            return segments[1]; // patients, appointments, etc.
+        }
+
+        return segments.Length > 0 ? segments[0] : "unknown";
     }
 
     /// <summary>
