@@ -1,9 +1,221 @@
+<div class="space-y-6 stagger">
 
-    <app-card title="record-detail-page">
-      <div class="text-center py-12">
-        <p class="text-gray-600 dark:text-gray-400">
-          record-detail-page page - Implementation in progress
-        </p>
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <a routerLink="/medical-records" class="btn-icon-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div>
+        <h1 class="heading-xl">{{ record.title }}</h1>
+        <p class="body-text mt-0.5">{{ record.category }} &middot; {{ record.date | date:'MMMM d, y' }}</p>
       </div>
-    </app-card>
-  
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="badge" [ngClass]="{
+        'badge-success': record.status === 'Final',
+        'badge-warning': record.status === 'Pending',
+        'badge-neutral': record.status === 'Draft'
+      }">{{ record.status }}</span>
+      <button class="btn-secondary btn-sm flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+        </svg>
+        Edit
+      </button>
+      <button class="btn-secondary btn-sm flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Download
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Record body -->
+    <div class="lg:col-span-2 space-y-5">
+
+      <!-- SOAP Note viewer -->
+      <div class="card space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="heading-sm">Clinical Note</h2>
+          <div class="flex gap-1.5">
+            <button *ngFor="let tab of noteTabs" (click)="activeTab = tab"
+              [class]="activeTab === tab ? 'filter-pill-active' : 'filter-pill'">{{ tab }}</button>
+          </div>
+        </div>
+
+        <!-- Subjective -->
+        <div *ngIf="activeTab === 'All' || activeTab === 'Subjective'" class="space-y-2">
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Subjective</span>
+          </div>
+          <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-3.5">{{ record.subjective }}</p>
+        </div>
+
+        <!-- Objective -->
+        <div *ngIf="activeTab === 'All' || activeTab === 'Objective'" class="space-y-2">
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-teal-500"></div>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Objective</span>
+          </div>
+          <div class="pl-3.5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div *ngFor="let v of record.vitals" class="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50">
+              <p class="text-2xs text-gray-400 font-medium">{{ v.label }}</p>
+              <p class="text-sm font-bold text-gray-900 dark:text-white mt-0.5">{{ v.value }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assessment -->
+        <div *ngIf="activeTab === 'All' || activeTab === 'Assessment'" class="space-y-2">
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Assessment</span>
+          </div>
+          <div class="pl-3.5 space-y-1.5">
+            <div *ngFor="let d of record.diagnoses; let i = index" class="flex items-start gap-2 text-sm">
+              <span class="font-mono text-xs text-gray-400 w-6 shrink-0 pt-0.5">{{ i + 1 }}.</span>
+              <div>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ d.name }}</span>
+                <span class="ml-2 text-xs text-gray-400">ICD-10: {{ d.code }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan -->
+        <div *ngIf="activeTab === 'All' || activeTab === 'Plan'" class="space-y-2">
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Plan</span>
+          </div>
+          <ul class="pl-3.5 space-y-2">
+            <li *ngFor="let p of record.plan" class="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <svg class="w-4 h-4 text-primary-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+              {{ p }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Attachments -->
+      <div class="card">
+        <h2 class="heading-sm mb-4">Attachments</h2>
+        <div class="space-y-2">
+          <div *ngFor="let att of record.attachments"
+               class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:border-primary-200 dark:hover:border-primary-800/50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="icon-box-sm icon-box-primary">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ att.name }}</p>
+                <p class="text-2xs text-gray-400">{{ att.type }} &middot; {{ att.size }}</p>
+              </div>
+            </div>
+            <button class="btn-icon-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-5">
+
+      <!-- Patient -->
+      <div class="card">
+        <h2 class="heading-sm mb-3">Patient</h2>
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-700 to-green-500 flex items-center justify-center text-white text-sm font-bold">
+            {{ record.patientInitials }}
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ record.patient }}</p>
+            <p class="text-2xs text-gray-400">MRN {{ record.mrn }}</p>
+          </div>
+        </div>
+        <a routerLink="/patients/1" class="link-primary text-xs flex items-center gap-1">
+          View Patient Profile
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Provider -->
+      <div class="card">
+        <h2 class="heading-sm mb-3">Provider</h2>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-teal-700 flex items-center justify-center text-white text-xs font-bold">
+            {{ record.providerInitials }}
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ record.provider }}</p>
+            <p class="text-2xs text-gray-400">{{ record.providerSpecialty }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Record metadata -->
+      <div class="card space-y-3">
+        <h2 class="heading-sm">Record Info</h2>
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">Record ID</span>
+            <span class="font-mono text-xs text-gray-700 dark:text-gray-300">{{ record.id }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">Category</span>
+            <span class="text-xs font-medium text-gray-900 dark:text-white">{{ record.category }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">Facility</span>
+            <span class="text-xs font-medium text-gray-900 dark:text-white">{{ record.facility }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">Last Modified</span>
+            <span class="text-xs text-gray-500">{{ record.modified }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">Version</span>
+            <span class="text-xs text-gray-500">{{ record.version }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Related records -->
+      <div class="card">
+        <h2 class="heading-sm mb-3">Related Records</h2>
+        <div class="space-y-2">
+          <a *ngFor="let rel of record.related" routerLink="/medical-records/1"
+             class="flex items-center gap-2 p-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+            <div class="icon-box-sm icon-box-primary shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400">{{ rel.title }}</p>
+              <p class="text-2xs text-gray-400">{{ rel.date }}</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

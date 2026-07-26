@@ -137,9 +137,8 @@
             <div *ngFor="let a of ageGroups" class="flex items-center gap-3">
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400 w-20 shrink-0">{{ a.range }}</span>
               <div class="flex-1 progress-bar h-5 relative">
-                <div class="rounded-md h-full flex items-center pl-2 transition-all duration-700"
-                  [style.width.%]="a.pct"
-                  style="background: linear-gradient(90deg, #16a34a, #4ade80)">
+                <div class="rounded-md h-full flex items-center pl-2 transition-all duration-700 bg-gradient-to-r from-green-600 to-green-400"
+                  [style.width.%]="a.pct">
                   <span class="text-2xs font-bold text-white" *ngIf="a.pct > 15">{{ a.pct }}%</span>
                 </div>
               </div>

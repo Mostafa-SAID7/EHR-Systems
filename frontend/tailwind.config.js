@@ -186,6 +186,10 @@ module.exports = {
         "green-mesh":         "radial-gradient(ellipse 80% 60% at 20% -10%, rgb(22 163 74 / 0.07), transparent 60%), radial-gradient(ellipse 60% 40% at 80% 110%, rgb(20 184 166 / 0.05), transparent 60%)",
         "hero-gradient":      "linear-gradient(135deg, #15803d 0%, #16a34a 40%, #0d9488 100%)",
         "card-gradient":      "linear-gradient(145deg, rgb(255 255 255 / 0.9) 0%, rgb(255 255 255 / 1) 100%)",
+        "dot-grid":           "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)",
+      },
+      backgroundSize: {
+        "dot-grid": "36px 36px",
       },
     },
   },
