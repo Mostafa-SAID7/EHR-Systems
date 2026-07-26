@@ -6,7 +6,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SidebarComponent, NavItem } from '../../shared/components/layout/sidebar/sidebar.component';
 import { TopbarComponent, TopbarAction } from '../../shared/components/layout/topbar/topbar.component';
 import { AuthService } from '../../core/services/auth.service';
-
 import { ToastContainerComponent } from '../../shared/components/ui/toast/toast.component';
 import { CookieConsentComponent } from '../../shared/components/ui/cookie-consent/cookie-consent.component';
 
@@ -27,6 +26,90 @@ const ICONS = {
   search:        'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
 };
 
+/**
+ * All navigation items with role restrictions.
+ * `roles: []` means visible to ALL authenticated users.
+ * `roles: ['admin']` means only admins see this item.
+ */
+interface NavItemDef extends NavItem {
+  roles?: string[];
+  children?: NavItemDef[];
+}
+
+const ALL_NAV_ITEMS: NavItemDef[] = [
+  // Dashboard — all roles
+  {
+    id: 'dashboard', label: 'Dashboard', icon: ICONS.dashboard, route: '/dashboard',
+    roles: [],
+  },
+
+  // Patients — doctors, nurses, admins
+  {
+    id: 'patients', label: 'Patients', icon: ICONS.patients, route: '/patients',
+    roles: ['doctor', 'nurse', 'admin'],
+  },
+
+  // Appointments — doctors, nurses, admins, receptionists
+  {
+    id: 'appointments', label: 'Appointments', icon: ICONS.appointments, route: '/appointments',
+    roles: ['doctor', 'nurse', 'admin', 'receptionist'],
+  },
+
+  // Clinical — doctors, nurses, admins
+  {
+    id: 'clinical', label: 'Clinical', icon: ICONS.clinical,
+    roles: ['doctor', 'nurse', 'admin'],
+    children: [
+      { id: 'notes',  label: 'Clinical Notes', icon: ICONS.notes,  route: '/clinical/notes',  roles: ['doctor', 'nurse', 'admin'] },
+      { id: 'vitals', label: 'Vitals',          icon: ICONS.vitals, route: '/clinical/vitals', roles: ['doctor', 'nurse', 'admin'] },
+      { id: 'labs',   label: 'Lab Results',     icon: ICONS.labs,   route: '/lab-results',     roles: ['doctor', 'nurse', 'labtechnician', 'lab-tech', 'admin'] },
+    ],
+  },
+
+  // Prescriptions — doctors, pharmacists, admins
+  {
+    id: 'prescriptions', label: 'Prescriptions', icon: ICONS.prescriptions, route: '/prescriptions',
+    roles: ['doctor', 'pharmacist', 'admin'],
+  },
+
+  // Billing — admins, billing officers
+  {
+    id: 'billing', label: 'Billing', icon: ICONS.billing, route: '/billing',
+    roles: ['admin', 'billing-officer', 'billingofficer'],
+  },
+
+  // Reports — admins, doctors, managers
+  {
+    id: 'reports', label: 'Reports', icon: ICONS.reports, route: '/reports',
+    roles: ['admin', 'doctor', 'manager'],
+    children: [
+      { id: 'reports-main', label: 'Analytics',        icon: ICONS.reports, route: '/reports',                    roles: ['admin', 'doctor', 'manager'] },
+      { id: 'pop-health',   label: 'Population Health', icon: ICONS.vitals,  route: '/reports/population-health', roles: ['admin', 'doctor', 'manager'] },
+      { id: 'compliance',   label: 'Compliance',        icon: ICONS.admin,   route: '/reports/compliance',        roles: ['admin', 'manager'] },
+    ],
+  },
+
+  // Admin — admins only
+  {
+    id: 'admin', label: 'Admin', icon: ICONS.admin, route: '/admin',
+    roles: ['admin'],
+    children: [
+      { id: 'admin-dash',  label: 'Overview',   icon: ICONS.dashboard, route: '/admin',            roles: ['admin'] },
+      { id: 'admin-users', label: 'Users',       icon: ICONS.patients,  route: '/admin/users',      roles: ['admin'] },
+      { id: 'admin-roles', label: 'Roles',       icon: ICONS.clinical,  route: '/admin/roles',      roles: ['admin'] },
+      { id: 'admin-audit', label: 'Audit Logs',  icon: ICONS.notes,     route: '/admin/audit-logs', roles: ['admin'] },
+      { id: 'admin-set',   label: 'Settings',    icon: ICONS.admin,     route: '/admin/settings',   roles: ['admin'] },
+    ],
+  },
+];
+
+/** Returns true if the user has at least one of the required roles (or item has no restriction). */
+function hasAccess(userRoles: string[], requiredRoles: string[] | undefined): boolean {
+  if (!requiredRoles || requiredRoles.length === 0) return true;
+  const userRolesLower = userRoles.map(r => r.toLowerCase());
+  return requiredRoles.some(r => userRolesLower.includes(r.toLowerCase()));
+}
+
 @Component({
   selector: 'app-main-layout',
   standalone: true,
@@ -34,7 +117,6 @@ const ICONS = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './main-layout.component.html',
 })
-
 export class MainLayoutComponent implements OnInit {
   private authService = inject(AuthService);
   private router      = inject(Router);
@@ -44,7 +126,7 @@ export class MainLayoutComponent implements OnInit {
   mobileSidebarOpen = false;
   pageTitle         = 'Dashboard';
 
-  // ── Computed user data — derived from signal, no repeated localStorage reads ─
+  // ── Computed display info ─────────────────────────────────────────────
   readonly displayName = computed(() => {
     const user = this.authService.user$();
     if (!user) return 'User';
@@ -57,40 +139,25 @@ export class MainLayoutComponent implements OnInit {
     return user?.avatar ?? user?.profileImage ?? '';
   });
 
-  // ── Navigation items ─────────────────────────────────────────────────
-  navItems: NavItem[] = [
-    { id: 'dashboard',    label: 'Dashboard',    icon: ICONS.dashboard,     route: '/dashboard' },
-    { id: 'patients',     label: 'Patients',     icon: ICONS.patients,      route: '/patients' },
-    { id: 'appointments', label: 'Appointments', icon: ICONS.appointments,  route: '/appointments' },
-    {
-      id: 'clinical', label: 'Clinical', icon: ICONS.clinical,
-      children: [
-        { id: 'notes',  label: 'Clinical Notes', icon: ICONS.notes,  route: '/clinical/notes' },
-        { id: 'vitals', label: 'Vitals',          icon: ICONS.vitals, route: '/clinical/vitals' },
-        { id: 'labs',   label: 'Lab Results',     icon: ICONS.labs,   route: '/lab-results' },
-      ],
-    },
-    { id: 'prescriptions', label: 'Prescriptions', icon: ICONS.prescriptions, route: '/prescriptions' },
-    { id: 'billing',       label: 'Billing',        icon: ICONS.billing,       route: '/billing' },
-    {
-      id: 'reports', label: 'Reports', icon: ICONS.reports, route: '/reports',
-      children: [
-        { id: 'reports-main',  label: 'Analytics',        icon: ICONS.reports, route: '/reports' },
-        { id: 'pop-health',    label: 'Population Health', icon: ICONS.vitals,  route: '/reports/population-health' },
-        { id: 'compliance',    label: 'Compliance',        icon: ICONS.admin,   route: '/reports/compliance' },
-      ],
-    },
-    {
-      id: 'admin', label: 'Admin', icon: ICONS.admin, route: '/admin',
-      children: [
-        { id: 'admin-dash',  label: 'Overview',       icon: ICONS.dashboard,    route: '/admin' },
-        { id: 'admin-users', label: 'Users',           icon: ICONS.patients,     route: '/admin/users' },
-        { id: 'admin-roles', label: 'Roles',           icon: ICONS.clinical,     route: '/admin/roles' },
-        { id: 'admin-audit', label: 'Audit Logs',      icon: ICONS.notes,        route: '/admin/audit-logs' },
-        { id: 'admin-set',   label: 'Settings',        icon: ICONS.admin,        route: '/admin/settings' },
-      ],
-    },
-  ];
+  // ── Role-filtered navigation ──────────────────────────────────────────
+  /**
+   * Computed nav items filtered by the current user's roles.
+   * Recalculates automatically whenever the auth signal changes.
+   */
+  readonly navItems = computed<NavItem[]>(() => {
+    const user      = this.authService.user$();
+    const userRoles = user?.roles?.map(r => r.name) ?? [];
+
+    return ALL_NAV_ITEMS
+      .filter(item => hasAccess(userRoles, item.roles))
+      .map(item => ({
+        ...item,
+        children: item.children
+          ?.filter(child => hasAccess(userRoles, (child as NavItemDef).roles))
+          .map(({ roles: _r, ...rest }) => rest),
+      }))
+      .map(({ roles: _r, ...rest }) => rest);
+  });
 
   topbarActions: TopbarAction[] = [
     { id: 'search',        iconPath: ICONS.search, label: 'Search patients' },

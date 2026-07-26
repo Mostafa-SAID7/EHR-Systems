@@ -22,6 +22,9 @@ export interface SortEvent {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './table.component.html',
+  host: {
+    class: 'w-full block overflow-x-auto'
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent {

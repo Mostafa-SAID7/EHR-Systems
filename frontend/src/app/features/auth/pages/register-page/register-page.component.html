@@ -15,7 +15,7 @@
               type="text"
               formControlName="firstName"
               placeholder="John"
-              [class]="hasError('firstName') ? 'input-error' : 'input'"
+              [class]="hasError('firstName') ? 'input-error' : 'input-base'"
             />
             <p *ngIf="hasError('firstName')" class="input-error-msg">First name is required</p>
           </div>
@@ -27,7 +27,7 @@
               type="text"
               formControlName="lastName"
               placeholder="Smith"
-              [class]="hasError('lastName') ? 'input-error' : 'input'"
+              [class]="hasError('lastName') ? 'input-error' : 'input-base'"
             />
             <p *ngIf="hasError('lastName')" class="input-error-msg">Last name is required</p>
           </div>
@@ -41,7 +41,7 @@
             type="email"
             formControlName="email"
             placeholder="your@email.com"
-            [class]="hasError('email') ? 'input-error' : 'input'"
+            [class]="hasError('email') ? 'input-error' : 'input-base'"
           />
           <p *ngIf="hasError('email')" class="input-error-msg">Please enter a valid email</p>
         </div>
@@ -54,7 +54,7 @@
             type="password"
             formControlName="password"
             placeholder="••••••••"
-            [class]="hasError('password') ? 'input-error' : 'input'"
+            [class]="hasError('password') ? 'input-error' : 'input-base'"
           />
           <p *ngIf="hasError('password')" class="input-error-msg">Password must be at least 8 characters</p>
         </div>

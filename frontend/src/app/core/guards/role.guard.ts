@@ -28,6 +28,6 @@ export const roleGuard: CanActivateFn = (
   if (hasRole) return true;
 
   notificationService.error('Access Denied', 'You do not have permission to access this resource.');
-  router.navigate(['/dashboard']);
+  router.navigate(['/403']);
   return false;
 };

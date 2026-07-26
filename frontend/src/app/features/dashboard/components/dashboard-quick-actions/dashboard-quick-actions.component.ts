@@ -14,6 +14,9 @@ export interface QuickAction {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './dashboard-quick-actions.component.html',
+  host: {
+    class: 'w-full block'
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardQuickActionsComponent {

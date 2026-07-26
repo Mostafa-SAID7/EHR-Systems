@@ -13,7 +13,6 @@ export type SkeletonShape = 'text' | 'circle' | 'rect' | 'card' | 'table-row' | 
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './skeleton.component.html',
-  styleUrl: './skeleton.component.scss'
 })
 export class SkeletonComponent {
   @Input() shape: SkeletonShape = 'text';

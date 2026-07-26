@@ -27,7 +27,6 @@ Shared Resources:
 
 ---
 
-## 📁 Project Structure
 
 ```
 backend/
@@ -181,77 +180,6 @@ POST   /patients/{id}/conditions
 
 ---
 
-### 3. Appointment Service
-
-**Responsibility**: Scheduling, availability, reminders
-
-**Endpoints**:
-```
-GET    /appointments
-POST   /appointments
-GET    /appointments/{id}
-PUT    /appointments/{id}
-DELETE /appointments/{id}
-GET    /appointments/availability
-POST   /appointments/{id}/cancel
-```
-
-**Key Features**:
-- Appointment scheduling
-- Doctor availability checking
-- Conflict detection
-- Automated reminders (email, SMS)
-- Calendar integration
-
----
-
-### 4. Medical Record Service
-
-**Responsibility**: Clinical notes, vitals, diagnostics
-
-**Endpoints**:
-```
-GET    /records
-POST   /records
-GET    /records/{id}
-PUT    /records/{id}
-POST   /records/vitals
-GET    /patients/{id}/timeline
-```
-
-**Key Features**:
-- SOAP note creation & management
-- Vital signs recording
-- Diagnostic data storage
-- Encrypted sensitive data
-- Compliance audit trail
-
----
-
-### 5. Prescription Service
-
-**Responsibility**: eRx management, medication interactions
-
-**Endpoints**:
-```
-GET    /prescriptions
-POST   /prescriptions
-GET    /prescriptions/{id}
-PUT    /prescriptions/{id}
-POST   /prescriptions/{id}/refill
-GET    /prescriptions/interactions
-```
-
-**Key Features**:
-- eRx workflow
-- Medication interaction checking
-- Refill request management
-- Dosage validation
-- Drug allergy screening
-
----
-
-### 6. Billing Service
 
 **Responsibility**: Claims, payments, insurance verification
 

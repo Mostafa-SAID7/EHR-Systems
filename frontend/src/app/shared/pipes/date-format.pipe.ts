@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { formatDate, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 
 export type DateFormatType = 'short' | 'medium' | 'long' | 'full' | 'iso' | 'relative' | 'time' | 'date';
 

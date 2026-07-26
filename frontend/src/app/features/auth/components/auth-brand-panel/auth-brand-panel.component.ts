@@ -11,6 +11,9 @@ export interface AuthHighlight {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './auth-brand-panel.component.html',
+  host: {
+    class: 'hidden lg:flex lg:w-[48%] xl:w-[52%] shrink-0 flex-col min-h-screen'
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthBrandPanelComponent {

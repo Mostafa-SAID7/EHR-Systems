@@ -34,13 +34,33 @@ export const appRoutes: Routes = [
       ),
   },
 
+  // 404 Not Found Page (public)
+  {
+    path: '404',
+    loadComponent: () =>
+      import('../features/errors/pages/not-found-page/not-found-page.component').then(
+        (m) => m.NotFoundPageComponent
+      ),
+    data: { title: '404 - Page Not Found' },
+  },
+
+  // 403 Access Denied Page (public)
+  {
+    path: '403',
+    loadComponent: () =>
+      import('../features/errors/pages/unauthorized-page/unauthorized-page.component').then(
+        (m) => m.UnauthorizedPageComponent
+      ),
+    data: { title: '403 - Access Denied' },
+  },
+
   // App Routes (Protected - Main Layout)
   {
     path: '',
     component: MainLayoutComponent,
     canActivate: [authGuard],
     children: [
-      // Dashboard
+      // Dashboard — all authenticated users
       {
         path: 'dashboard',
         loadComponent: () =>
@@ -54,7 +74,7 @@ export const appRoutes: Routes = [
       {
         path: 'patients',
         canActivate: [roleGuard],
-        data: { roles: ['doctor', 'nurse', 'admin'] },
+        data: { roles: ['doctor', 'nurse', 'admin'], title: 'Patients' },
         loadChildren: () =>
           import('../features/patients/patients.routes').then(
             (m) => m.patientsRoutes
@@ -65,18 +85,48 @@ export const appRoutes: Routes = [
       {
         path: 'appointments',
         canActivate: [roleGuard],
-        data: { roles: ['doctor', 'nurse', 'admin', 'receptionist'] },
+        data: { roles: ['doctor', 'nurse', 'admin', 'receptionist'], title: 'Appointments' },
         loadChildren: () =>
           import('../features/appointments/appointments.routes').then(
             (m) => m.appointmentsRoutes
           ),
       },
 
+      // Clinical Routes — redirects to medical-records
+      {
+        path: 'clinical',
+        canActivate: [roleGuard],
+        data: { roles: ['doctor', 'nurse', 'admin'], title: 'Clinical' },
+        children: [
+          {
+            path: '',
+            redirectTo: 'notes',
+            pathMatch: 'full',
+          },
+          {
+            path: 'notes',
+            loadComponent: () =>
+              import('../features/medical-records/pages/medical-records-page/medical-records-page.component').then(
+                (m) => m.MedicalRecordsPageComponent
+              ),
+            data: { title: 'Clinical Notes' },
+          },
+          {
+            path: 'vitals',
+            loadComponent: () =>
+              import('../features/medical-records/pages/medical-records-page/medical-records-page.component').then(
+                (m) => m.MedicalRecordsPageComponent
+              ),
+            data: { title: 'Vitals' },
+          },
+        ],
+      },
+
       // Medical Records Feature Routes
       {
         path: 'medical-records',
         canActivate: [roleGuard],
-        data: { roles: ['doctor', 'nurse', 'admin'] },
+        data: { roles: ['doctor', 'nurse', 'admin'], title: 'Medical Records' },
         loadChildren: () =>
           import('../features/medical-records/medical-records.routes').then(
             (m) => m.medicalRecordsRoutes
@@ -87,7 +137,7 @@ export const appRoutes: Routes = [
       {
         path: 'prescriptions',
         canActivate: [roleGuard],
-        data: { roles: ['doctor', 'pharmacist', 'admin'] },
+        data: { roles: ['doctor', 'pharmacist', 'admin'], title: 'Prescriptions' },
         loadChildren: () =>
           import('../features/prescriptions/prescriptions.routes').then(
             (m) => m.prescriptionsRoutes
@@ -98,7 +148,7 @@ export const appRoutes: Routes = [
       {
         path: 'lab-results',
         canActivate: [roleGuard],
-        data: { roles: ['doctor', 'nurse', 'lab-tech', 'admin'] },
+        data: { roles: ['doctor', 'nurse', 'labtechnician', 'lab-tech', 'admin'], title: 'Lab Results' },
         loadChildren: () =>
           import('../features/lab-results/lab-results.routes').then(
             (m) => m.labResultsRoutes
@@ -109,7 +159,7 @@ export const appRoutes: Routes = [
       {
         path: 'billing',
         canActivate: [roleGuard],
-        data: { roles: ['admin', 'billing-officer'] },
+        data: { roles: ['admin', 'billing-officer', 'billingofficer'], title: 'Billing' },
         loadChildren: () =>
           import('../features/billing/billing.routes').then(
             (m) => m.billingRoutes
@@ -120,7 +170,7 @@ export const appRoutes: Routes = [
       {
         path: 'reports',
         canActivate: [roleGuard],
-        data: { roles: ['admin', 'doctor', 'manager'] },
+        data: { roles: ['admin', 'doctor', 'manager'], title: 'Reports & Analytics' },
         loadChildren: () =>
           import('../features/reports-analytics/reports-analytics.routes').then(
             (m) => m.reportsAnalyticsRoutes
@@ -131,7 +181,7 @@ export const appRoutes: Routes = [
       {
         path: 'admin',
         canActivate: [roleGuard],
-        data: { roles: ['admin'] },
+        data: { roles: ['admin'], title: 'Administration' },
         loadChildren: () =>
           import('../features/admin/admin.routes').then(
             (m) => m.adminRoutes
@@ -140,19 +190,10 @@ export const appRoutes: Routes = [
     ],
   },
 
-  // 404 Not Found Page
-  {
-    path: '404',
-    loadComponent: () =>
-      import('../features/not-found/pages/not-found-page/not-found-page.component').then(
-        (m) => m.NotFoundPageComponent
-      ),
-    data: { title: '404 - Page Not Found' },
-  },
-
   // Wildcard route for 404
   {
     path: '**',
     redirectTo: '404',
   },
 ];
+

@@ -14,6 +14,9 @@ export interface TodayAppointment {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './dashboard-appointments-card.component.html',
+  host: {
+    class: 'w-full block'
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardAppointmentsCardComponent {

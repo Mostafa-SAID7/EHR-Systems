@@ -17,6 +17,9 @@ export interface TopbarAction {
   standalone: true,
   imports: [CommonModule, RouterModule, InitialsPipe],
   templateUrl: './topbar.component.html',
+  host: {
+    class: 'w-full block shrink-0'
+  },
   animations: [
     trigger('menuAnim', [
       transition(':enter', [

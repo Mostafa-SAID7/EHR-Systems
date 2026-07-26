@@ -10,7 +10,7 @@
       <!-- Sidebar (desktop) -->
       <app-sidebar
         class="hidden md:flex"
-        [navItems]="navItems"
+        [navItems]="navItems()"
         [(collapsed)]="sidebarCollapsed"
       />
 
@@ -23,7 +23,7 @@
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         <div class="relative z-50 h-full w-64" (click)="$event.stopPropagation()">
           <app-sidebar
-            [navItems]="navItems"
+            [navItems]="navItems()"
             [collapsed]="false"
             [isMobile]="true"
             (navigate)="mobileSidebarOpen = false"

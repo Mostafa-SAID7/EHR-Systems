@@ -16,6 +16,9 @@ export interface DashboardStat {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard-stat-cards.component.html',
+  host: {
+    class: 'w-full block'
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardStatCardsComponent {

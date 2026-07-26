@@ -19,6 +19,9 @@ export interface NavItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
+  host: {
+    class: 'h-full flex flex-col shrink-0'
+  },
   animations: [
     trigger('expandCollapse', [
       transition(':enter', [

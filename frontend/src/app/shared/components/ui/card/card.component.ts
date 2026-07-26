@@ -9,6 +9,9 @@ export type CardVariant = 'default' | 'hover' | 'flat' | 'elevated' | 'green';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './card.component.html',
+  host: {
+    class: 'w-full block'
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardComponent {
