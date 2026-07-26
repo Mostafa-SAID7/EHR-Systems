@@ -25,67 +25,7 @@ const DEFAULT_ICONS: Record<string, string> = {
   selector: 'app-timeline',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="space-y-0 stagger">
-      <div *ngFor="let event of events; let last = last" class="relative flex gap-4">
-
-        <!-- Left: dot + connector -->
-        <div class="flex flex-col items-center shrink-0">
-          <div [ngClass]="getDotClasses(event.color)"
-            class="relative z-10 flex items-center justify-center
-                   w-9 h-9 rounded-xl shadow-sm text-white shrink-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
-                [attr.d]="event.iconPath || getDefaultIcon(event.color)"/>
-            </svg>
-          </div>
-          <!-- Fading connector — no hard border lines -->
-          <div *ngIf="!last"
-            class="w-px flex-1 my-1.5 bg-gradient-to-b
-                   from-surface-200 via-surface-100 to-transparent
-                   dark:from-surface-700 dark:via-surface-800 dark:to-transparent">
-          </div>
-        </div>
-
-        <!-- Right: content -->
-        <div class="flex-1 pb-5 min-w-0">
-          <div class="card p-4 hover:shadow-card-hover transition-shadow duration-200">
-            <div class="flex items-start justify-between gap-3 mb-1">
-              <h4 class="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
-                {{ event.title }}
-              </h4>
-              <time class="text-2xs text-gray-400 dark:text-gray-500 whitespace-nowrap shrink-0 mt-0.5">
-                {{ event.timestamp | date:'MMM d, h:mm a' }}
-              </time>
-            </div>
-
-            <p *ngIf="event.description"
-              class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              {{ event.description }}
-            </p>
-
-            <div *ngIf="event.details"
-              class="mt-3 px-3 py-2.5 bg-surface-50 dark:bg-surface-900/60
-                     rounded-xl text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {{ event.details }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty state -->
-      <div *ngIf="events.length === 0" class="empty-state">
-        <div class="empty-icon">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-          </svg>
-        </div>
-        <h3>No events yet</h3>
-        <p>Events will appear here as they are recorded.</p>
-      </div>
-    </div>
-  `,
+  templateUrl: './timeline.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimelineComponent {

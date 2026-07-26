@@ -1,0 +1,81 @@
+
+    <div class="stagger">
+      <div class="mb-7">
+        <h2 class="heading-lg mb-1">Create an account</h2>
+        <p class="body-text">Get started with EHR Platform</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Name row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="form-field">
+            <label for="firstName" class="input-label">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              placeholder="John"
+              [class]="hasError('firstName') ? 'input-error' : 'input'"
+            />
+            <p *ngIf="hasError('firstName')" class="input-error-msg">First name is required</p>
+          </div>
+
+          <div class="form-field">
+            <label for="lastName" class="input-label">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              placeholder="Smith"
+              [class]="hasError('lastName') ? 'input-error' : 'input'"
+            />
+            <p *ngIf="hasError('lastName')" class="input-error-msg">Last name is required</p>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-field">
+          <label for="email" class="input-label">Email address</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="your@email.com"
+            [class]="hasError('email') ? 'input-error' : 'input'"
+          />
+          <p *ngIf="hasError('email')" class="input-error-msg">Please enter a valid email</p>
+        </div>
+
+        <!-- Password -->
+        <div class="form-field">
+          <label for="password" class="input-label">Password</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            [class]="hasError('password') ? 'input-error' : 'input'"
+          />
+          <p *ngIf="hasError('password')" class="input-error-msg">Password must be at least 8 characters</p>
+        </div>
+
+        <!-- Server error -->
+        <div *ngIf="serverError" class="alert-error animate-scale-in">
+          <span class="text-sm">{{ serverError }}</span>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || isLoading"
+          class="btn-primary w-full py-3 mt-2"
+        >
+          {{ isLoading ? 'Creating account…' : 'Register Account' }}
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        Already have an account?
+        <a routerLink="/auth/login" class="font-semibold text-primary-600 hover:text-primary-700 ml-1">Sign in</a>
+      </p>
+    </div>
+  

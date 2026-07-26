@@ -1,0 +1,19 @@
+
+    <nav class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 px-6 py-3">
+      <a href="/" class="hover:text-gray-900 dark:hover:text-white">🏠 Home</a>
+
+      <span *ngFor="let breadcrumb of breadcrumbs" class="flex items-center gap-2">
+        <span class="text-gray-400">/</span>
+        <a
+          *ngIf="!breadcrumb.isLast"
+          [href]="breadcrumb.url"
+          class="hover:text-gray-900 dark:hover:text-white"
+        >
+          {{ breadcrumb.label }}
+        </a>
+        <span *ngIf="breadcrumb.isLast" class="text-gray-900 dark:text-white font-medium">
+          {{ breadcrumb.label }}
+        </span>
+      </span>
+    </nav>
+  

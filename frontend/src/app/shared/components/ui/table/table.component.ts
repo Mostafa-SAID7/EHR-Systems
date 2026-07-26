@@ -21,70 +21,7 @@ export interface SortEvent {
   selector: 'app-table',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="table-container">
-      <table class="table-base">
-        <thead>
-          <tr>
-            <th
-              *ngFor="let col of columns"
-              [style.width]="col.width || 'auto'"
-              [class.text-center]="col.align === 'center'"
-              [class.text-right]="col.align === 'right'"
-            >
-              <button
-                *ngIf="col.sortable; else staticLabel"
-                (click)="onSort(col.key)"
-                class="inline-flex items-center gap-1.5 group transition-colors duration-150
-                       hover:text-primary-600 dark:hover:text-primary-400"
-              >
-                {{ col.label }}
-                <span class="flex flex-col gap-px opacity-40 group-hover:opacity-100 transition-opacity">
-                  <svg class="w-2.5 h-2.5" [class.text-primary-600]="sortColumn === col.key && sortDirection === 'asc'"
-                    viewBox="0 0 10 6" fill="currentColor">
-                    <path d="M5 0l5 6H0z"/>
-                  </svg>
-                  <svg class="w-2.5 h-2.5" [class.text-primary-600]="sortColumn === col.key && sortDirection === 'desc'"
-                    viewBox="0 0 10 6" fill="currentColor">
-                    <path d="M5 6L0 0h10z"/>
-                  </svg>
-                </span>
-              </button>
-              <ng-template #staticLabel>{{ col.label }}</ng-template>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Rows -->
-          <tr
-            *ngFor="let row of data; let i = index"
-            class="animate-fade-in"
-            [style.animation-delay]="i * 30 + 'ms'"
-          >
-            <td
-              *ngFor="let col of columns"
-              [class.text-center]="col.align === 'center'"
-              [class.text-right]="col.align === 'right'"
-            >
-              {{ row[col.key] }}
-            </td>
-          </tr>
-
-          <!-- Empty -->
-          <tr *ngIf="data.length === 0">
-            <td [attr.colspan]="columns.length" class="py-16 text-center">
-              <div class="flex flex-col items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-2xl opacity-40">
-                  📋
-                </div>
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ emptyMessage }}</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  `,
+  templateUrl: './table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent {

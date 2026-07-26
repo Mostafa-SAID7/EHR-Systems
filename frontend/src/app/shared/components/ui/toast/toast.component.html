@@ -1,0 +1,60 @@
+
+    <div
+      aria-live="polite"
+      aria-atomic="true"
+      class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"
+    >
+      <div
+        *ngFor="let toast of toasts; trackBy: trackById"
+        (mouseenter)="pauseToast(toast)"
+        (mouseleave)="resumeToast(toast)"
+        [ngClass]="getToastBorderClass(toast.type)"
+        class="pointer-events-auto relative overflow-hidden rounded-2xl bg-white/95 dark:bg-surface-800/95 backdrop-blur-md shadow-2xl border p-4 transition-all duration-300 transform animate-slide-in-right hover:scale-[1.02]"
+      >
+        <div class="flex items-start gap-3">
+          <!-- Icon -->
+          <div [ngClass]="getIconBoxClass(toast.type)" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path *ngIf="toast.type === 'success'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              <path *ngIf="toast.type === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              <path *ngIf="toast.type === 'warning'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              <path *ngIf="toast.type === 'info'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0 pr-2">
+            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+              {{ toast.title }}
+            </h4>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mt-0.5 leading-relaxed break-words">
+              {{ toast.message }}
+            </p>
+          </div>
+
+          <!-- Close button -->
+          <button
+            (click)="dismiss(toast.id)"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-700 shrink-0"
+            title="Dismiss notification"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Progress bar timer -->
+        <div
+          *ngIf="toast.duration && toast.duration > 0"
+          class="absolute bottom-0 left-0 right-0 h-1 bg-surface-100 dark:bg-surface-700/50"
+        >
+          <div
+            [ngClass]="getProgressBarClass(toast.type)"
+            [style.width.%]="toast.progress ?? 100"
+            class="h-full transition-all duration-100 ease-linear"
+          ></div>
+        </div>
+      </div>
+    </div>
+  

@@ -8,18 +8,7 @@ export type CardVariant = 'default' | 'hover' | 'flat' | 'elevated' | 'green';
   selector: 'app-card',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div [ngClass]="getClasses()">
-      <!-- Optional header -->
-      <div *ngIf="title"
-        class="flex items-center justify-between pb-4 mb-4
-               border-b border-surface-100 dark:border-surface-700/60">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ title }}</h3>
-        <ng-content select="[card-actions]"></ng-content>
-      </div>
-      <ng-content></ng-content>
-    </div>
-  `,
+  templateUrl: './card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardComponent {

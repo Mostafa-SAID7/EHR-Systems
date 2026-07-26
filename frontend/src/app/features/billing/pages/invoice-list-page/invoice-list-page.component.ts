@@ -10,16 +10,7 @@ import { CardComponent } from '../../../../shared/components/ui/card/card.compon
   selector: 'app-invoice-list-page',
   standalone: true,
   imports: [CommonModule, CardComponent],
-  template: `
-    <app-card title="invoice-list-page">
-      <div class="text-center py-12">
-        <p class="text-gray-600 dark:text-gray-400">
-          invoice-list-page page - Implementation in progress
-        </p>
-      </div>
-    </app-card>
-  `,
-  styles: [],
+  templateUrl: './invoice-list-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvoiceListPageComponent implements OnInit {

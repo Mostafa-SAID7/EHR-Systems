@@ -6,71 +6,7 @@ import { RouterModule } from '@angular/router';
   selector: 'app-home-features',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  template: `
-    <section id="features" class="py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div class="text-center max-w-2xl mx-auto mb-16">
-          <h2 class="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-2">Core Platform Modules</h2>
-          <p class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Designed for Complete Clinical Excellence
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          <!-- Card 1 -->
-          <div class="card-hover group">
-            <div class="w-12 h-12 rounded-xl bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Longitudinal Patient Records</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-              Unified 360-degree timeline containing demographics, allergies, medical history, vital trends, and digital attachments.
-            </p>
-            <a routerLink="/patients" class="link-primary">
-              Explore Patient Manager &rarr;
-            </a>
-          </div>
-
-          <!-- Card 2 -->
-          <div class="card-hover group">
-            <div class="w-12 h-12 rounded-xl bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Intelligent e-Prescriptions</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-              Automated drug interaction screening, refill management, and direct electronic routing to network pharmacies.
-            </p>
-            <a routerLink="/prescriptions" class="link-primary">
-              View e-Rx Module &rarr;
-            </a>
-          </div>
-
-          <!-- Card 3 -->
-          <div class="card-hover group">
-            <div class="w-12 h-12 rounded-xl bg-primary-100/80 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Smart Appointment Scheduling</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-              Conflict-free scheduling calendar, physician roster availability, and automated SMS appointment reminders.
-            </p>
-            <a routerLink="/appointments" class="link-primary">
-              Check Scheduler &rarr;
-            </a>
-          </div>
-
-        </div>
-      </div>
-    </section>
-  `,
+  templateUrl: './home-features.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeFeaturesComponent {}

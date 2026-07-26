@@ -1,3 +1,4 @@
 - [EHR Identity Service setup](ehr-identity-setup.md) — dotnet-8.0 required; SSL must be disabled for Replit local postgres; JWT_SECRET + ENCRYPTION_KEY needed.
 - [EHR domain events pattern](ehr-domain-events.md) — two separate event hierarchies: DomainEvent (in-process, BaseEntity) vs IntegrationEvent (cross-service, Kafka/MassTransit).
 - [EHR polyglot database strategy](ehr-database-strategy.md) — five stores: Postgres (OLTP), Redis (cache), Elasticsearch (search), MongoDB (docs), MySQL (billing); optional stores degrade gracefully; DI helpers in DataAccessExtensions + MongoExtensions.
+- [EHR Replit runtime setup](ehr-replit-runtime.md) — .NET 8 and Angular host configuration are required; absent Kafka/RabbitMQ must not prevent local services from starting.

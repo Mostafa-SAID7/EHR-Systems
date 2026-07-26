@@ -1,0 +1,92 @@
+
+    <div class="space-y-6 stagger">
+
+      <!-- ── Header ──────────────────────────────── -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="heading-xl">Administration</h1>
+          <p class="body-text mt-1">System management and configuration</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="badge-success flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse-soft"></span>
+            System Online
+          </span>
+        </div>
+      </div>
+
+      <!-- ── System health ─────────────────────────── -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div *ngFor="let s of systemStats; let i = index"
+          class="stat-card animate-count-up"
+          [style.animation-delay]="i * 60 + 'ms'">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="stat-label">{{ s.label }}</p>
+              <p class="stat-value mt-1.5">{{ s.value }}</p>
+            </div>
+            <div [ngClass]="s.iconClass" class="icon-box-md shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="s.icon"/>
+              </svg>
+            </div>
+          </div>
+          <div class="mt-2 text-xs" [ngClass]="s.positive ? 'stat-change positive' : 'stat-change negative'">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                [attr.d]="s.positive ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+            </svg>
+            {{ s.change }}
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Quick links ───────────────────────────── -->
+      <div class="grid-3">
+        <a *ngFor="let link of quickLinks; let i = index"
+          [routerLink]="link.route"
+          class="card-hover flex items-start gap-4"
+          [style.animation-delay]="i * 55 + 'ms'">
+          <div [ngClass]="link.iconClass" class="icon-box-lg shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="link.icon"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ link.label }}</p>
+              <span *ngIf="link.badge" class="badge-danger text-2xs">{{ link.badge }}</span>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{{ link.description }}</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0 mt-0.5 group-hover:text-primary-500 transition-colors"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- ── Recent admin activity ──────────────────── -->
+      <div class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="heading-sm">Recent Admin Activity</h2>
+          <span class="badge-neutral text-2xs">Last 24 hours</span>
+        </div>
+        <div class="space-y-0">
+          <div *ngFor="let log of auditLogs" class="list-item">
+            <div [ngClass]="log.iconClass" class="icon-box-sm shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="log.icon"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ log.action }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ log.user }} &middot; {{ log.time }}</p>
+            </div>
+            <span [ngClass]="log.badgeClass" class="badge shrink-0">{{ log.type }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  
