@@ -1,4 +1,4 @@
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { passwordStrengthValidator, PasswordStrength, matchPasswordValidator } from './password-strength.validator';
 
 describe('Password Validators', () => {
@@ -55,35 +55,23 @@ describe('Password Validators', () => {
 
   describe('matchPasswordValidator', () => {
     it('should validate matching passwords', () => {
-      const form = new FormControl({
-        password: 'Test1234!@',
-        confirmPassword: 'Test1234!@',
+      const form = new FormGroup({
+        password: new FormControl('Test1234!@'),
+        confirmPassword: new FormControl('Test1234!@'),
       });
 
-      const control = new FormControl('Test1234!@');
-      control.parent = form;
-      (control.parent as any).get = (name: string) =>
-        name === 'password'
-          ? new FormControl('Test1234!@')
-          : new FormControl('');
-
+      const control = form.get('confirmPassword') as FormControl;
       const result = matchPasswordValidator('password')(control);
       expect(result).toBeNull();
     });
 
     it('should reject non-matching passwords', () => {
-      const form = new FormControl({
-        password: 'Test1234!@',
-        confirmPassword: 'Different1234!@',
+      const form = new FormGroup({
+        password: new FormControl('Test1234!@'),
+        confirmPassword: new FormControl('Different1234!@'),
       });
 
-      const control = new FormControl('Different1234!@');
-      control.parent = form;
-      (control.parent as any).get = (name: string) =>
-        name === 'password'
-          ? new FormControl('Test1234!@')
-          : new FormControl('');
-
+      const control = form.get('confirmPassword') as FormControl;
       const result = matchPasswordValidator('password')(control);
       expect(result).not.toBeNull();
       expect(result?.['passwordMismatch']).toBe(true);
