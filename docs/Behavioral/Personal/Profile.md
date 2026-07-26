@@ -22,11 +22,11 @@ Senior Full Stack Developer with 3 years building high-scale multi-vendor ecomme
 - Led backend architecture decisions for multi-service coordination
 
 **Tech Stack:**
-- Backend: TypeScript / Node.js / C# .NET / Python
-- Frontend: Angular / HTML5 / Vanilla CSS / RxJS
-- Database: PostgreSQL / MySQL / Redis
+- Backend: TypeScript / Node.js / C# .NET 
+- Frontend: Angular / HTML5 / Vanilla CSS / RxJS / React / Nextjs
+- Database: PostgreSQL / MySQL / Redis / Mongodb / Elastic search / Sqlserver
 - Message Queue: Kafka / RabbitMQ
-- Infrastructure: Docker / Kubernetes
+- Infrastructure: Docker / Kubernetes / terrform
 
 ### Previous: Enterprise Healthcare Systems (EHR Platform)
 - **Role**: Senior Full Stack Developer
