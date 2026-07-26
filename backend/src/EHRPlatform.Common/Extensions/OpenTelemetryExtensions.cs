@@ -55,6 +55,18 @@ public static class OpenTelemetryExtensions
                         options.Filter = _ => true;
                     })
 
+                    // MassTransit/RabbitMQ: message broker metrics
+                    // - messaging.publish.messages (counter - publish rate)
+                    // - messaging.receive.messages (counter - receive rate)
+                    // - messaging.acknowledge (counter - ack rate)
+                    // - rabbitmq.queue.message_count (gauge - queue length)
+                    // - rabbitmq.consumer_count (gauge - consumer count)
+                    // - rabbitmq.message.dead_letter (counter - dead-letter messages)
+                    // - rabbitmq.message.redelivered (counter - redelivered messages)
+                    .AddMeter("MassTransit")  // MassTransit activity diagnostics
+                    .AddMeter("MassTransit.RabbitMQ")  // RabbitMQ-specific metrics
+                    .AddMeter("System.Net.NameResolution")  // DNS metrics
+
                     // Runtime: CLR (Common Language Runtime) metrics
                     // - dotnet.gc.collections.count (counter)
                     // - dotnet.gc.objects.collected (histogram)

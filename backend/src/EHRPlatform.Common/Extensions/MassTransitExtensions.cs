@@ -1,6 +1,7 @@
 using Confluent.Kafka;
 using EHRPlatform.Common.Messaging;
 using MassTransit;
+using MassTransit.Monitoring;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -56,6 +57,14 @@ public static class MassTransitExtensions
     /// <summary>
     /// Register MassTransit with RabbitMQ as the background-job bus.
     /// Configures standard EHR exchange/queue topology with dead-lettering.
+    /// 
+    /// Metrics Collected (via MassTransit diagnostics):
+    ///   - RabbitMQ queue length
+    ///   - Consumer count
+    ///   - Publish rate
+    ///   - Ack rate
+    ///   - Dead-letter messages
+    ///   - Unacked messages
     /// </summary>
     public static IServiceCollection AddMassTransitWithRabbitMQ(
         this IServiceCollection services,
@@ -69,6 +78,18 @@ public static class MassTransitExtensions
 
         services.AddMassTransit(x =>
         {
+            // ── RabbitMQ Metrics Configuration ─────────────────────────────────────
+            // Enable MassTransit activity source for OpenTelemetry integration
+            // Collects:
+            //   - rabbitmq.queue.message_count (gauge)
+            //   - rabbitmq.consumer_count (gauge)
+            //   - messaging.publish.messages (counter - publish rate)
+            //   - messaging.acknowledge (counter - ack rate)
+            //   - rabbitmq.message.dead_letter (counter)
+            //   - rabbitmq.message.redelivered (counter)
+            
+            x.AddActivityDiagnostics();  // Enables OpenTelemetry ActivitySource for MassTransit
+            
             configureConsumers?.Invoke(x);
 
             x.UsingRabbitMq((ctx, cfg) =>
@@ -102,6 +123,14 @@ public static class MassTransitExtensions
     ///   IBus           → RabbitMQ (default MassTransit bus)
     ///   IKafkaProducer → Kafka rider
     ///   IMessageBus    → unified wrapper (uses IBus underneath)
+    /// 
+    /// Metrics Collected (via MassTransit diagnostics):
+    ///   - RabbitMQ queue length
+    ///   - Consumer count
+    ///   - Publish rate
+    ///   - Ack rate
+    ///   - Dead-letter messages
+    ///   - Unacked messages
     /// </summary>
     public static IServiceCollection AddMassTransitHybrid(
         this IServiceCollection services,
@@ -117,6 +146,18 @@ public static class MassTransitExtensions
 
         services.AddMassTransit(x =>
         {
+            // ── RabbitMQ Metrics Configuration ─────────────────────────────────────
+            // Enable MassTransit activity source for OpenTelemetry integration
+            // Collects:
+            //   - rabbitmq.queue.message_count (gauge)
+            //   - rabbitmq.consumer_count (gauge)
+            //   - messaging.publish.messages (counter - publish rate)
+            //   - messaging.acknowledge (counter - ack rate)
+            //   - rabbitmq.message.dead_letter (counter)
+            //   - rabbitmq.message.redelivered (counter)
+            
+            x.AddActivityDiagnostics();  // Enables OpenTelemetry ActivitySource for MassTransit
+            
             // Register RabbitMQ consumers
             configureRabbitMqConsumers?.Invoke(x);
 
