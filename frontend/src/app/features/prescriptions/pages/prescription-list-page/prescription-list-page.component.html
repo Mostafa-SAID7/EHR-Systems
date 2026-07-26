@@ -2,7 +2,7 @@
     <div class="space-y-6 stagger">
 
       <!-- ── Header ───────────────────────────────────── -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="page-header">
         <div>
           <h1 class="heading-xl">Prescriptions</h1>
           <p class="body-text mt-1">Manage and track all patient e-prescriptions</p>
@@ -29,7 +29,7 @@
       ></app-prescription-stats-strip>
 
       <!-- ── Search + filter ───────────────────────────── -->
-      <div class="flex flex-col sm:flex-row gap-3">
+      <div class="search-row">
         <div class="relative flex-1">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +38,7 @@
           </div>
           <input type="text" [(ngModel)]="searchQuery" placeholder="Search by patient name or drug…" class="input-icon w-full"/>
         </div>
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="filter-bar">
           <button *ngFor="let f of filters"
             (click)="activeFilter = f"
             [class]="activeFilter === f ? 'filter-pill-active' : 'filter-pill'">{{ f }}</button>

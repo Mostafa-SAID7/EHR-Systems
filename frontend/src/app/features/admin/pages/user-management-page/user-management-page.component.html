@@ -2,7 +2,7 @@
     <div class="space-y-6 stagger">
 
       <!-- ── Header ───────────────────────────────────── -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="page-header">
         <div>
           <h1 class="heading-xl">User Management</h1>
           <p class="body-text mt-1">Manage platform users, roles, and access permissions</p>
@@ -39,7 +39,7 @@
       ></app-admin-user-invite-panel>
 
       <!-- ── Search + filter ───────────────────────────── -->
-      <div class="flex flex-col sm:flex-row gap-3">
+      <div class="search-row">
         <div class="relative flex-1">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,14 +48,10 @@
           </div>
           <input type="text" [(ngModel)]="searchQuery" (input)="loadUsers()" placeholder="Search users by name or email…" class="input-icon w-full"/>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="filter-bar">
           <button *ngFor="let f of filters"
             (click)="activeFilter = f"
-            [class.bg-primary-600]="activeFilter === f"
-            [class.text-white]="activeFilter === f"
-            [class.bg-surface-100]="activeFilter !== f"
-            [class.dark:bg-surface-800]="activeFilter !== f"
-            class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors">
+            [class]="activeFilter === f ? 'filter-pill-active' : 'filter-pill'">
             {{ f }}
           </button>
         </div>
@@ -64,18 +60,18 @@
       <!-- ── User table ────────────────────────────────── -->
       <div class="card overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-surface-50 dark:bg-surface-800/50 text-xs font-semibold text-gray-500 uppercase">
+          <table class="table-base">
+            <thead>
               <tr>
-                <th class="px-4 py-3">User</th>
-                <th class="px-4 py-3">Role</th>
-                <th class="px-4 py-3">Department</th>
-                <th class="px-4 py-3">Status</th>
-                <th class="px-4 py-3">Last Active</th>
-                <th class="px-4 py-3 text-right">Actions</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Last Active</th>
+                <th class="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-surface-800">
+            <tbody>
               <!-- Loading Skeleton Rows -->
               <ng-container *ngIf="isLoading">
                 <app-skeleton shape="table-row"></app-skeleton>
@@ -85,35 +81,31 @@
               </ng-container>
 
               <ng-container *ngIf="!isLoading">
-                <tr *ngFor="let user of filteredUsers()" class="hover:bg-surface-50/50 dark:hover:bg-surface-800/30 transition-colors">
+                <tr *ngFor="let user of filteredUsers()">
 
-                <td class="px-4 py-3">
+                <td>
                   <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm"
-                      [style.background]="user.color">
-                      {{ user.initials }}
-                    </div>
+                    <div class="avatar-custom-md" [style.background]="user.color">{{ user.initials }}</div>
                     <div>
-                      <p class="font-medium text-surface-900 dark:text-surface-50">{{ user.name }}</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ user.email }}</p>
+                      <p class="label-text">{{ user.name }}</p>
+                      <p class="caption">{{ user.email }}</p>
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-                    {{ user.role }}
-                  </span>
+                <td>
+                  <span class="badge-primary badge">{{ user.role }}</span>
                 </td>
-                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ user.department }}</td>
-                <td class="px-4 py-3">
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        [ngClass]="user.active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'">
-                    <span [class.bg-emerald-500]="user.active" [class.bg-red-500]="!user.active" class="w-1.5 h-1.5 rounded-full"></span>
+                <td class="body-text">{{ user.department }}</td>
+                <td>
+                  <span class="badge"
+                        [ngClass]="user.active ? 'badge-success' : 'badge-danger'">
+                    <span class="w-1.5 h-1.5 rounded-full"
+                          [ngClass]="user.active ? 'bg-green-500' : 'bg-red-500'"></span>
                     {{ user.active ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{{ user.lastActive }}</td>
-                <td class="px-4 py-3 text-right">
+                <td class="caption">{{ user.lastActive }}</td>
+                <td class="text-right">
                   <div class="flex items-center justify-end gap-1">
                     <button class="btn-icon-sm" title="Edit user">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

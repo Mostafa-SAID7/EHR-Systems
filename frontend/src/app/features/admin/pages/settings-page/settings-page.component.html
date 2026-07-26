@@ -15,9 +15,7 @@
           <nav class="card p-2 space-y-0.5">
             <button *ngFor="let s of sections"
               (click)="activeSection = s.key"
-              [class]="activeSection === s.key
-                ? 'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-semibold'
-                : 'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 text-sm font-medium hover:bg-surface-50 dark:hover:bg-surface-800/60 transition-colors'">
+              [class]="activeSection === s.key ? 'nav-item nav-item-active' : 'nav-item'">
               <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="s.icon"/>
               </svg>

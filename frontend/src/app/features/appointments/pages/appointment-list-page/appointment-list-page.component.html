@@ -2,7 +2,7 @@
     <div class="space-y-6 stagger">
 
       <!-- ── Header ───────────────────────────────── -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="page-header">
         <div>
           <h1 class="heading-xl">Appointments</h1>
           <p class="body-text mt-1">{{ todayLabel }} — {{ todayCount }} appointments</p>
@@ -52,7 +52,7 @@
       <!-- ── Status summary pills ──────────────────── -->
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div *ngFor="let s of statusSummary"
-          class="card flex items-center gap-3 p-3 cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200">
+          class="mini-stat cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200">
           <div class="w-2.5 h-2.5 rounded-full shrink-0" [ngClass]="s.dotClass"></div>
           <div>
             <p class="text-base font-bold text-gray-900 dark:text-white tabular-nums">{{ s.count }}</p>
