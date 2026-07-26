@@ -161,6 +161,7 @@ else
 
 // ── OpenTelemetry ─────────────────────────────────────────────────────────────
 builder.Services.AddEHRTelemetry(builder.Configuration, "patient-service");
+builder.Services.AddOpenTelemetryMetrics("patient-service");
 
 // ── JWT Authentication ────────────────────────────────────────────────────────
 var jwtSecret = builder.Configuration["Jwt:Secret"]
@@ -212,6 +213,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
+app.MapPrometheusMetricsEndpoint();
 
 await app.RunAsync();
 

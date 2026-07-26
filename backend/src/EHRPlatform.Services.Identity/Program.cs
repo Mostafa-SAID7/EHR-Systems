@@ -28,6 +28,11 @@ try
            .WriteTo.Console()
            .Enrich.FromLogContext());
 
+    // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
+    // Exposes /metrics endpoint for Prometheus scraping
+    // Collects: HTTP metrics, runtime (GC, memory), process (CPU), ASP.NET Core
+    builder.Services.AddOpenTelemetryMetrics("identity-service");
+
     // ── Controllers & Swagger ─────────────────────────────────────────────────
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -162,6 +167,7 @@ try
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");
+    app.MapPrometheusMetricsEndpoint();
 
     // ── Auto-create / migrate schema on first run ─────────────────────────────
     // EnsureCreatedAsync: fast for development; switch to MigrateAsync once

@@ -17,6 +17,9 @@ try
     builder.Host.UseSerilog((ctx, config) =>
         config.ReadFrom.Configuration(ctx.Configuration));
 
+    // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
+    builder.Services.AddOpenTelemetryMetrics("analytics-service");
+
     // ── Controllers & Swagger ─────────────────────────────────────────────────
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -72,6 +75,7 @@ try
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");
+    app.MapPrometheusMetricsEndpoint();
 
     Log.Information("EHR Analytics Service starting");
     await app.RunAsync();

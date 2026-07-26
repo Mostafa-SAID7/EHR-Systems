@@ -20,6 +20,9 @@ try
            .WriteTo.Console()
            .Enrich.FromLogContext());
 
+    // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
+    builder.Services.AddOpenTelemetryMetrics("audit-service");
+
     // ── Controllers & Swagger ─────────────────────────────────────────────────
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -91,6 +94,7 @@ try
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");
+    app.MapPrometheusMetricsEndpoint();
 
     Log.Information("EHR Audit Service starting");
     await app.RunAsync();

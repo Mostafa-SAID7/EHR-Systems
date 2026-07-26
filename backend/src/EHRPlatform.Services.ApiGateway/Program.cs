@@ -26,6 +26,9 @@ try
            .WriteTo.Console()
            .Enrich.FromLogContext());
 
+    // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
+    builder.Services.AddOpenTelemetryMetrics("api-gateway");
+
     // ── YARP Reverse Proxy ────────────────────────────────────────────────────
     builder.Services.AddReverseProxy()
         .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
@@ -189,6 +192,7 @@ try
 
     // 7. Health & proxy
     app.MapHealthChecks("/health");
+    app.MapPrometheusMetricsEndpoint();
     app.MapReverseProxy();
 
     Log.Information("EHR API Gateway starting on port 5000");

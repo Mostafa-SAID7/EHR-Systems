@@ -10,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((ctx, config) =>
     config.ReadFrom.Configuration(ctx.Configuration));
 
+// ── OpenTelemetry Metrics ─────────────────────────────────────────────────────
+builder.Services.AddOpenTelemetryMetrics("notification-service");
+
 // ── SignalR ───────────────────────────────────────────────────────────────────
 builder.Services.AddSignalR(opts =>
 {
@@ -73,5 +76,6 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<EHRNotificationHub>("/hubs/notifications");
 app.MapHealthChecks("/health");
+app.MapPrometheusMetricsEndpoint();
 
 await app.RunAsync();
