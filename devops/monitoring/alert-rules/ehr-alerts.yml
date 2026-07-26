@@ -1,0 +1,342 @@
+# =============================================================================
+# Prometheus Alert Rules — EHR Platform
+# Critical alerts for application, infrastructure, and HIPAA compliance
+# =============================================================================
+
+groups:
+  - name: ehr.application
+    interval: 30s
+    rules:
+
+      # ────────────────────────────────────────────────────────────────────────
+      # Application-level alerts (RED Method)
+      # ────────────────────────────────────────────────────────────────────────
+
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > 0.02
+        for: 5m
+        labels:
+          severity: critical
+          service: "{{ $labels.service }}"
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 2%) over last 5 minutes"
+
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (service, le))
+          > 2
+        for: 5m
+        labels:
+          severity: critical
+          service: "{{ $labels.service }}"
+        annotations:
+          summary: "High P99 latency on {{ $labels.service }}"
+          description: "P99 latency is {{ $value }}s (threshold: 2s) over last 5 minutes"
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (service, le))
+          > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: "{{ $labels.service }}"
+        annotations:
+          summary: "High P95 latency on {{ $labels.service }}"
+          description: "P95 latency is {{ $value }}s (threshold: 1s) over last 10 minutes"
+
+      - alert: ServiceHealthCheckFailing
+        expr: |
+          up{job="ehr-services"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: "{{ $labels.instance }}"
+        annotations:
+          summary: "Service {{ $labels.instance }} health check failing"
+          description: "Service has been unreachable for 2+ minutes. Immediate investigation required."
+
+      - alert: HighErrorRateDatabase
+        expr: |
+          (
+            sum(rate(db_connection_errors_total[5m])) by (service)
+            /
+            sum(rate(db_queries_total[5m])) by (service)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: "{{ $labels.service }}"
+        annotations:
+          summary: "High database error rate on {{ $labels.service }}"
+          description: "Database error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+  - name: ehr.queue
+    interval: 30s
+    rules:
+
+      # ────────────────────────────────────────────────────────────────────────
+      # Message queue alerts (Kafka consumer lag)
+      # ────────────────────────────────────────────────────────────────────────
+
+      - alert: HighKafkaConsumerLag
+        expr: |
+          sum(kafka_consumer_lag) by (consumer_group, topic) > 10000
+        for: 15m
+        labels:
+          severity: warning
+          consumer_group: "{{ $labels.consumer_group }}"
+        annotations:
+          summary: "High Kafka consumer lag on {{ $labels.consumer_group }}"
+          description: |
+            Consumer group {{ $labels.consumer_group }} has {{ $value }} messages of lag on topic {{ $labels.topic }}.
+            This indicates slow processing or bottleneck in the consumer.
+
+      - alert: KafkaConsumerLagGrowing
+        expr: |
+          rate(kafka_consumer_lag[5m]) > 0
+        for: 20m
+        labels:
+          severity: warning
+          consumer_group: "{{ $labels.consumer_group }}"
+        annotations:
+          summary: "Kafka consumer lag growing for {{ $labels.consumer_group }}"
+          description: |
+            Consumer {{ $labels.consumer_group }} lag is continuously increasing.
+            Producer rate > consumer rate. Scale up consumers or investigate slowness.
+
+  - name: ehr.infrastructure
+    interval: 30s
+    rules:
+
+      # ────────────────────────────────────────────────────────────────────────
+      # Infrastructure alerts (USE Method)
+      # ────────────────────────────────────────────────────────────────────────
+
+      - alert: HighCPUUtilization
+        expr: |
+          (100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance) * 100)) > 85
+        for: 10m
+        labels:
+          severity: warning
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "High CPU utilization on {{ $labels.instance }}"
+          description: "CPU utilization is {{ $value | humanize }}% (threshold: 85%) over last 10 minutes"
+
+      - alert: HighMemoryUtilization
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "High memory utilization on {{ $labels.instance }}"
+          description: "Memory utilization is {{ $value | humanize }}% (threshold: 85%) over last 10 minutes"
+
+      - alert: HighDiskUsage
+        expr: |
+          (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanize }}% (threshold: 80%). Running out of space."
+
+      - alert: DiskSpaceLow
+        expr: |
+          node_filesystem_avail_bytes{mountpoint="/"} / 1024 / 1024 / 1024 < 5
+        for: 5m
+        labels:
+          severity: critical
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "Critically low disk space on {{ $labels.instance }}"
+          description: "Less than 5GB free disk space. Risk of data loss or service interruption."
+
+  - name: ehr.database
+    interval: 30s
+    rules:
+
+      # ────────────────────────────────────────────────────────────────────────
+      # Database alerts (PostgreSQL)
+      # ────────────────────────────────────────────────────────────────────────
+
+      - alert: PostgreSQLConnectionPoolExhausted
+        expr: |
+          (pg_stat_activity_count / pg_settings_max_connections) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "PostgreSQL connection pool nearly exhausted on {{ $labels.instance }}"
+          description: |
+            {{ $value | humanizePercentage }} of connection pool in use.
+            Risk of connection refused errors. Check for slow queries or connection leaks.
+
+      - alert: PostgreSQLSlowQuery
+        expr: |
+          pg_slow_queries > 10
+        for: 10m
+        labels:
+          severity: warning
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "PostgreSQL slow queries detected on {{ $labels.instance }}"
+          description: "{{ $value }} slow queries in last 10 minutes. Consider query optimization or index addition."
+
+      - alert: PostgreSQLReplicationLag
+        expr: |
+          pg_replication_lag_seconds > 60
+        for: 5m
+        labels:
+          severity: warning
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "PostgreSQL replication lag on {{ $labels.instance }}"
+          description: "Replication lag is {{ $value }}s. Standby replica is behind primary."
+
+  - name: ehr.cache
+    interval: 30s
+    rules:
+
+      # ────────────────────────────────────────────────────────────────────────
+      # Cache alerts (Redis)
+      # ────────────────────────────────────────────────────────────────────────
+
+      - alert: RedisHighMemoryUsage
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "Redis memory usage critically high on {{ $labels.instance }}"
+          description: |
+            Redis memory is {{ $value | humanize }}% full.
+            Risk of eviction or OOM. Consider increasing maxmemory or cleaning up old keys.
+
+      - alert: RedisDown
+        expr: |
+          up{job="redis"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          instance: "{{ $labels.instance }}"
+        annotations:
+          summary: "Redis is down on {{ $labels.instance }}"
+          description: "Redis has been unreachable for 2+ minutes. Cache functionality is degraded."
+
+  - name: ehr.compliance
+    interval: 30s
+    rules:
+
+      # ────────────────────────────────────────────────────────────────────────
+      # HIPAA Compliance & Audit alerts
+      # ────────────────────────────────────────────────────────────────────────
+
+      - alert: AuditLogWriteFailure
+        expr: |
+          increase(audit_log_write_failures_total[5m]) > 0
+        labels:
+          severity: critical
+          service: audit
+        annotations:
+          summary: "Audit log write failure detected"
+          description: |
+            Failed to write audit logs (HIPAA compliance issue).
+            {{ $value }} write failures in last 5 minutes.
+            Immediate action required to prevent compliance breach.
+
+      - alert: UnencryptedDataTransfer
+        expr: |
+          increase(unencrypted_connection_attempts_total[5m]) > 0
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Unencrypted data transfer attempt detected"
+          description: |
+            {{ $value }} unencrypted connection attempts detected.
+            All PHI must be encrypted in transit (TLS). Investigate immediately.
+
+      - alert: UnauthorizedAccessAttempt
+        expr: |
+          increase(unauthorized_access_attempts_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: identity
+        annotations:
+          summary: "Multiple unauthorized access attempts"
+          description: |
+            {{ $value }} unauthorized access attempts in last 5 minutes.
+            Possible security incident or brute force attack. Review audit logs.
+
+      - alert: FailedAuthenticationRate
+        expr: |
+          (
+            sum(rate(authentication_failures_total[5m]))
+            /
+            sum(rate(authentication_attempts_total[5m]))
+          ) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: identity
+        annotations:
+          summary: "High authentication failure rate"
+          description: |
+            Authentication failure rate is {{ $value | humanizePercentage }}.
+            Possible security incident or misconfiguration. Check identity service logs.
+
+  - name: ehr.integrations
+    interval: 60s
+    rules:
+
+      # ────────────────────────────────────────────────────────────────────────
+      # External integration alerts (Payment gateway, Insurance APIs, etc.)
+      # ────────────────────────────────────────────────────────────────────────
+
+      - alert: ExternalAPICallFailure
+        expr: |
+          (
+            sum(rate(external_api_calls_failed_total[5m])) by (api_name)
+            /
+            sum(rate(external_api_calls_total[5m])) by (api_name)
+          ) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          api: "{{ $labels.api_name }}"
+        annotations:
+          summary: "High failure rate for {{ $labels.api_name }} integration"
+          description: |
+            {{ $labels.api_name }} API calls failing at {{ $value | humanizePercentage }} rate.
+            May impact payments or claims processing. Check API status and network connectivity.
+
+      - alert: ExternalAPILatencyHigh
+        expr: |
+          histogram_quantile(0.95, sum(rate(external_api_call_duration_seconds_bucket[5m])) by (api_name, le))
+          > 5
+        for: 5m
+        labels:
+          severity: warning
+          api: "{{ $labels.api_name }}"
+        annotations:
+          summary: "High latency for {{ $labels.api_name }} API calls"
+          description: |
+            {{ $labels.api_name }} P95 response time is {{ $value }}s.
+            External service may be slow or unavailable. Consider circuit breaker.
+
