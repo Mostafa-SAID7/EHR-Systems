@@ -1,6 +1,5 @@
 using EHRPlatform.Common.Caching;
 using EHRPlatform.Services.Prescription.Domain.Entities;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Prescription.Application.Services;
@@ -40,11 +39,7 @@ public class PrescriptionCacheService
     public async Task SetPrescriptionAsync(PrescriptionEntity prescription)
     {
         var key = $"prescription:rx:{prescription.Id}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
-        };
-        await _cacheService.SetAsync(key, prescription, options);
+        await _cacheService.SetAsync(key, prescription, TimeSpan.FromHours(2));
         _logger.LogDebug($"Cached prescription {prescription.Id}");
     }
 
@@ -73,11 +68,7 @@ public class PrescriptionCacheService
     public async Task SetPatientPrescriptionsAsync(Guid patientId, List<PrescriptionEntity> prescriptions)
     {
         var key = $"prescription:patient:{patientId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-        };
-        await _cacheService.SetAsync(key, prescriptions, options);
+        await _cacheService.SetAsync(key, prescriptions, TimeSpan.FromHours(1));
         _logger.LogDebug($"Cached {prescriptions.Count} prescriptions for patient {patientId}");
     }
 
@@ -106,11 +97,7 @@ public class PrescriptionCacheService
     public async Task SetPatientActivePrescriptionsAsync(Guid patientId, List<PrescriptionEntity> activePrescriptions)
     {
         var key = $"prescription:active:{patientId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-        };
-        await _cacheService.SetAsync(key, activePrescriptions, options);
+        await _cacheService.SetAsync(key, activePrescriptions, TimeSpan.FromMinutes(30));
         _logger.LogDebug($"Cached {activePrescriptions.Count} active prescriptions for patient {patientId}");
     }
 
@@ -143,11 +130,7 @@ public class PrescriptionCacheService
     public async Task SetRefillRequestAsync(PrescriptionRefill refillRequest)
     {
         var key = $"prescription:refill:{refillRequest.Id}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-        };
-        await _cacheService.SetAsync(key, refillRequest, options);
+        await _cacheService.SetAsync(key, refillRequest, TimeSpan.FromHours(1));
         _logger.LogDebug($"Cached refill request {refillRequest.Id}");
     }
 
@@ -176,11 +159,7 @@ public class PrescriptionCacheService
     public async Task SetPatientPendingRefillsAsync(Guid patientId, List<PrescriptionRefill> pendingRefills)
     {
         var key = $"prescription:refills:pending:{patientId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15)
-        };
-        await _cacheService.SetAsync(key, pendingRefills, options);
+        await _cacheService.SetAsync(key, pendingRefills, TimeSpan.FromMinutes(15));
         _logger.LogDebug($"Cached {pendingRefills.Count} pending refill requests for patient {patientId}");
     }
 
@@ -209,11 +188,7 @@ public class PrescriptionCacheService
     public async Task SetPrescriptionRefillsAsync(Guid prescriptionId, List<PrescriptionRefill> refills)
     {
         var key = $"prescription:rx:refills:{prescriptionId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-        };
-        await _cacheService.SetAsync(key, refills, options);
+        await _cacheService.SetAsync(key, refills, TimeSpan.FromHours(1));
         _logger.LogDebug($"Cached {refills.Count} refills for prescription {prescriptionId}");
     }
 

@@ -1,6 +1,5 @@
 using EHRPlatform.Common.Caching;
 using EHRPlatform.Services.Clinical.Domain.Entities;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Clinical.Application.Services;
@@ -40,11 +39,7 @@ public class ClinicalCacheService
     public async Task SetClinicalNoteAsync(ClinicalNote clinicalNote)
     {
         var key = $"clinical:note:{clinicalNote.Id}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-        };
-        await _cacheService.SetAsync(key, clinicalNote, options);
+        await _cacheService.SetAsync(key, clinicalNote, TimeSpan.FromHours(1));
         _logger.LogDebug($"Cached clinical note {clinicalNote.Id}");
     }
 
@@ -73,11 +68,7 @@ public class ClinicalCacheService
     public async Task SetPatientClinicalNotesAsync(Guid patientId, List<ClinicalNote> notes)
     {
         var key = $"clinical:notes:patient:{patientId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-        };
-        await _cacheService.SetAsync(key, notes, options);
+        await _cacheService.SetAsync(key, notes, TimeSpan.FromMinutes(30));
         _logger.LogDebug($"Cached {notes.Count} clinical notes for patient {patientId}");
     }
 
@@ -110,11 +101,7 @@ public class ClinicalCacheService
     public async Task SetVitalSignsAsync(VitalSigns vitalSigns)
     {
         var key = $"clinical:vitals:{vitalSigns.Id}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-        };
-        await _cacheService.SetAsync(key, vitalSigns, options);
+        await _cacheService.SetAsync(key, vitalSigns, TimeSpan.FromMinutes(30));
         _logger.LogDebug($"Cached vital signs {vitalSigns.Id}");
     }
 
@@ -133,11 +120,7 @@ public class ClinicalCacheService
     public async Task SetLatestPatientVitalSignsAsync(Guid patientId, VitalSigns vitalSigns)
     {
         var key = $"clinical:vitals:latest:{patientId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15)
-        };
-        await _cacheService.SetAsync(key, vitalSigns, options);
+        await _cacheService.SetAsync(key, vitalSigns, TimeSpan.FromMinutes(15));
         _logger.LogDebug($"Cached latest vital signs for patient {patientId}");
     }
 
@@ -170,11 +153,7 @@ public class ClinicalCacheService
     public async Task SetClinicalNoteDiagnosesAsync(Guid clinicalNoteId, List<ClinicalDiagnosis> diagnoses)
     {
         var key = $"clinical:diagnoses:note:{clinicalNoteId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-        };
-        await _cacheService.SetAsync(key, diagnoses, options);
+        await _cacheService.SetAsync(key, diagnoses, TimeSpan.FromHours(1));
         _logger.LogDebug($"Cached {diagnoses.Count} diagnoses for note {clinicalNoteId}");
     }
 
@@ -207,11 +186,7 @@ public class ClinicalCacheService
     public async Task SetClinicalNoteProceduresAsync(Guid clinicalNoteId, List<ClinicalProcedure> procedures)
     {
         var key = $"clinical:procedures:note:{clinicalNoteId}";
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-        };
-        await _cacheService.SetAsync(key, procedures, options);
+        await _cacheService.SetAsync(key, procedures, TimeSpan.FromHours(1));
         _logger.LogDebug($"Cached {procedures.Count} procedures for note {clinicalNoteId}");
     }
 
