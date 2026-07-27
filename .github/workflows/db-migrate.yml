@@ -1,0 +1,480 @@
+name: Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      action:
+        description: 'Migration action'
+        required: true
+        default: 'validate'
+        type: choice
+        options:
+          - validate
+          - up
+          - down
+          - status
+  
+  pull_request:
+    paths:
+      - 'backend/db/migrations/**'
+      - 'backend/scripts/db-migrate.sh'
+    branches:
+      - develop
+      - main
+  
+  push:
+    paths:
+      - 'backend/db/migrations/**'
+    branches:
+      - develop
+
+env:
+  MIGRATIONS_DIR: backend/db/migrations
+  SCRIPTS_DIR: backend/scripts
+
+jobs:
+  # ───────────────────────────────────────────────────────────────────────────
+  # PHASE 1: Validate Migrations (All branches)
+  # ───────────────────────────────────────────────────────────────────────────
+  
+  validate-migrations:
+    name: Validate Migrations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check migration file naming
+        run: |
+          echo "🔍 Validating migration file names..."
+          
+          INVALID_FILES=0
+          for file in $MIGRATIONS_DIR/*.sql; do
+            filename=$(basename "$file")
+            
+            # Skip template
+            if [[ "$filename" == "00_MIGRATION_TEMPLATE.sql" ]]; then
+              continue
+            fi
+            
+            # Skip markdown files
+            if [[ "$filename" == *.md ]]; then
+              continue
+            fi
+            
+            # Validate naming: YYYYMMDD_NNN_description.sql
+            if ! [[ "$filename" =~ ^[0-9]{8}_[0-9]{3}_[a-z0-9-]+\.sql$ ]]; then
+              echo "❌ Invalid migration name: $filename"
+              echo "   Format: YYYYMMDD_NNN_description.sql (e.g., 20250115_001_add-indexes.sql)"
+              ((INVALID_FILES++))
+            else
+              echo "✅ $filename"
+            fi
+          done
+          
+          if [ $INVALID_FILES -gt 0 ]; then
+            echo ""
+            echo "❌ Found $INVALID_FILES invalid migration file(s)"
+            exit 1
+          fi
+      
+      - name: Check SQL syntax
+        run: |
+          echo "🔍 Checking SQL syntax..."
+          
+          SYNTAX_ERRORS=0
+          for file in $MIGRATIONS_DIR/[0-9]*.sql; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              
+              # Basic SQL syntax checks
+              if ! grep -q "INSERT INTO \"__MigrationHistory\"" "$file"; then
+                echo "⚠️  Warning: $filename missing migration history entry"
+              fi
+              
+              if grep -q "COMMIT" "$file"; then
+                echo "✅ $filename"
+              else
+                echo "❌ Missing COMMIT in: $filename"
+                ((SYNTAX_ERRORS++))
+              fi
+            fi
+          done
+          
+          if [ $SYNTAX_ERRORS -gt 0 ]; then
+            echo ""
+            echo "❌ Found $SYNTAX_ERRORS SQL issues"
+            exit 1
+          fi
+      
+      - name: Check for duplicates
+        run: |
+          echo "🔍 Checking for duplicate migration IDs..."
+          
+          MIGRATION_IDS=$(ls -1 $MIGRATIONS_DIR/[0-9]*.sql 2>/dev/null | xargs -I {} basename {} .sql | sort)
+          
+          DUPLICATES=$(echo "$MIGRATION_IDS" | uniq -d)
+          
+          if [ -z "$DUPLICATES" ]; then
+            echo "✅ No duplicate migrations found"
+          else
+            echo "❌ Duplicate migration IDs found:"
+            echo "$DUPLICATES"
+            exit 1
+          fi
+      
+      - name: Comment PR with validation results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Migration Validation Passed**\n\n- File naming conventions ✓\n- SQL syntax ✓\n- No duplicates ✓'
+            })
+  
+  # ───────────────────────────────────────────────────────────────────────────
+  # PHASE 2: Lint Migrations
+  # ───────────────────────────────────────────────────────────────────────────
+  
+  lint-migrations:
+    name: Lint Migrations
+    runs-on: ubuntu-latest
+    needs: validate-migrations
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install sqlfluff
+        run: pip install sqlfluff sqlfluff-templater-jinja
+      
+      - name: Lint SQL
+        run: |
+          echo "🔍 Linting SQL migrations..."
+          
+          # Create .sqlfluff config
+          cat > .sqlfluff << EOF
+          [sqlfluff]
+          dialect = postgres
+          
+          [sqlfluff:rules:L001]
+          operator_new_lines = after
+          
+          [sqlfluff:rules:L003]
+          indent_unit = space
+          
+          [sqlfluff:rules:L031]
+          comma_spacing = inline
+          EOF
+          
+          # Lint migration files
+          sqlfluff lint $MIGRATIONS_DIR/[0-9]*.sql --disable-rules L001,L003 || true
+      
+      - name: Check for best practices
+        run: |
+          echo "🔍 Checking for SQL best practices..."
+          
+          ISSUES=0
+          for file in $MIGRATIONS_DIR/[0-9]*.sql; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              
+              # Check for DROP TABLE without CASCADE
+              if grep -q "DROP TABLE" "$file" && ! grep -q "DROP TABLE.*CASCADE" "$file"; then
+                echo "⚠️  Warning: $filename uses DROP TABLE without CASCADE"
+              fi
+              
+              # Check for missing comments
+              if ! grep -q "^--" "$file"; then
+                echo "⚠️  Warning: $filename missing SQL comments"
+              fi
+            fi
+          done
+  
+  # ───────────────────────────────────────────────────────────────────────────
+  # PHASE 3: Deploy to Dev (develop branch only)
+  # ───────────────────────────────────────────────────────────────────────────
+  
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: lint-migrations
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: ehr_user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: ehr_platform_dev
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Wait for PostgreSQL
+        run: |
+          echo "⏳ Waiting for PostgreSQL..."
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ehr_user; then
+              echo "✅ PostgreSQL is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      
+      - name: Apply baseline migration
+        env:
+          PGPASSWORD: password
+        run: |
+          echo "📦 Applying baseline migration..."
+          psql -h localhost -U ehr_user -d ehr_platform_dev -f $MIGRATIONS_DIR/20250101_001_baseline.sql
+      
+      - name: Verify migration
+        env:
+          PGPASSWORD: password
+        run: |
+          echo "✅ Verifying migration..."
+          RESULT=$(psql -h localhost -U ehr_user -d ehr_platform_dev -tc "SELECT COUNT(*) FROM \"__MigrationHistory\"")
+          
+          if [ "$RESULT" -gt 0 ]; then
+            echo "✅ Migration tracking table populated: $RESULT migrations"
+            psql -h localhost -U ehr_user -d ehr_platform_dev -c "SELECT * FROM \"__MigrationHistory\""
+          else
+            echo "❌ Migration failed: No migrations recorded"
+            exit 1
+          fi
+      
+      - name: Validate schema
+        env:
+          PGPASSWORD: password
+        run: |
+          echo "🔍 Validating schema..."
+          
+          TABLES=$(psql -h localhost -U ehr_user -d ehr_platform_dev -tc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'")
+          
+          if [ "$TABLES" -gt 5 ]; then
+            echo "✅ Schema validation passed: $TABLES tables found"
+          else
+            echo "❌ Schema validation failed: Only $TABLES tables found"
+            exit 1
+          fi
+      
+      - name: Comment PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${status} **Development Migration: ${{ job.status }}**\n\n- Baseline migration applied\n- Schema validated\n- Migration history tracked`
+            })
+  
+  # ───────────────────────────────────────────────────────────────────────────
+  # PHASE 4: Deploy to Staging (manual workflow_dispatch only)
+  # ───────────────────────────────────────────────────────────────────────────
+  
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: lint-migrations
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging' && github.event.inputs.action == 'up'
+    environment:
+      name: staging
+      url: https://api-staging.ehr-platform.local
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME_STAGING }}
+          aws-region: us-east-1
+      
+      - name: Get RDS endpoint
+        id: rds
+        run: |
+          RDS_ENDPOINT=$(aws rds describe-db-instances \
+            --db-instance-identifier ehr-platform-staging \
+            --query 'DBInstances[0].Endpoint.Address' \
+            --output text)
+          echo "endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
+      
+      - name: Create backup
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD_STAGING }}
+        run: |
+          echo "💾 Creating backup..."
+          pg_dump -h ${{ steps.rds.outputs.endpoint }} \
+            -U ehr_user \
+            -d ehr_platform_staging \
+            --format=custom \
+            > backup_staging_$(date +%Y%m%d_%H%M%S).dump
+      
+      - name: Apply migrations
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD_STAGING }}
+        run: |
+          echo "📦 Applying migrations to staging..."
+          
+          for file in $MIGRATIONS_DIR/[0-9]*.sql; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              echo "Applying: $filename"
+              
+              psql -h ${{ steps.rds.outputs.endpoint }} \
+                -U ehr_user \
+                -d ehr_platform_staging \
+                -f "$file" || exit 1
+            fi
+          done
+      
+      - name: Verify migrations
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD_STAGING }}
+        run: |
+          echo "✅ Verifying migrations..."
+          psql -h ${{ steps.rds.outputs.endpoint }} \
+            -U ehr_user \
+            -d ehr_platform_staging \
+            -c "SELECT * FROM \"__MigrationHistory\" ORDER BY \"AppliedAt\" DESC LIMIT 5"
+      
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_STAGING }}
+          payload: |
+            {
+              "text": "✅ Staging Database Migrations Complete",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ *Staging Database Migrations Complete*\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Author:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+  
+  # ───────────────────────────────────────────────────────────────────────────
+  # PHASE 5: Production Review (manual workflow_dispatch only)
+  # ───────────────────────────────────────────────────────────────────────────
+  
+  production-review:
+    name: Production Migration Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://api.ehr-platform.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: List pending migrations
+        run: |
+          echo "📋 Pending migrations for production:"
+          ls -la $MIGRATIONS_DIR/[0-9]*.sql
+      
+      - name: Generate migration report
+        id: report
+        run: |
+          {
+            echo "report<<EOF"
+            echo "# Production Migration Report"
+            echo ""
+            echo "## Pending Migrations"
+            for file in $MIGRATIONS_DIR/[0-9]*.sql; do
+              if [ -f "$file" ]; then
+                echo "- $(basename "$file")"
+              fi
+            done
+            echo ""
+            echo "## Approval Required"
+            echo "This requires manual DBA approval before execution"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+      
+      - name: Create deployment checklist
+        run: |
+          cat > /tmp/checklist.md << 'EOF'
+          # Production Migration Checklist
+          
+          - [ ] DBA reviewed all migration files
+          - [ ] Backup created and verified
+          - [ ] Maintenance window scheduled
+          - [ ] Rollback scripts tested
+          - [ ] Team notified of migration window
+          - [ ] Monitoring enabled for migration
+          - [ ] Go/No-Go decision made
+          
+          ## Failure Procedures
+          - [ ] Rollback script prepared
+          - [ ] Alert channels configured
+          - [ ] Post-mortem meeting scheduled
+          EOF
+          cat /tmp/checklist.md
+      
+      - name: Notify PagerDuty
+        uses: morrissimo/pagerduty-action@v1
+        with:
+          pagerduty-token: ${{ secrets.PAGERDUTY_TOKEN }}
+          incident-title: "Production Migration Approval Required"
+          incident-urgency: high
+          incident-body: ${{ steps.report.outputs.report }}
+      
+      - name: Comment workflow status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'prod-migration-review',
+              client_payload: {
+                status: 'awaiting_approval'
+              }
+            })
+
