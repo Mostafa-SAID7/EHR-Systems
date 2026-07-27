@@ -5,6 +5,7 @@ using EHRPlatform.Common.Search;
 using EHRPlatform.Common.Security;
 using EHRPlatform.Services.Identity.Application.Identity.Extensions;
 using EHRPlatform.Services.Identity.Data;
+using EHRPlatform.Services.Identity.Extensions;
 using EHRPlatform.Services.Identity.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -32,6 +33,7 @@ try
     // Exposes /metrics endpoint for Prometheus scraping
     // Collects: HTTP metrics, runtime (GC, memory), process (CPU), ASP.NET Core
     builder.Services.AddOpenTelemetryObservability("identity-service");
+    builder.Services.AddIdentityMetrics();  // ← Add identity-specific metrics
 
     // ── Controllers & Swagger ─────────────────────────────────────────────────
     builder.Services.AddControllers();

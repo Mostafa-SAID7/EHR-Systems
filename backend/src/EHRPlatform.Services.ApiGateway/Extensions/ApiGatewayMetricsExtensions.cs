@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.Metrics;
 
-namespace EHRPlatform.Common.Extensions;
+namespace EHRPlatform.Services.ApiGateway.Extensions;
 
 /// <summary>
 /// API Gateway metrics collection via custom middleware.

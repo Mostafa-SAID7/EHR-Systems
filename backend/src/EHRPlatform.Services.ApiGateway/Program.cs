@@ -2,12 +2,13 @@ using System.Text;
 using System.Threading.RateLimiting;
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Middleware;
+using EHRPlatform.Services.ApiGateway.Extensions;
+using EHRPlatform.Services.ApiGateway.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using EHRPlatform.Services.ApiGateway.Middleware;
 
 // ── Bootstrap logger ──────────────────────────────────────────────────────────
 Log.Logger = new LoggerConfiguration()
