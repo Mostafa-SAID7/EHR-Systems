@@ -45,4 +45,37 @@ public interface IDapperContext
         object? parameters          = null,
         string splitOn              = "Id",
         CancellationToken ct        = default);
+
+    /// <summary>
+    /// Execute a batch of SQL statements that return multiple independent result
+    /// sets in one round-trip (Dapper GridReader pattern).
+    ///
+    /// Use for complex reporting queries — e.g., analytics dashboards that need
+    /// summary counts + detail rows + aggregates from a single database call.
+    ///
+    /// Example:
+    /// <code>
+    /// var sql = "SELECT COUNT(*) FROM invoices; SELECT * FROM invoices WHERE status = @status;";
+    /// await dapper.QueryMultipleAsync(sql, new { status = "Pending" }, async grid =>
+    /// {
+    ///     var total   = await grid.ReadFirstAsync&lt;int&gt;();
+    ///     var pending = (await grid.ReadAsync&lt;Invoice&gt;()).ToList();
+    /// });
+    /// </code>
+    /// </summary>
+    Task QueryMultipleAsync(
+        string sql,
+        Func<Dapper.SqlMapper.GridReader, Task> read,
+        object? parameters          = null,
+        CancellationToken ct        = default);
+
+    /// <summary>
+    /// Execute a batch of SQL statements that return multiple result sets,
+    /// returning a value computed by the <paramref name="read"/> callback.
+    /// </summary>
+    Task<TResult> QueryMultipleAsync<TResult>(
+        string sql,
+        Func<Dapper.SqlMapper.GridReader, Task<TResult>> read,
+        object? parameters          = null,
+        CancellationToken ct        = default);
 }

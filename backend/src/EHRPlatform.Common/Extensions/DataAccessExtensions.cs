@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace EHRPlatform.Common.Extensions;
@@ -71,6 +72,34 @@ public static class DataAccessExtensions
                         errorCodesToAdd: null);
                 })
                 .EnableDetailedErrors());
+    }
+
+    /// <summary>
+    /// Register data-access with a MySQL connection string (MySqlConnector / Pomelo).
+    /// Uses MySqlConnector directly (no EF Core provider — raw ADO.NET + Dapper).
+    ///
+    /// Use when a service needs MySQL for a specific aggregate or reporting store
+    /// (e.g. legacy billing tables).  For full EF Core MySQL support add
+    /// Pomelo.EntityFrameworkCore.MySql and call UseMySQL inside the options action.
+    /// </summary>
+    public static IServiceCollection AddMySqlDataAccess(
+        this IServiceCollection services,
+        string? connectionString)
+    {
+        if (string.IsNullOrEmpty(connectionString))
+            throw new ArgumentException("MySQL connection string is required.", nameof(connectionString));
+
+        // Register a named factory so services can open raw MySqlConnection instances.
+        services.AddScoped<Func<MySqlConnector.MySqlConnection>>(_ =>
+            () => new MySqlConnector.MySqlConnection(connectionString));
+
+        // Register the migration executor for manual schema management.
+        services.AddScoped<Migrations.MySqlMigrationExecutor>(sp =>
+            new Migrations.MySqlMigrationExecutor(
+                connectionString,
+                sp.GetRequiredService<ILogger<Migrations.MySqlMigrationExecutor>>()));
+
+        return services;
     }
 
     /// <summary>

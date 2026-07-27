@@ -24,16 +24,19 @@ public abstract class BaseDbContext : DbContext
     /// <summary>
     /// Configure global model conventions and behaviors.
     /// Automatically applied to all contexts derived from this class.
+    ///
+    /// NOTE: We intentionally do NOT set a global HaveMaxLength here.
+    /// A blanket 500-char cap silently truncates clinical SOAP notes,
+    /// audit ChangeDetails (JSON diffs), and OutboxEvent.EventData payloads.
+    /// Each entity's IEntityTypeConfiguration must set explicit limits on
+    /// bounded fields (codes, names, emails) and leave unbounded fields
+    /// (note content, JSON blobs) as the database default (TEXT on Postgres).
     /// </summary>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
 
-        // String properties default to VARCHAR (database-optimized)
-        configurationBuilder.Properties<string>()
-            .HaveMaxLength(500); // Prevent unbounded strings
-
-        // GUID properties use field-backed access mode (performance optimization)
+        // GUID properties use standard conversion (performance optimization)
         configurationBuilder.Properties<Guid>()
             .HaveConversion<Guid>();
     }
@@ -214,7 +217,12 @@ public abstract class BaseDbContext : DbContext
 
     /// <summary>
     /// Interceptor for soft delete support.
-    /// Prevents hard deletion - converts DELETE to UPDATE (setting DeletedAt).
+    /// Prevents hard deletion — converts DELETE to UPDATE (setting DeletedAt + UpdatedAt).
+    ///
+    /// BUG FIX: Previously, AuditingInterceptor ran first and saw the entity in
+    /// EntityState.Deleted, so it skipped the UpdatedAt assignment. Then this
+    /// interceptor flipped the state to Modified but UpdatedAt was never touched.
+    /// Fix: always stamp UpdatedAt here so soft-delete timestamps are consistent.
     /// </summary>
     private sealed class SoftDeleteInterceptor : SaveChangesInterceptor
     {
@@ -225,18 +233,7 @@ public abstract class BaseDbContext : DbContext
             if (eventData.Context is not DbContext context)
                 return base.SavingChanges(eventData, result);
 
-            var deletedEntries = context.ChangeTracker
-                .Entries<BaseEntity>()
-                .Where(e => e.State == EntityState.Deleted)
-                .ToList();
-
-            foreach (var entry in deletedEntries)
-            {
-                // Convert hard delete to soft delete
-                entry.State = EntityState.Modified;
-                entry.Entity.DeletedAt = DateTime.UtcNow;
-            }
-
+            ApplySoftDelete(context);
             return base.SavingChanges(eventData, result);
         }
 
@@ -248,6 +245,13 @@ public abstract class BaseDbContext : DbContext
             if (eventData.Context is not DbContext context)
                 return await base.SavingChangesAsync(eventData, result, cancellationToken);
 
+            ApplySoftDelete(context);
+            return await base.SavingChangesAsync(eventData, result, cancellationToken);
+        }
+
+        private static void ApplySoftDelete(DbContext context)
+        {
+            var now = DateTime.UtcNow;
             var deletedEntries = context.ChangeTracker
                 .Entries<BaseEntity>()
                 .Where(e => e.State == EntityState.Deleted)
@@ -255,12 +259,13 @@ public abstract class BaseDbContext : DbContext
 
             foreach (var entry in deletedEntries)
             {
-                // Convert hard delete to soft delete
+                // Convert hard delete to soft delete and stamp both timestamps.
                 entry.State = EntityState.Modified;
-                entry.Entity.DeletedAt = DateTime.UtcNow;
+                entry.Entity.DeletedAt = now;
+                // Ensure UpdatedAt is always current — AuditingInterceptor runs
+                // first and skips Deleted entries, so we must set it here.
+                entry.Entity.UpdatedAt = now;
             }
-
-            return await base.SavingChangesAsync(eventData, result, cancellationToken);
         }
     }
 }

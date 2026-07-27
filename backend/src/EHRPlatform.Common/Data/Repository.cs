@@ -24,14 +24,29 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
     }
 
     /// <summary>
-    /// Get entity by ID asynchronously.
+    /// Get entity by ID using the EF Core identity cache.
+    /// Fast for write-then-read within the same unit of work, but may return a
+    /// tracked instance that reflects in-memory mutations rather than persisted data.
     /// Global query filter automatically excludes soft-deleted entities.
     /// </summary>
     public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         ArgumentGuard.NotEmpty(id, nameof(id));
-        
         return await _dbSet.FindAsync(new object[] { id }, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Get entity by ID bypassing the EF Core identity cache (AsNoTracking).
+    /// Always issues a SELECT — guarantees the freshest database state.
+    /// Use for HIPAA-sensitive reads: clinical notes, audit entries, prescriptions.
+    /// Global query filter automatically excludes soft-deleted entities.
+    /// </summary>
+    public virtual async Task<TEntity?> GetByIdNoTrackingAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        ArgumentGuard.NotEmpty(id, nameof(id));
+        return await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
     /// <summary>

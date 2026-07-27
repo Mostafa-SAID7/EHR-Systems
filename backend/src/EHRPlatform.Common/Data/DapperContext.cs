@@ -84,4 +84,30 @@ public sealed class DapperContext : IDapperContext
         var conn = await GetOpenConnectionAsync(ct);
         return await conn.QueryAsync(sql, map, parameters, splitOn: splitOn);
     }
+
+    /// <inheritdoc />
+    public async Task QueryMultipleAsync(
+        string sql,
+        Func<SqlMapper.GridReader, Task> read,
+        object? parameters   = null,
+        CancellationToken ct = default)
+    {
+        var conn = await GetOpenConnectionAsync(ct);
+        using var grid = await conn.QueryMultipleAsync(
+            new CommandDefinition(sql, parameters, cancellationToken: ct));
+        await read(grid);
+    }
+
+    /// <inheritdoc />
+    public async Task<TResult> QueryMultipleAsync<TResult>(
+        string sql,
+        Func<SqlMapper.GridReader, Task<TResult>> read,
+        object? parameters   = null,
+        CancellationToken ct = default)
+    {
+        var conn = await GetOpenConnectionAsync(ct);
+        using var grid = await conn.QueryMultipleAsync(
+            new CommandDefinition(sql, parameters, cancellationToken: ct));
+        return await read(grid);
+    }
 }
