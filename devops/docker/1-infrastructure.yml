@@ -1,0 +1,291 @@
+# =============================================================================
+# Infrastructure Layer: Databases, Caches, Message Queues
+# Single Responsibility: Data storage and messaging
+# Startup: ~30 seconds
+# =============================================================================
+
+version: '3.8'
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+networks:
+  ehr-network:
+    driver: bridge
+
+volumes:
+  postgres-identity-data:
+  postgres-patient-data:
+  postgres-clinical-data:
+  postgres-appointments-data:
+  postgres-audit-data:
+  mongodb-data:
+  mysql-billing-data:
+  redis-data:
+  zookeeper-data:
+  kafka-data:
+  rabbitmq-data:
+  elasticsearch-data:
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # PostgreSQL (5 instances)
+  # ─────────────────────────────────────────────────────────────
+  postgres-identity:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-identity
+    environment:
+      POSTGRES_DB: ehr_identity
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-identity-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  postgres-patient:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-patient
+    environment:
+      POSTGRES_DB: ehr_patient
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-patient-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  postgres-clinical:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-clinical
+    environment:
+      POSTGRES_DB: ehr_clinical
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-clinical-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  postgres-appointments:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-appointments
+    environment:
+      POSTGRES_DB: ehr_appointments
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres-appointments-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  postgres-audit:
+    image: postgres:16-alpine
+    container_name: ehr-postgres-audit
+    environment:
+      POSTGRES_DB: ehr_audit
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres-audit-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # MongoDB
+  # ─────────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: ehr-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-ehr_admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-ehr_mongo_password}
+      MONGO_INITDB_DATABASE: ehr_platform
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # MySQL (Billing)
+  # ─────────────────────────────────────────────────────────────
+  mysql-billing:
+    image: mysql:8.0
+    container_name: ehr-mysql-billing
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ehr_billing
+      MYSQL_USER: ${MYSQL_USER:-ehr_billing_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-billing_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-billing-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Redis
+  # ─────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_password}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # RabbitMQ
+  # ─────────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: ehr-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ehr_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-ehr_password}
+      RABBITMQ_DEFAULT_VHOST: /ehr
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Zookeeper + Kafka
+  # ─────────────────────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ehr-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ehr-kafka
+    depends_on:
+      zookeeper:
+        condition: service_started
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Elasticsearch
+  # ─────────────────────────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: ehr-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -qv 'red'"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ehr-network
+    <<: *restart-policy

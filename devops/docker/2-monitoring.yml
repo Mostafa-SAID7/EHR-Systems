@@ -1,0 +1,119 @@
+# =============================================================================
+# Monitoring Layer: Prometheus, Grafana, Loki, Tempo, OTEL Collector
+# Single Responsibility: Observability (metrics, logs, traces)
+# Startup: ~20 seconds
+# Dependencies: None (can run independently)
+# =============================================================================
+
+version: '3.8'
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+networks:
+  ehr-network:
+    driver: bridge
+    external: true
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+  tempo-data:
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # Prometheus: Metrics storage
+  # ─────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: ehr-prometheus
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Grafana: Dashboards & visualization
+  # ─────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: ehr-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Loki: Log aggregation
+  # ─────────────────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: ehr-loki
+    volumes:
+      - ../monitoring/loki-config.yml:/etc/loki/local-config.yml:ro
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yml
+    ports:
+      - "3100:3100"
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Tempo: Distributed tracing backend
+  # ─────────────────────────────────────────────────────────────
+  tempo:
+    image: grafana/tempo:2.2.1
+    container_name: ehr-tempo
+    volumes:
+      - ../monitoring/tempo-config.yml:/etc/tempo.yml:ro
+      - tempo-data:/var/tempo
+    command: -config.file=/etc/tempo.yml
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # OpenTelemetry Collector: Metrics/traces/logs pipeline
+  # ─────────────────────────────────────────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.86.0
+    container_name: ehr-otel-collector
+    volumes:
+      - ../monitoring/otel-collector.yml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "4319:4318"
+      - "4320:4317"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - ehr-network
+    <<: *restart-policy

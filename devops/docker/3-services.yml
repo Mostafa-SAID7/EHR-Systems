@@ -1,0 +1,269 @@
+# =============================================================================
+# Microservices Layer: 10 EHR Services
+# Single Responsibility: Business logic services (one per domain)
+# Startup: ~15 seconds (after infrastructure ready)
+# Dependencies: infrastructure (postgres, mongodb, redis, rabbitmq, kafka)
+#               monitoring (otel-collector)
+# =============================================================================
+
+version: '3.8'
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+x-common-env: &common-env
+  ASPNETCORE_ENVIRONMENT: Docker
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://otel-collector:4318
+  OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: http://otel-collector:4317
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_USERNAME: ${RABBITMQ_USER:-ehr_user}
+  RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-ehr_password}
+  REDIS_CONNECTION_STRING: redis:6379,password=${REDIS_PASSWORD:-redis_password}
+  MONGODB_CONNECTION_STRING: mongodb://${MONGO_USER:-ehr_admin}:${MONGO_PASSWORD:-ehr_mongo_password}@mongodb:27017/ehr_platform?authSource=admin
+
+networks:
+  ehr-network:
+    driver: bridge
+    external: true
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # API Gateway (Port 5000)
+  # ─────────────────────────────────────────────────────────────
+  api-gateway:
+    image: ehr-platform/api-gateway:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.ApiGateway/Dockerfile
+    container_name: ehr-api-gateway
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - otel-collector
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Identity Service (Port 5001)
+  # ─────────────────────────────────────────────────────────────
+  identity-service:
+    image: ehr-platform/identity-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Identity/Dockerfile
+    container_name: ehr-identity-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5001
+      ConnectionStrings__DefaultConnection: Server=postgres-identity;Port=5432;Database=ehr_identity;User Id=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};
+      Jwt__Secret: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres-identity:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Patient Service (Port 5002)
+  # ─────────────────────────────────────────────────────────────
+  patient-service:
+    image: ehr-platform/patient-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Patient/Dockerfile
+    container_name: ehr-patient-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5002
+      ConnectionStrings__DefaultConnection: Server=postgres-patient;Port=5432;Database=ehr_patient;User Id=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};
+    ports:
+      - "5002:5002"
+    depends_on:
+      postgres-patient:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Clinical Service (Port 5003)
+  # ─────────────────────────────────────────────────────────────
+  clinical-service:
+    image: ehr-platform/clinical-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Clinical/Dockerfile
+    container_name: ehr-clinical-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5003
+      ConnectionStrings__DefaultConnection: Server=postgres-clinical;Port=5432;Database=ehr_clinical;User Id=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};
+    ports:
+      - "5003:5003"
+    depends_on:
+      postgres-clinical:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Appointment Service (Port 5004)
+  # ─────────────────────────────────────────────────────────────
+  appointment-service:
+    image: ehr-platform/appointment-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Appointment/Dockerfile
+    container_name: ehr-appointment-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5004
+      ConnectionStrings__DefaultConnection: Server=postgres-appointments;Port=5432;Database=ehr_appointments;User Id=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};
+    ports:
+      - "5004:5004"
+    depends_on:
+      postgres-appointments:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Prescription Service (Port 5005)
+  # ─────────────────────────────────────────────────────────────
+  prescription-service:
+    image: ehr-platform/prescription-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Prescription/Dockerfile
+    container_name: ehr-prescription-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5005
+      MongoDB__ConnectionString: ${MONGODB_CONNECTION_STRING}
+    ports:
+      - "5005:5005"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Billing Service (Port 5006)
+  # ─────────────────────────────────────────────────────────────
+  billing-service:
+    image: ehr-platform/billing-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Billing/Dockerfile
+    container_name: ehr-billing-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5006
+      ConnectionStrings__DefaultConnection: Server=mysql-billing;Port=3306;Database=ehr_billing;User Id=${MYSQL_USER:-ehr_billing_user};Password=${MYSQL_PASSWORD:-billing_password};
+    ports:
+      - "5006:5006"
+    depends_on:
+      mysql-billing:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Audit Service (Port 5007)
+  # ─────────────────────────────────────────────────────────────
+  audit-service:
+    image: ehr-platform/audit-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Audit/Dockerfile
+    container_name: ehr-audit-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5007
+      ConnectionStrings__DefaultConnection: Server=postgres-audit;Port=5432;Database=ehr_audit;User Id=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres};
+    ports:
+      - "5007:5007"
+    depends_on:
+      postgres-audit:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Notification Service (Port 5008)
+  # ─────────────────────────────────────────────────────────────
+  notification-service:
+    image: ehr-platform/notification-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Notification/Dockerfile
+    container_name: ehr-notification-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5008
+      MongoDB__ConnectionString: ${MONGODB_CONNECTION_STRING}
+    ports:
+      - "5008:5008"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
+
+  # ─────────────────────────────────────────────────────────────
+  # Analytics Service (Port 5009)
+  # ─────────────────────────────────────────────────────────────
+  analytics-service:
+    image: ehr-platform/analytics-service:latest
+    build:
+      context: ../../backend
+      dockerfile: src/EHRPlatform.Services.Analytics/Dockerfile
+    container_name: ehr-analytics-service
+    environment:
+      <<: *common-env
+      ASPNETCORE_URLS: http://+:5009
+      MongoDB__ConnectionString: ${MONGODB_CONNECTION_STRING}
+      Elasticsearch__Url: http://elasticsearch:9200
+    ports:
+      - "5009:5009"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ehr-network
+    <<: *restart-policy
