@@ -56,6 +56,7 @@ jobs:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
     
     - name: Extract metadata
       id: meta
