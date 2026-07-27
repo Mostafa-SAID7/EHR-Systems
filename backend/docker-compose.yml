@@ -45,6 +45,55 @@ services:
       - ehr-network
     restart: unless-stopped
 
+  mysql:
+    image: mysql:8.0
+    container_name: ehr-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-ehr_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ehr_platform}
+      MYSQL_USER: ${MYSQL_USER:-ehr_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-ehr_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/migrations/mysql/20250101_001_baseline.sql:/docker-entrypoint-initdb.d/001_baseline.sql
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_allowed_packet=256M
+      - --innodb_buffer_pool_size=256M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER:-ehr_user}", "-p${MYSQL_PASSWORD:-ehr_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7.0
+    container_name: ehr-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-ehr_platform}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./db/migrations/mongo/20250101_001_baseline.js:/docker-entrypoint-initdb.d/001_baseline.js
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: ehr-redis
@@ -209,6 +258,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
       identity-service:
@@ -217,6 +270,8 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5000
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
       Jwt__Issuer: ${JWT_ISSUER:-ehr-platform}
@@ -240,12 +295,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5001
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
       Jwt__Issuer: ${JWT_ISSUER:-ehr-platform}
@@ -264,6 +323,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
       elasticsearch:
@@ -272,6 +333,8 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5002
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Elasticsearch__Urls: http://elasticsearch:9200
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
@@ -291,12 +354,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5003
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
       Jwt__Issuer: ${JWT_ISSUER:-ehr-platform}
@@ -315,6 +382,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
       elasticsearch:
@@ -323,6 +392,8 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5004
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Elasticsearch__Urls: http://elasticsearch:9200
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
@@ -342,12 +413,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5005
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
       Jwt__Issuer: ${JWT_ISSUER:-ehr-platform}
@@ -366,12 +441,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5006
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
       Jwt__Issuer: ${JWT_ISSUER:-ehr-platform}
@@ -390,6 +469,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
       elasticsearch:
@@ -398,6 +479,8 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5007
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Elasticsearch__Urls: http://elasticsearch:9200
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
@@ -417,12 +500,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5008
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
       Jwt__Issuer: ${JWT_ISSUER:-ehr-platform}
@@ -441,6 +528,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
       elasticsearch:
@@ -449,6 +538,8 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:5009
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:-redis_password}"
       Elasticsearch__Urls: http://elasticsearch:9200
       Jwt__Secret: ${JWT_SECRET:-your-super-secret-key-change-in-production-at-least-32-characters-long!}
@@ -472,10 +563,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
       kafka:
         condition: service_healthy
     environment:
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ehr_platform};Username=${POSTGRES_USER:-ehr_user};Password=${POSTGRES_PASSWORD:-ehr_password};Include Error Detail=true"
+      ConnectionStrings__MySQL: "Server=mysql;Port=3306;Database=${MYSQL_DATABASE:-ehr_platform};Uid=${MYSQL_USER:-ehr_user};Pwd=${MYSQL_PASSWORD:-ehr_password};"
+      ConnectionStrings__MongoDB: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-ehr_root_password}@mongodb:27017/${MONGO_DATABASE:-ehr_platform}?authSource=admin"
       Kafka__BootstrapServers: kafka:9092
       Kafka__Topics__PatientEvents: patient-events
       Kafka__Topics__AppointmentEvents: appointment-events
@@ -501,6 +598,10 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local
+  mysql_data:
+    driver: local
+  mongodb_data:
     driver: local
   redis_data:
     driver: local

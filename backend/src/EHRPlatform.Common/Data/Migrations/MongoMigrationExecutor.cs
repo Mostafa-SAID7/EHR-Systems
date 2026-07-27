@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
 namespace EHRPlatform.Common.Data.Migrations;
