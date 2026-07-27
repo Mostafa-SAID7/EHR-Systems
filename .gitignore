@@ -56,7 +56,11 @@ dist/
 # Database
 *.db
 *.sqlite
-migrations/
+# Allow SQL migrations in backend/db/migrations/
+!backend/db/migrations/
+backend/db/migrations/*.sql
+!backend/db/migrations/*.sql
+backend/db/rollback/
 
 # Secrets (never commit these!)
 appsettings.*.json
