@@ -17,10 +17,14 @@ namespace EHRPlatform.Services.Patient.Controllers;
 public class PatientsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<PatientsController> _logger;
 
-    public PatientsController(IMediator mediator)
+    public PatientsController(
+        IMediator mediator,
+        ILogger<PatientsController> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     /// <summary>
@@ -36,6 +40,42 @@ public class PatientsController : ControllerBase
     {
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetPatient), new { id = result.Id }, result);
+    }
+
+    /// <summary>
+    /// Get patient by MRN (Medical Record Number) - SLUG-BASED route.
+    /// URL-friendly alternative to GUID-based lookup.
+    /// Example: GET /api/v1/patients/mrn/MRN-2024-001234
+    /// </summary>
+    [HttpGet("mrn/{mrnValue}")]
+    [ProducesResponseType(typeof(PatientResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPatientByMRN(
+        string mrnValue,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new GetPatientByMRNQuery { MRN = mrnValue },
+            cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get patient detail by MRN (Medical Record Number) - SLUG-BASED route.
+    /// Includes allergies and conditions.
+    /// Example: GET /api/v1/patients/mrn/MRN-2024-001234/detail
+    /// </summary>
+    [HttpGet("mrn/{mrnValue}/detail")]
+    [ProducesResponseType(typeof(PatientDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPatientDetailByMRN(
+        string mrnValue,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(
+            new GetPatientDetailByMRNQuery { MRN = mrnValue },
+            cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>
@@ -172,3 +212,4 @@ public class PatientsController : ControllerBase
         return Ok(new { status = "healthy", service = "patient-service" });
     }
 }
+

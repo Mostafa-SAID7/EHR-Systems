@@ -1,214 +1,143 @@
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 
 namespace EHRPlatform.Services.Appointment.Controllers;
 
 /// <summary>
-/// Appointment scheduling endpoints.
-/// Book, confirm, cancel, check-in, complete appointments.
-/// Provider availability management.
+/// Manages appointment scheduling, status transitions, and lifecycle.
+/// Entities: Appointment aggregate with reminder support.
 /// </summary>
 [ApiController]
 [Route("api/v1/appointments")]
-[Authorize]
 public class AppointmentsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<AppointmentsController> _logger;
 
-    public AppointmentsController(IMediator mediator)
+    public AppointmentsController(
+        IMediator mediator,
+        ILogger<AppointmentsController> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     /// <summary>
-    /// Schedule new appointment.
-    /// Validates provider availability, sets auto-reminders.
+    /// Schedules a new appointment.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(AppointmentResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ScheduleAppointment(
         [FromBody] ScheduleAppointmentCommand command,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetAppointment), new { id = result.Id }, result);
     }
 
     /// <summary>
-    /// Get appointment by ID (cached).
+    /// Gets appointment by ID.
     /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(AppointmentResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAppointment(
         Guid id,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(
-            new GetAppointmentQuery { AppointmentId = id },
-            cancellationToken);
+        var query = new GetAppointmentQuery { AppointmentId = id };
+        var result = await _mediator.Send(query, cancellationToken);
+        if (result == null)
+            return NotFound();
         return Ok(result);
     }
 
     /// <summary>
-    /// Get patient appointments (cached, paginated).
-    /// Optional date range filtering.
+    /// Gets appointments for a patient.
     /// </summary>
     [HttpGet("patient/{patientId}")]
-    [ProducesResponseType(typeof(PagedResult<AppointmentResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<AppointmentResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPatientAppointments(
         Guid patientId,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(
-            new GetPatientAppointmentsQuery
-            {
-                PatientId = patientId,
-                FromDate = from,
-                ToDate = to,
-                PageNumber = page,
-                PageSize = pageSize
-            },
-            cancellationToken);
+        var query = new GetAppointmentsQuery { PatientId = patientId };
+        var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 
     /// <summary>
-    /// Get provider calendar for specific date (cached).
-    /// Shows all appointments and availability.
-    /// </summary>
-    [HttpGet("provider/{providerId}/calendar")]
-    [ProducesResponseType(typeof(ProviderAppointmentCalendarDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetProviderCalendar(
-        Guid providerId,
-        [FromQuery] DateTime date,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _mediator.Send(
-            new GetProviderAppointmentsQuery { ProviderId = providerId, Date = date },
-            cancellationToken);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Get provider availability slots (cached).
-    /// Date range for booking.
-    /// </summary>
-    [HttpGet("provider/{providerId}/availability")]
-    [ProducesResponseType(typeof(ProviderAvailabilityListDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetProviderAvailability(
-        Guid providerId,
-        [FromQuery] DateTime from,
-        [FromQuery] DateTime to,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _mediator.Send(
-            new GetProviderAvailabilityQuery { ProviderId = providerId, FromDate = from, ToDate = to },
-            cancellationToken);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Confirm appointment.
-    /// Patient confirms scheduled appointment.
+    /// Confirms an appointment.
     /// </summary>
     [HttpPost("{id}/confirm")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ConfirmAppointment(
         Guid id,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
-        await _mediator.Send(
-            new ConfirmAppointmentCommand { AppointmentId = id },
-            cancellationToken);
-        return NoContent();
+        var command = new ConfirmAppointmentCommand { AppointmentId = id };
+        await _mediator.Send(command, cancellationToken);
+        return Ok();
     }
 
     /// <summary>
-    /// Cancel appointment.
-    /// Returns availability slot to provider's open pool.
+    /// Cancels an appointment.
     /// </summary>
     [HttpPost("{id}/cancel")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelAppointment(
         Guid id,
-        [FromBody] string reason = "",
+        [FromQuery] string reason = "",
         CancellationToken cancellationToken = default)
     {
-        await _mediator.Send(
-            new CancelAppointmentCommand { AppointmentId = id, Reason = reason },
-            cancellationToken);
-        return NoContent();
+        var command = new CancelAppointmentCommand { AppointmentId = id, Reason = reason };
+        await _mediator.Send(command, cancellationToken);
+        return Ok();
     }
 
     /// <summary>
-    /// Check-in for appointment.
-    /// Patient arrives at clinic/virtual waiting room.
+    /// Checks in to an appointment.
     /// </summary>
     [HttpPost("{id}/check-in")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CheckIn(
         Guid id,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
-        await _mediator.Send(
-            new CheckInAppointmentCommand { AppointmentId = id },
-            cancellationToken);
-        return NoContent();
+        var command = new CheckInAppointmentCommand { AppointmentId = id };
+        await _mediator.Send(command, cancellationToken);
+        return Ok();
     }
 
     /// <summary>
-    /// Complete appointment.
-    /// Provider marks appointment as completed.
+    /// Completes an appointment.
     /// </summary>
     [HttpPost("{id}/complete")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CompleteAppointment(
         Guid id,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
-        await _mediator.Send(
-            new CompleteAppointmentCommand { AppointmentId = id },
-            cancellationToken);
-        return NoContent();
+        var command = new CompleteAppointmentCommand { AppointmentId = id };
+        await _mediator.Send(command, cancellationToken);
+        return Ok();
     }
 
     /// <summary>
-    /// Set provider availability slot.
-    /// Create recurring or one-time availability.
-    /// </summary>
-    [HttpPost("provider/availability")]
-    [ProducesResponseType(typeof(ProviderAvailabilityDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SetAvailability(
-        [FromBody] SetProviderAvailabilityCommand command,
-        CancellationToken cancellationToken)
-    {
-        var result = await _mediator.Send(command, cancellationToken);
-        return CreatedAtAction(nameof(GetProviderAvailability), result);
-    }
-
-    /// <summary>
-    /// Health check.
+    /// Health check endpoint.
     /// </summary>
     [HttpGet("health")]
-    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult Health()
     {
-        return Ok(new { status = "healthy", service = "appointment-service" });
+        return Ok(new { status = "healthy" });
     }
 }

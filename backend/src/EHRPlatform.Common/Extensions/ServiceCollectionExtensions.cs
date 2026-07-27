@@ -10,6 +10,9 @@ using EHRPlatform.Common.Health;
 using EHRPlatform.Common.Behaviors;
 using EHRPlatform.Common.Middleware;
 using EHRPlatform.Common.CDC;
+using EHRPlatform.Common.Slugs;
+using EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Categories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
@@ -66,6 +69,15 @@ public static class ServiceCollectionExtensions
 
         // Current-user service (HTTP-context scoped)
         services.AddEHRCurrentUser();
+
+        // Slug generation service
+        services.AddSlugGeneration();
+
+        // Tag management service
+        services.AddTagServices();
+
+        // Tag query service
+        services.AddTagQueryService();
 
         // CDC fan-out service
         services.AddSingleton<ICdcService, OutboxCdcService>();
@@ -174,6 +186,70 @@ public static class ServiceCollectionExtensions
     {
         services.AddCQRSFromCurrentAssembly();
         services.AddEHRCommon(configuration);
+        return services;
+    }
+
+    // ── Slug Generation ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Register slug generation service for URL-friendly entity identifiers.
+    /// </summary>
+    public static IServiceCollection AddSlugGeneration(this IServiceCollection services)
+    {
+        services.AddSingleton<ISlugGenerator, SlugGenerator>();
+        return services;
+    }
+
+    // ── Tag Management ────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Register tag service for centralized tagging infrastructure.
+    /// </summary>
+    public static IServiceCollection AddTagServices(this IServiceCollection services)
+    {
+        services.AddSingleton<ITagService, TagService>();
+        return services;
+    }
+
+    /// <summary>
+    /// Register tag query service for advanced tag searching and filtering.
+    /// </summary>
+    public static IServiceCollection AddTagQueryService(this IServiceCollection services)
+    {
+        services.AddScoped<ITagQueryService, TagQueryService>();
+        return services;
+    }
+
+    // ── Category Management ───────────────────────────────────────────────────
+
+    /// <summary>
+    /// Register category providers for service-specific categorization logic.
+    /// Call this from each microservice's Program.cs to enable centralized tagging.
+    /// </summary>
+    public static IServiceCollection AddCategoryProviders(
+        this IServiceCollection services,
+        params Type[] providerTypes)
+    {
+        // Register all provided ICategoryProvider implementations
+        foreach (var providerType in providerTypes)
+        {
+            if (!typeof(ICategoryProvider).IsAssignableFrom(providerType))
+                throw new InvalidOperationException(
+                    $"Type {providerType.Name} does not implement ICategoryProvider");
+
+            services.AddScoped(typeof(ICategoryProvider), providerType);
+        }
+
+        return services;
+    }
+
+    /// <summary>
+    /// Convenience overload: register a single category provider.
+    /// </summary>
+    public static IServiceCollection AddCategoryProvider<T>(this IServiceCollection services)
+        where T : class, ICategoryProvider
+    {
+        services.AddScoped<ICategoryProvider, T>();
         return services;
     }
 

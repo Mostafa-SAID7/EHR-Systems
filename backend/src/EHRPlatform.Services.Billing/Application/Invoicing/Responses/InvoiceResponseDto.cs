@@ -1,18 +1,31 @@
+using EHRPlatform.Common.DTOs;
+
 namespace EHRPlatform.Services.Billing.Application.Invoicing.Responses;
 
 /// <summary>
-/// Invoice response DTO.
+/// Invoice response DTO with slug support for InvoiceNumber.
 /// Contains complete invoice information for API responses.
+/// Enables URL-friendly invoice lookup via InvoiceNumber slug.
 /// </summary>
-public class InvoiceResponseDto
+public class InvoiceResponseDto : StatusDto
 {
-    public Guid Id { get; set; }
     public Guid PatientId { get; set; }
+    
+    /// <summary>
+    /// Invoice number (unique identifier, human-readable).
+    /// Used as basis for invoice slug.
+    /// </summary>
     public string InvoiceNumber { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// URL-friendly slug for InvoiceNumber (e.g., "inv-20250115-001234").
+    /// Enables slug-based lookup: GET /api/v1/billing/invoices/invoice-number/{invoiceNumberSlug}
+    /// </summary>
+    public string? InvoiceNumberSlug { get; set; }
+    
     public Guid? AppointmentId { get; set; }
     public DateTime ServiceDate { get; set; }
     public DateTime DueDate { get; set; }
-    public string Status { get; set; } = string.Empty;
     public decimal SubTotal { get; set; }
     public decimal TaxAmount { get; set; }
     public decimal InsuranceResponsibility { get; set; }
