@@ -21,6 +21,10 @@ public class VitalSignsConfiguration : IEntityTypeConfiguration<VitalSigns>
         
         builder.HasIndex(e => e.ClinicalNoteId);
         builder.HasIndex(e => e.RecordedAt).IsDescending();
+        // Composite for "vitals timeline" queries — always filtered by note, sorted by time
+        builder.HasIndex(e => new { e.ClinicalNoteId, e.RecordedAt })
+               .HasDatabaseName("IX_VitalSigns_ClinicalNoteId_RecordedAt")
+               .IsDescending(false, true);
 
         builder.Property(e => e.Temperature)
             .HasPrecision(5, 2);

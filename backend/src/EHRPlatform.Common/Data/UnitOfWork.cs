@@ -160,63 +160,75 @@ public class UnitOfWork : IUnitOfWork
     }
 
     /// <summary>
-    /// Save changes and publish domain events to outbox.
-    /// All operations occur within same transaction - ensures consistency.
-    /// 
-    /// Process:
-    /// 1. Collect domain events from all aggregates
-    /// 2. Save entity changes to database
-    /// 3. Convert domain events to integration events
-    /// 4. Insert integration events into outbox table
-    /// 5. Commit transaction (all-or-nothing)
-    /// 
-    /// BackgroundService processes outbox asynchronously and publishes to Kafka.
-    /// This ensures guaranteed event delivery even if service crashes.
+    /// Save domain entity changes AND outbox events atomically inside a single
+    /// database transaction.
+    ///
+    /// BUG FIX: The previous implementation called SaveChangesAsync twice
+    /// without a surrounding transaction.  If the second call (outbox insert)
+    /// failed, entity changes were already committed but no outbox events were
+    /// written, silently breaking the at-least-once delivery guarantee.
+    ///
+    /// Process (all-or-nothing):
+    /// 1. Begin transaction (reuse existing one if already active).
+    /// 2. Collect and clear domain events from all aggregates.
+    /// 3. Stage entity changes in the DbContext.
+    /// 4. Stage outbox events in the same DbContext (one SaveChangesAsync).
+    /// 5. Commit transaction — entity rows + outbox rows land together.
+    ///
+    /// BackgroundService processes the outbox asynchronously and publishes to
+    /// Kafka/RabbitMQ.  Guaranteed delivery survives any post-commit crash.
     /// </summary>
     public async Task<(int changesCount, int eventsCount)> SaveChangesWithEventPublishingAsync(
         CancellationToken cancellationToken = default)
     {
         try
         {
-            // Get all domain events from entities
+            // Collect domain events BEFORE SaveChanges mutates entity state.
             var domainEvents = _context.ChangeTracker
                 .Entries<BaseEntity>()
                 .SelectMany(e => e.Entity.GetDomainEvents())
                 .ToList();
 
-            // Clear domain events from entities
-            foreach (var entity in _context.ChangeTracker.Entries<BaseEntity>())
-            {
-                entity.Entity.ClearDomainEvents();
-            }
+            foreach (var entry in _context.ChangeTracker.Entries<BaseEntity>())
+                entry.Entity.ClearDomainEvents();
 
-            // Save entity changes
-            var changesCount = await _context.SaveChangesAsync(cancellationToken);
-
-            // Convert domain events to integration events and add to outbox
-            var integrationEvents = domainEvents
+            // Build outbox rows — stage them in the change tracker so they are
+            // saved in the same round-trip and (more importantly) the same txn.
+            var outboxEvents = domainEvents
                 .Select(de => new OutboxEvent
                 {
-                    Id = Guid.NewGuid(),
-                    EventType = de.GetType().Name,
-                    EventData = System.Text.Json.JsonSerializer.Serialize(de),
-                    CreatedAt = DateTime.UtcNow,
-                    IsPublished = false,
-                    PublishedAt = null,
-                    PublishAttempts = 0,
-                    ErrorMessage = null
+                    Id               = Guid.NewGuid(),
+                    EventType        = de.GetType().FullName ?? de.GetType().Name,
+                    EventData        = System.Text.Json.JsonSerializer.Serialize(de,
+                                           de.GetType(),
+                                           new System.Text.Json.JsonSerializerOptions
+                                           {
+                                               WriteIndented = false
+                                           }),
+                    CreatedAt        = DateTime.UtcNow,
+                    IsPublished      = false,
+                    PublishedAt      = null,
+                    PublishAttempts  = 0,
+                    ErrorMessage     = null
                 })
                 .ToList();
 
-            // Insert outbox events
-            if (integrationEvents.Any())
+            if (outboxEvents.Count > 0)
+                await _context.Set<OutboxEvent>().AddRangeAsync(outboxEvents, cancellationToken);
+
+            // If no external transaction is active, wrap this in one so that
+            // entity rows + outbox rows are committed atomically.
+            if (_transaction == null)
             {
-                var outboxDbSet = _context.Set<OutboxEvent>();
-                await outboxDbSet.AddRangeAsync(integrationEvents, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
+                await BeginTransactionAsync(cancellationToken);
+                var changesCount = await _context.SaveChangesAsync(cancellationToken);
+                await CommitTransactionAsync(cancellationToken);
+                return (changesCount - outboxEvents.Count, outboxEvents.Count);
             }
 
-            return (changesCount, integrationEvents.Count);
+            // Caller already opened a transaction — just flush; they will commit.
+            var changes = await _context.SaveChangesAsync(cancellationToken);
+            return (changes - outboxEvents.Count, outboxEvents.Count);
         }
         catch (OperationCanceledException)
         {
@@ -224,7 +236,8 @@ public class UnitOfWork : IUnitOfWork
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("Error occurred while saving changes and publishing events", ex);
+            throw new InvalidOperationException(
+                "Error occurred while saving changes and publishing events", ex);
         }
     }
 

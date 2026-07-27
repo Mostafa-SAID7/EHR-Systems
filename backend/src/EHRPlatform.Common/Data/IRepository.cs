@@ -14,9 +14,20 @@ public interface IRepository<TEntity> where TEntity : BaseEntity
 {
     /// <summary>
     /// Get entity by ID asynchronously.
+    /// Uses EF Core identity cache — may return a tracked (potentially stale) instance.
+    /// Prefer <see cref="GetByIdNoTrackingAsync"/> for HIPAA-sensitive reads where
+    /// you must always retrieve the freshest database state.
     /// Returns null if entity not found or is soft-deleted.
     /// </summary>
     Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get entity by ID bypassing the EF Core identity cache (AsNoTracking).
+    /// Always issues a SELECT to the database — guarantees fresh data for HIPAA reads
+    /// such as clinical notes, audit entries, and prescription records.
+    /// Returns null if entity not found or is soft-deleted.
+    /// </summary>
+    Task<TEntity?> GetByIdNoTrackingAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get all entities (excluding soft-deleted).
