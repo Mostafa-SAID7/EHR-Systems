@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 using EHRPlatform.Services.Analytics.Application.Analytics.Mappers;
@@ -10,7 +11,7 @@ namespace EHRPlatform.Services.Analytics.Features.Analytics.Handlers;
 /// Handler for GetDashboardsQuery.
 /// Retrieves paginated dashboards filtered by user.
 /// </summary>
-public class GetDashboardsQueryHandler : IQueryHandler<GetDashboardsQuery, DashboardListDto>
+public class GetDashboardsQueryHandler : IQueryHandler<GetDashboardsQuery, PagedResult<DashboardResponse>>
 {
     private readonly AnalyticsMapper _mapper;
     private readonly ILogger<GetDashboardsQueryHandler> _logger;
@@ -23,7 +24,7 @@ public class GetDashboardsQueryHandler : IQueryHandler<GetDashboardsQuery, Dashb
         _logger = logger;
     }
 
-    public async Task<DashboardListDto> Handle(GetDashboardsQuery query, CancellationToken cancellationToken)
+    public async Task<PagedResult<DashboardResponse>> Handle(GetDashboardsQuery query, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Retrieving dashboards for user {UserId}, page {PageNumber}", query.UserId, query.PageNumber);
 
@@ -31,6 +32,6 @@ public class GetDashboardsQueryHandler : IQueryHandler<GetDashboardsQuery, Dashb
         var dashboards = new List<Domain.Entities.Dashboard>();
         var total = 0;
 
-        return _mapper.MapToDashboardListDto(dashboards, total, query.PageNumber, query.PageSize);
+        return _mapper.MapToDashboardPagedResult(dashboards, total, query.PageNumber, query.PageSize);
     }
 }

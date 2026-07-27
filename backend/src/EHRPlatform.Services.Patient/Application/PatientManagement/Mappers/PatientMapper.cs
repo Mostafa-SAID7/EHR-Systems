@@ -1,8 +1,8 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.DTOs;
 using Microsoft.Extensions.Logging;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
-using PatientListDto = EHRPlatform.Services.Patient.Application.PatientManagement.Responses.PatientListDto;
 
 namespace EHRPlatform.Services.Patient.Application.PatientManagement.Mappers;
 
@@ -34,22 +34,20 @@ public class PatientMapper : MappingServiceBase<PatientEntity, PatientResponseDt
     }
 
     /// <summary>
-    /// Map patients to paginated list DTO.
+    /// Map patients to paged result.
     /// </summary>
-    public PatientListDto MapToListDto(
+    public PagedResult<PatientResponseDto> MapToPagedResult(
         ICollection<PatientEntity> patients,
         int total,
         int pageNumber,
         int pageSize)
     {
-        Logger.LogDebug("Mapping {Count} patients to paginated list DTO", patients.Count);
+        Logger.LogDebug("Mapping {Count} patients to paged result", patients.Count);
 
-        return new PatientListDto
-        {
-            Items = patients.Adapt<List<PatientResponseDto>>(),
-            Total = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        return PagedResult<PatientResponseDto>.Create(
+            patients.Adapt<List<PatientResponseDto>>(),
+            total,
+            pageNumber,
+            pageSize);
     }
 }

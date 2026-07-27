@@ -1,5 +1,7 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
+using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
 
@@ -19,7 +21,7 @@ public record GetClinicalNoteQuery : ICachedQuery<ClinicalNoteResponseDto>
 /// All clinical notes with vitals and diagnoses.
 /// CACHED query.
 /// </summary>
-public record GetPatientClinicalTimelineQuery : ICachedQuery<ClinicalNoteListDto>
+public record GetPatientClinicalTimelineQuery : ICachedQuery<PagedResult<ClinicalNoteTimelineItemDto>>
 {
     public Guid PatientId { get; init; }
     public int PageNumber { get; init; } = 1;
@@ -33,7 +35,7 @@ public record GetPatientClinicalTimelineQuery : ICachedQuery<ClinicalNoteListDto
 /// Get paginated list of clinical notes for a patient.
 /// CACHED query.
 /// </summary>
-public record GetClinicalNotesQuery : ICachedQuery<ClinicalNoteListDto>
+public record GetClinicalNotesQuery : ICachedQuery<PagedResult<ClinicalNoteResponse>>
 {
     public Guid PatientId { get; init; }
     public int PageNumber { get; init; } = 1;

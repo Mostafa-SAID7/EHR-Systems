@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Queries;
@@ -17,7 +18,7 @@ public record GetPrescriptionQuery : ICachedQuery<PrescriptionResponseDto>
 /// <summary>
 /// Get patient active prescriptions - CACHED query.
 /// </summary>
-public record GetPatientActivePrescriptionsQuery : ICachedQuery<PrescriptionListDto>
+public record GetPatientActivePrescriptionsQuery : ICachedQuery<PagedResult<PrescriptionResponseDto>>
 {
     public Guid PatientId { get; init; }
     public int PageNumber { get; init; } = 1;
@@ -30,7 +31,7 @@ public record GetPatientActivePrescriptionsQuery : ICachedQuery<PrescriptionList
 /// <summary>
 /// Get patient all prescriptions history - CACHED query.
 /// </summary>
-public record GetPatientPrescriptionHistoryQuery : ICachedQuery<PrescriptionListDto>
+public record GetPatientPrescriptionHistoryQuery : ICachedQuery<PagedResult<PrescriptionResponseDto>>
 {
     public Guid PatientId { get; init; }
     public int PageNumber { get; init; } = 1;
@@ -43,7 +44,7 @@ public record GetPatientPrescriptionHistoryQuery : ICachedQuery<PrescriptionList
 /// <summary>
 /// Get pending refill requests for provider - CACHED query.
 /// </summary>
-public record GetPendingRefillsQuery : ICachedQuery<RefillRequestListDto>
+public record GetPendingRefillsQuery : ICachedQuery<PagedResult<RefillRequestDto>>
 {
     public Guid ProviderId { get; init; }
     public int PageNumber { get; init; } = 1;

@@ -36,3 +36,18 @@ public class ProcedureDto
     public string ProcedureName { get; set; } = string.Empty;
     public DateTime PerformedDate { get; set; }
 }
+
+/// <summary>
+/// Clinical note timeline item DTO.
+/// Used for paged timeline results.
+/// </summary>
+public class ClinicalNoteTimelineItemDto
+{
+    public Guid Id { get; set; }
+    public DateTime EncounterDate { get; set; }
+    public string EncounterType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public Guid ProviderId { get; set; }
+    public List<DiagnosisDto> Diagnoses { get; set; } = new();
+    public VitalSignsDto? LatestVitals { get; set; }
+}

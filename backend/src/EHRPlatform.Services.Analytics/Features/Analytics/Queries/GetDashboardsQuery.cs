@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 
 namespace EHRPlatform.Services.Analytics.Features.Analytics.Queries;
@@ -7,7 +8,7 @@ namespace EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 /// Get paginated list of dashboards query.
 /// Cached for performance (600s TTL).
 /// </summary>
-public record GetDashboardsQuery : ICachedQuery<DashboardListDto>
+public record GetDashboardsQuery : ICachedQuery<PagedResult<DashboardResponse>>
 {
     public Guid? UserId { get; init; }
     public int PageNumber { get; init; } = 1;

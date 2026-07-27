@@ -1,5 +1,6 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 
@@ -9,7 +10,7 @@ namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
 /// Get patient clinical timeline handler.
 /// Single Responsibility: Retrieve paginated clinical notes for a patient's encounter timeline.
 /// </summary>
-public class GetPatientClinicalTimelineQueryHandler : IQueryHandler<GetPatientClinicalTimelineQuery, ClinicalNoteListDto>
+public class GetPatientClinicalTimelineQueryHandler : IQueryHandler<GetPatientClinicalTimelineQuery, PagedResult<ClinicalNoteTimelineItemDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GetPatientClinicalTimelineQueryHandler> _logger;
@@ -20,7 +21,7 @@ public class GetPatientClinicalTimelineQueryHandler : IQueryHandler<GetPatientCl
         _logger = logger;
     }
 
-    public async Task<ClinicalNoteListDto> Handle(
+    public async Task<PagedResult<ClinicalNoteTimelineItemDto>> Handle(
         GetPatientClinicalTimelineQuery request,
         CancellationToken cancellationToken)
     {
@@ -66,13 +67,6 @@ public class GetPatientClinicalTimelineQueryHandler : IQueryHandler<GetPatientCl
                 : null
         }).ToList();
 
-        return new ClinicalNoteListDto
-        {
-            PatientId = request.PatientId,
-            Notes = timelineItems,
-            Total = total,
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize
-        };
+        return PagedResult<ClinicalNoteTimelineItemDto>.Create(timelineItems, total, request.PageNumber, request.PageSize);
     }
 }

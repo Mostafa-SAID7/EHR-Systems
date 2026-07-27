@@ -1,5 +1,6 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using PrescriptionRefillEntity = EHRPlatform.Services.Prescription.Domain.Entities.PrescriptionRefill;
 
@@ -59,23 +60,21 @@ public class PrescriptionMapper : MappingServiceBase<PrescriptionEntity, Prescri
     }
 
     /// <summary>
-    /// Map collection of prescriptions to paginated DTO.
+    /// Map collection of prescriptions to paged result.
     /// </summary>
-    public PrescriptionListDto MapToListDto(
+    public PagedResult<PrescriptionResponseDto> MapToPagedResult(
         ICollection<PrescriptionEntity> prescriptions,
         int total,
         int pageNumber,
         int pageSize)
     {
-        Logger.LogDebug("Mapping {Count} prescriptions to paginated list DTO", prescriptions.Count);
+        Logger.LogDebug("Mapping {Count} prescriptions to paged result", prescriptions.Count);
 
-        return new PrescriptionListDto
-        {
-            Items = prescriptions.Adapt<List<PrescriptionResponseDto>>(),
-            Total = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        return PagedResult<PrescriptionResponseDto>.Create(
+            prescriptions.Adapt<List<PrescriptionResponseDto>>(),
+            total,
+            pageNumber,
+            pageSize);
     }
 
     /// <summary>

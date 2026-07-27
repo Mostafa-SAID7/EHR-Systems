@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Audit.Features.Audit.Queries;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 using EHRPlatform.Services.Audit.Application.Audit.Mappers;
@@ -10,7 +11,7 @@ namespace EHRPlatform.Services.Audit.Features.Audit.Handlers;
 /// Handler for GetAuditEntriesQuery.
 /// Retrieves paginated audit entries with filtering.
 /// </summary>
-public class GetAuditEntriesQueryHandler : IQueryHandler<GetAuditEntriesQuery, AuditListDto>
+public class GetAuditEntriesQueryHandler : IQueryHandler<GetAuditEntriesQuery, PagedResult<AuditEntryResponse>>
 {
     private readonly AuditMapper _mapper;
     private readonly ILogger<GetAuditEntriesQueryHandler> _logger;
@@ -23,7 +24,7 @@ public class GetAuditEntriesQueryHandler : IQueryHandler<GetAuditEntriesQuery, A
         _logger = logger;
     }
 
-    public async Task<AuditListDto> Handle(GetAuditEntriesQuery query, CancellationToken cancellationToken)
+    public async Task<PagedResult<AuditEntryResponse>> Handle(GetAuditEntriesQuery query, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Retrieving audit entries with filters - User: {UserId}, Resource: {ResourceType}, Action: {Action}", 
             query.UserId, query.ResourceType, query.Action);
@@ -33,6 +34,6 @@ public class GetAuditEntriesQueryHandler : IQueryHandler<GetAuditEntriesQuery, A
         var auditEntries = new List<Domain.Entities.AuditEntry>();
         var total = 0;
 
-        return _mapper.MapToListDto(auditEntries, total, query.PageNumber, query.PageSize);
+        return _mapper.MapToPagedResult(auditEntries, total, query.PageNumber, query.PageSize);
     }
 }

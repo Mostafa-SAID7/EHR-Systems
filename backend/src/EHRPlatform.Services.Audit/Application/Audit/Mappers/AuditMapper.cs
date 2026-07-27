@@ -1,5 +1,6 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Audit.Domain.Entities;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 using Microsoft.Extensions.Logging;
@@ -25,42 +26,38 @@ public class AuditMapper : MappingServiceBase<AuditEntry, AuditEntryResponse>
     }
 
     /// <summary>
-    /// Map collection of audit entries to paginated DTO.
+    /// Map collection of audit entries to paginated result.
     /// </summary>
-    public AuditListDto MapToListDto(
+    public PagedResult<AuditEntryResponse> MapToPagedResult(
         ICollection<AuditEntry> auditEntries,
         int total,
         int pageNumber,
         int pageSize)
     {
-        Logger.LogDebug("Mapping {Count} audit entries to paginated list DTO", auditEntries.Count);
+        Logger.LogDebug("Mapping {Count} audit entries to paged result", auditEntries.Count);
 
-        return new AuditListDto
-        {
-            Items = auditEntries.Adapt<List<AuditEntryResponse>>(),
-            Total = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        return PagedResult<AuditEntryResponse>.Create(
+            auditEntries.Adapt<List<AuditEntryResponse>>(),
+            total,
+            pageNumber,
+            pageSize);
     }
 
     /// <summary>
-    /// Map collection of access logs to paginated DTO.
+    /// Map collection of access logs to paginated result.
     /// </summary>
-    public AccessLogListDto MapToAccessLogListDto(
+    public PagedResult<AccessLogResponse> MapToAccessLogPagedResult(
         ICollection<AccessLog> accessLogs,
         int total,
         int pageNumber,
         int pageSize)
     {
-        Logger.LogDebug("Mapping {Count} access logs to paginated list DTO", accessLogs.Count);
+        Logger.LogDebug("Mapping {Count} access logs to paged result", accessLogs.Count);
 
-        return new AccessLogListDto
-        {
-            Items = accessLogs.Adapt<List<AccessLogResponse>>(),
-            Total = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        return PagedResult<AccessLogResponse>.Create(
+            accessLogs.Adapt<List<AccessLogResponse>>(),
+            total,
+            pageNumber,
+            pageSize);
     }
 }

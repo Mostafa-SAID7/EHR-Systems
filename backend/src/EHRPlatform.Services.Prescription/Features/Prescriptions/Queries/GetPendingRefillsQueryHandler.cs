@@ -1,5 +1,6 @@
 ﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 
@@ -9,7 +10,7 @@ namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Queries;
 /// Get pending refills handler.
 /// Single Responsibility: Retrieve paginated pending refill requests for a given provider.
 /// </summary>
-public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuery, RefillRequestListDto>
+public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuery, PagedResult<RefillRequestDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GetPendingRefillsQueryHandler> _logger;
@@ -20,7 +21,7 @@ public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuer
         _logger = logger;
     }
 
-    public async Task<RefillRequestListDto> Handle(
+    public async Task<PagedResult<RefillRequestDto>> Handle(
         GetPendingRefillsQuery request,
         CancellationToken cancellationToken)
     {
@@ -50,13 +51,7 @@ public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuer
         var skip = (request.PageNumber - 1) * request.PageSize;
         var items = pendingRefills.Skip(skip).Take(request.PageSize).ToList();
 
-        return new RefillRequestListDto
-        {
-            Items = items,
-            Total = pendingRefills.Count,
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize
-        };
+        return PagedResult<RefillRequestDto>.Create(items, pendingRefills.Count, request.PageNumber, request.PageSize);
     }
 }
 

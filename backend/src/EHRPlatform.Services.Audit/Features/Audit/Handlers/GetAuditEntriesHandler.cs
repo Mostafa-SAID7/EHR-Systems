@@ -2,6 +2,7 @@ using MediatR;
 using EHRPlatform.Services.Audit.Features.Audit.Queries;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.DTOs;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Handlers;
@@ -9,7 +10,7 @@ namespace EHRPlatform.Services.Audit.Features.Audit.Handlers;
 /// <summary>
 /// Handler for GetAuditEntriesQuery.
 /// </summary>
-public class GetAuditEntriesHandler : IRequestHandler<GetAuditEntriesQuery, AuditListDto>
+public class GetAuditEntriesHandler : IRequestHandler<GetAuditEntriesQuery, PagedResult<AuditEntryResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GetAuditEntriesHandler> _logger;
@@ -20,7 +21,7 @@ public class GetAuditEntriesHandler : IRequestHandler<GetAuditEntriesQuery, Audi
         _logger = logger;
     }
 
-    public async Task<AuditListDto> Handle(GetAuditEntriesQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<AuditEntryResponse>> Handle(GetAuditEntriesQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Fetching audit entries page {Page}", request.PageNumber);
 
@@ -48,23 +49,19 @@ public class GetAuditEntriesHandler : IRequestHandler<GetAuditEntriesQuery, Audi
                 .Take(request.PageSize),
             cancellationToken);
 
-        return new AuditListDto
+        var items = entries.Select(e => new AuditEntryResponse
         {
-            Items = entries.Select(e => new AuditEntryResponse
-            {
-                Id = e.Id,
-                UserId = e.UserId,
-                UserEmail = e.UserEmail,
-                Action = e.Action,
-                ResourceType = e.ResourceType,
-                ResourceId = e.ResourceId.ToString(),
-                Status = e.Status,
-                Timestamp = e.Timestamp,
-                Details = e.FailureReason
-            }).ToList(),
-            Total = total,
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize
-        };
+            Id = e.Id,
+            UserId = e.UserId,
+            UserEmail = e.UserEmail,
+            Action = e.Action,
+            ResourceType = e.ResourceType,
+            ResourceId = e.ResourceId.ToString(),
+            Status = e.Status,
+            Timestamp = e.Timestamp,
+            Details = e.FailureReason
+        }).ToList();
+
+        return PagedResult<AuditEntryResponse>.Create(items, total, request.PageNumber, request.PageSize);
     }
 }

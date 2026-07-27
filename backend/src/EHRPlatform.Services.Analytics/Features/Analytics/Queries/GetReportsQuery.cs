@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 
 namespace EHRPlatform.Services.Analytics.Features.Analytics.Queries;
@@ -7,7 +8,7 @@ namespace EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 /// Get paginated list of reports query.
 /// Cached for performance (3600s TTL - longer for reports).
 /// </summary>
-public record GetReportsQuery : ICachedQuery<ReportListDto>
+public record GetReportsQuery : ICachedQuery<PagedResult<ReportResponse>>
 {
     public Guid? UserId { get; init; }
     public string? Schedule { get; init; }

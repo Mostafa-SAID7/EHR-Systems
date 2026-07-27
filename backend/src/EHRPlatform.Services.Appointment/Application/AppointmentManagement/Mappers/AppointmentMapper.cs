@@ -1,5 +1,6 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 using Microsoft.Extensions.Logging;
 using ApptEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
@@ -22,12 +23,15 @@ public class AppointmentMapper : MappingServiceBase<ApptEntity, AppointmentRespo
         return appointments.Adapt<List<AppointmentResponseDto>>();
     }
 
-    public AppointmentListDto MapToListDto(IList<ApptEntity> appointments, int total, int pageNumber, int pageSize)
-        => new()
-        {
-            Items = appointments.Adapt<List<AppointmentResponseDto>>(),
-            Total = total, PageNumber = pageNumber, PageSize = pageSize
-        };
+    public PagedResult<AppointmentResponseDto> MapToPagedResult(IList<ApptEntity> appointments, int total, int pageNumber, int pageSize)
+    {
+        Logger.LogDebug("Mapping {Count} appointments to paged result", appointments.Count);
+        return PagedResult<AppointmentResponseDto>.Create(
+            appointments.Adapt<List<AppointmentResponseDto>>(),
+            total,
+            pageNumber,
+            pageSize);
+    }
 
     public ProviderAppointmentCalendarDto MapToProviderCalendarDto(Guid providerId, DateTime date, IList<ApptEntity> appointments)
         => new()

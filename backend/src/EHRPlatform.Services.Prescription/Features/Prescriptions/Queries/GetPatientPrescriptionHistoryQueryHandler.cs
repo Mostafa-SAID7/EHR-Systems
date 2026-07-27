@@ -1,5 +1,6 @@
 ﻿using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 using Mapster;
@@ -10,7 +11,7 @@ namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Queries;
 /// Get patient prescription history handler.
 /// Single Responsibility: Retrieve paginated full prescription history for a given patient.
 /// </summary>
-public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatientPrescriptionHistoryQuery, PrescriptionListDto>
+public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatientPrescriptionHistoryQuery, PagedResult<PrescriptionResponseDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GetPatientPrescriptionHistoryQueryHandler> _logger;
@@ -21,7 +22,7 @@ public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatien
         _logger = logger;
     }
 
-    public async Task<PrescriptionListDto> Handle(
+    public async Task<PagedResult<PrescriptionResponseDto>> Handle(
         GetPatientPrescriptionHistoryQuery request,
         CancellationToken cancellationToken)
     {
@@ -41,13 +42,8 @@ public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatien
                 .Take(request.PageSize),
             cancellationToken);
 
-        return new PrescriptionListDto
-        {
-            Items = prescriptions.Adapt<List<PrescriptionResponseDto>>(),
-            Total = total,
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize
-        };
+        var items = prescriptions.Adapt<List<PrescriptionResponseDto>>();
+        return PagedResult<PrescriptionResponseDto>.Create(items, total, request.PageNumber, request.PageSize);
     }
 }
 

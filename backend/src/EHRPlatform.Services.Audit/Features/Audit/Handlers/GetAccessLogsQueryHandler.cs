@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Audit.Features.Audit.Queries;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 using EHRPlatform.Services.Audit.Application.Audit.Mappers;
@@ -10,7 +11,7 @@ namespace EHRPlatform.Services.Audit.Features.Audit.Handlers;
 /// Handler for GetAccessLogsQuery.
 /// Retrieves paginated access logs with filtering.
 /// </summary>
-public class GetAccessLogsQueryHandler : IQueryHandler<GetAccessLogsQuery, AccessLogListDto>
+public class GetAccessLogsQueryHandler : IQueryHandler<GetAccessLogsQuery, PagedResult<AccessLogResponse>>
 {
     private readonly AuditMapper _mapper;
     private readonly ILogger<GetAccessLogsQueryHandler> _logger;
@@ -23,7 +24,7 @@ public class GetAccessLogsQueryHandler : IQueryHandler<GetAccessLogsQuery, Acces
         _logger = logger;
     }
 
-    public async Task<AccessLogListDto> Handle(GetAccessLogsQuery query, CancellationToken cancellationToken)
+    public async Task<PagedResult<AccessLogResponse>> Handle(GetAccessLogsQuery query, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Retrieving access logs with filters - User: {UserId}, Resource: {ResourceType}", 
             query.UserId, query.ResourceType);
@@ -33,6 +34,6 @@ public class GetAccessLogsQueryHandler : IQueryHandler<GetAccessLogsQuery, Acces
         var accessLogs = new List<Domain.Entities.AccessLog>();
         var total = 0;
 
-        return _mapper.MapToAccessLogListDto(accessLogs, total, query.PageNumber, query.PageSize);
+        return _mapper.MapToAccessLogPagedResult(accessLogs, total, query.PageNumber, query.PageSize);
     }
 }

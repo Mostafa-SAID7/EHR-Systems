@@ -1,7 +1,8 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
-using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
+using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +12,7 @@ namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;
 /// Get clinical notes query handler.
 /// Retrieves paginated list of clinical notes for patient.
 /// </summary>
-public class GetClinicalNotesQueryHandler : IQueryHandler<GetClinicalNotesQuery, ClinicalNoteListDto>
+public class GetClinicalNotesQueryHandler : IQueryHandler<GetClinicalNotesQuery, PagedResult<ClinicalNoteResponse>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ClinicalNoteMapper _mapper;
@@ -27,7 +28,7 @@ public class GetClinicalNotesQueryHandler : IQueryHandler<GetClinicalNotesQuery,
         _logger = logger;
     }
 
-    public async Task<ClinicalNoteListDto> Handle(GetClinicalNotesQuery query, CancellationToken cancellationToken)
+    public async Task<PagedResult<ClinicalNoteResponse>> Handle(GetClinicalNotesQuery query, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Retrieving clinical notes for patient {PatientId}, page {PageNumber}", query.PatientId, query.PageNumber);
 
@@ -44,6 +45,6 @@ public class GetClinicalNotesQueryHandler : IQueryHandler<GetClinicalNotesQuery,
                   .Take(query.PageSize),
             cancellationToken);
 
-        return _mapper.MapToListDto(notes, total, query.PageNumber, query.PageSize);
+        return _mapper.MapToPagedResult(notes, total, query.PageNumber, query.PageSize);
     }
 }

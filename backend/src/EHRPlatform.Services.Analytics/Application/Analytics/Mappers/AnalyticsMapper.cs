@@ -1,5 +1,6 @@
 using Mapster;
 using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 using Microsoft.Extensions.Logging;
@@ -16,37 +17,33 @@ public class AnalyticsMapper : MappingServiceBase<Dashboard, DashboardResponse>
     {
     }
 
-    public DashboardListDto MapToDashboardListDto(
+    public PagedResult<DashboardResponse> MapToDashboardPagedResult(
         ICollection<Dashboard> dashboards,
         int total,
         int pageNumber,
         int pageSize)
     {
-        Logger.LogDebug("Mapping {Count} dashboards to paginated list DTO", dashboards.Count);
+        Logger.LogDebug("Mapping {Count} dashboards to paged result", dashboards.Count);
 
-        return new DashboardListDto
-        {
-            Items = dashboards.Adapt<List<DashboardResponse>>(),
-            Total = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        return PagedResult<DashboardResponse>.Create(
+            dashboards.Adapt<List<DashboardResponse>>(),
+            total,
+            pageNumber,
+            pageSize);
     }
 
-    public ReportListDto MapToReportListDto(
+    public PagedResult<ReportResponse> MapToReportPagedResult(
         ICollection<Report> reports,
         int total,
         int pageNumber,
         int pageSize)
     {
-        Logger.LogDebug("Mapping {Count} reports to paginated list DTO", reports.Count);
+        Logger.LogDebug("Mapping {Count} reports to paged result", reports.Count);
 
-        return new ReportListDto
-        {
-            Items = reports.Adapt<List<ReportResponse>>(),
-            Total = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        return PagedResult<ReportResponse>.Create(
+            reports.Adapt<List<ReportResponse>>(),
+            total,
+            pageNumber,
+            pageSize);
     }
 }

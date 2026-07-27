@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 
@@ -59,7 +60,7 @@ public class AppointmentsController : ControllerBase
     /// Optional date range filtering.
     /// </summary>
     [HttpGet("patient/{patientId}")]
-    [ProducesResponseType(typeof(AppointmentListDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<AppointmentResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPatientAppointments(
         Guid patientId,
         [FromQuery] DateTime? from,

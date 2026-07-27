@@ -3,6 +3,7 @@
 using System.Net;
 using System.Text.Json;
 using EHRPlatform.Common.Exceptions;
+using EHRPlatform.Common.Responses;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -113,16 +114,6 @@ public sealed class GlobalExceptionMiddleware
             Exceptions.TimeoutException => (504, "Request Timeout",       "TIMEOUT"),
             _                       => (500, "An unexpected error occurred.", "INTERNAL_ERROR")
         };
-}
-
-/// <summary>RFC 7807 Problem Details payload.</summary>
-internal sealed class ProblemDetails
-{
-    public int    Status        { get; set; }
-    public string Title         { get; set; } = string.Empty;
-    public string ErrorCode     { get; set; } = string.Empty;
-    public string CorrelationId { get; set; } = string.Empty;
-    public string? Detail       { get; set; }
 }
 
 /// <summary>Extension methods to register GlobalExceptionMiddleware.</summary>

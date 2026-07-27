@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Queries;
@@ -7,7 +8,7 @@ namespace EHRPlatform.Services.Audit.Features.Audit.Queries;
 /// Get paginated list of access logs query.
 /// Cached for performance (600s TTL).
 /// </summary>
-public record GetAccessLogsQuery : ICachedQuery<AccessLogListDto>
+public record GetAccessLogsQuery : ICachedQuery<PagedResult<AccessLogResponse>>
 {
     public Guid? UserId { get; init; }
     public string? ResourceType { get; init; }

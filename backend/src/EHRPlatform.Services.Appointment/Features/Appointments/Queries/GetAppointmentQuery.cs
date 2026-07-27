@@ -1,5 +1,6 @@
 using EHRPlatform.Common.Behaviors;
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
@@ -18,7 +19,7 @@ public record GetAppointmentQuery : IQuery<AppointmentResponseDto>, ICachedQuery
 /// <summary>
 /// Get patient appointments (paginated, optional date range filter).
 /// </summary>
-public record GetPatientAppointmentsQuery : IQuery<AppointmentListDto>, ICachedQuery
+public record GetPatientAppointmentsQuery : IQuery<PagedResult<AppointmentResponseDto>>, ICachedQuery
 {
     public Guid PatientId { get; init; }
     public DateTime? FromDate { get; init; }

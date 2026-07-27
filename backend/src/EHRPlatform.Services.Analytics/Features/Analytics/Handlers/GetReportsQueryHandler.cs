@@ -1,4 +1,5 @@
 using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 using EHRPlatform.Services.Analytics.Application.Analytics.Mappers;
@@ -10,7 +11,7 @@ namespace EHRPlatform.Services.Analytics.Features.Analytics.Handlers;
 /// Handler for GetReportsQuery.
 /// Retrieves paginated reports filtered by user and schedule.
 /// </summary>
-public class GetReportsQueryHandler : IQueryHandler<GetReportsQuery, ReportListDto>
+public class GetReportsQueryHandler : IQueryHandler<GetReportsQuery, PagedResult<ReportResponse>>
 {
     private readonly AnalyticsMapper _mapper;
     private readonly ILogger<GetReportsQueryHandler> _logger;
@@ -23,7 +24,7 @@ public class GetReportsQueryHandler : IQueryHandler<GetReportsQuery, ReportListD
         _logger = logger;
     }
 
-    public async Task<ReportListDto> Handle(GetReportsQuery query, CancellationToken cancellationToken)
+    public async Task<PagedResult<ReportResponse>> Handle(GetReportsQuery query, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Retrieving reports for user {UserId}, schedule {Schedule}, page {PageNumber}", 
             query.UserId, query.Schedule, query.PageNumber);
@@ -32,6 +33,6 @@ public class GetReportsQueryHandler : IQueryHandler<GetReportsQuery, ReportListD
         var reports = new List<Domain.Entities.Report>();
         var total = 0;
 
-        return _mapper.MapToReportListDto(reports, total, query.PageNumber, query.PageSize);
+        return _mapper.MapToReportPagedResult(reports, total, query.PageNumber, query.PageSize);
     }
 }

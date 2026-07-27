@@ -1,5 +1,6 @@
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Mappers;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,7 @@ namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 /// Get patient appointments handler.
 /// Single Responsibility: Retrieve paginated appointments for a patient within a date range.
 /// </summary>
-public class GetPatientAppointmentsQueryHandler : IQueryHandler<GetPatientAppointmentsQuery, AppointmentListDto>
+public class GetPatientAppointmentsQueryHandler : IQueryHandler<GetPatientAppointmentsQuery, PagedResult<AppointmentResponseDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly AppointmentMapper _mapper;
@@ -26,7 +27,7 @@ public class GetPatientAppointmentsQueryHandler : IQueryHandler<GetPatientAppoin
         _logger = logger;
     }
 
-    public async Task<AppointmentListDto> Handle(
+    public async Task<PagedResult<AppointmentResponseDto>> Handle(
         GetPatientAppointmentsQuery request,
         CancellationToken cancellationToken)
     {
@@ -48,6 +49,6 @@ public class GetPatientAppointmentsQueryHandler : IQueryHandler<GetPatientAppoin
                 .Take(request.PageSize),
             cancellationToken);
 
-        return _mapper.MapToListDto(appointments, total, request.PageNumber, request.PageSize);
+        return _mapper.MapToPagedResult(appointments, total, request.PageNumber, request.PageSize);
     }
 }

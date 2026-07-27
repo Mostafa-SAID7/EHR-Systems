@@ -1,4 +1,5 @@
 using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using Microsoft.Extensions.Logging;
@@ -69,28 +70,15 @@ public class ClinicalNoteMapper : MappingServiceBase<Domain.Entities.ClinicalNot
         };
     }
 
-    public ClinicalNoteListDto MapToListDto(
+    public PagedResult<ClinicalNoteResponse> MapToPagedResult(
         ICollection<Domain.Entities.ClinicalNote> notes,
         int total,
         int pageNumber,
         int pageSize)
     {
-        Logger.LogDebug("Mapping {Count} clinical notes to paginated list DTO", notes.Count);
+        Logger.LogDebug("Mapping {Count} clinical notes to paged result", notes.Count);
 
-        return new ClinicalNoteListDto
-        {
-            PatientId = notes.FirstOrDefault()?.PatientId ?? Guid.Empty,
-            Notes = notes.Select(n => new ClinicalNoteTimelineItemDto
-            {
-                Id = n.Id,
-                EncounterDate = n.EncounterDate,
-                EncounterType = n.EncounterType,
-                Status = n.Status,
-                ProviderId = n.ProviderId
-            }).ToList(),
-            Total = total,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
+        var dtos = notes.Select(n => MapToResponse(n)).ToList();
+        return PagedResult<ClinicalNoteResponse>.Create(dtos, total, pageNumber, pageSize);
     }
 }

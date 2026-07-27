@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using EHRPlatform.Common.DTOs;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Queries;
 
@@ -56,7 +57,7 @@ public class PrescriptionsController : ControllerBase
     /// Get patient active prescriptions (cached, paginated).
     /// </summary>
     [HttpGet("patient/{patientId}/active")]
-    [ProducesResponseType(typeof(PrescriptionListDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<PrescriptionResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetActivePrescriptions(
         Guid patientId,
         [FromQuery] int page = 1,
@@ -78,7 +79,7 @@ public class PrescriptionsController : ControllerBase
     /// Get patient prescription history (cached, paginated).
     /// </summary>
     [HttpGet("patient/{patientId}/history")]
-    [ProducesResponseType(typeof(PrescriptionListDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<PrescriptionResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPrescriptionHistory(
         Guid patientId,
         [FromQuery] int page = 1,
