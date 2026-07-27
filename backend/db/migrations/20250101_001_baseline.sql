@@ -140,6 +140,142 @@ CREATE INDEX IF NOT EXISTS "IX_Users_Email" ON "Users" ("Email");
 CREATE INDEX IF NOT EXISTS "IX_Users_IsActive" ON "Users" ("IsActive");
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- SCHEMA: Clinical Service
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS "ClinicalNotes" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "PatientId" uuid NOT NULL,
+    "ProviderId" uuid NOT NULL,
+    "Content" text NOT NULL,
+    "NoteType" integer NOT NULL DEFAULT 0,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "DeletedAt" timestamp with time zone
+);
+
+CREATE TABLE IF NOT EXISTS "VitalSigns" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "PatientId" uuid NOT NULL,
+    "Temperature" numeric(5,2),
+    "BloodPressureSystolic" integer,
+    "BloodPressureDiastolic" integer,
+    "HeartRate" integer,
+    "RespiratoryRate" integer,
+    "RecordedAt" timestamp with time zone NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "DeletedAt" timestamp with time zone
+);
+
+CREATE TABLE IF NOT EXISTS "ClinicalDiagnoses" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "PatientId" uuid NOT NULL,
+    "DiagnosisCode" character varying(20) NOT NULL,
+    "DiagnosisText" character varying(255) NOT NULL,
+    "DiagnosedDate" date NOT NULL,
+    "Status" integer NOT NULL DEFAULT 0,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "DeletedAt" timestamp with time zone
+);
+
+CREATE TABLE IF NOT EXISTS "ClinicalProcedures" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "PatientId" uuid NOT NULL,
+    "ProcedureName" character varying(255) NOT NULL,
+    "ProcedureCode" character varying(20),
+    "ProcedureDate" date NOT NULL,
+    "Status" integer NOT NULL DEFAULT 0,
+    "Notes" text,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "DeletedAt" timestamp with time zone
+);
+
+CREATE INDEX IF NOT EXISTS "IX_ClinicalNotes_PatientId" ON "ClinicalNotes" ("PatientId");
+CREATE INDEX IF NOT EXISTS "IX_VitalSigns_PatientId" ON "VitalSigns" ("PatientId");
+CREATE INDEX IF NOT EXISTS "IX_ClinicalDiagnoses_PatientId" ON "ClinicalDiagnoses" ("PatientId");
+CREATE INDEX IF NOT EXISTS "IX_ClinicalProcedures_PatientId" ON "ClinicalProcedures" ("PatientId");
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- SCHEMA: Notification Service
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS "Notifications" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "UserId" uuid NOT NULL,
+    "Subject" character varying(255) NOT NULL,
+    "Message" text NOT NULL,
+    "Type" integer NOT NULL DEFAULT 0,
+    "Status" integer NOT NULL DEFAULT 0,
+    "IsRead" boolean NOT NULL DEFAULT false,
+    "ReadAt" timestamp with time zone,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "NotificationTemplates" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "Name" character varying(100) UNIQUE NOT NULL,
+    "Subject" character varying(255) NOT NULL,
+    "Body" text NOT NULL,
+    "Type" integer NOT NULL DEFAULT 0,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "NotificationPreferences" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "UserId" uuid NOT NULL UNIQUE,
+    "EmailNotifications" boolean NOT NULL DEFAULT true,
+    "SmsNotifications" boolean NOT NULL DEFAULT false,
+    "PushNotifications" boolean NOT NULL DEFAULT true,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS "IX_Notifications_UserId" ON "Notifications" ("UserId");
+CREATE INDEX IF NOT EXISTS "IX_Notifications_IsRead" ON "Notifications" ("IsRead");
+CREATE INDEX IF NOT EXISTS "IX_NotificationPreferences_UserId" ON "NotificationPreferences" ("UserId");
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- SCHEMA: Prescription Service
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS "Prescriptions" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "PatientId" uuid NOT NULL,
+    "ProviderId" uuid NOT NULL,
+    "MedicationName" character varying(255) NOT NULL,
+    "Dosage" character varying(100) NOT NULL,
+    "Frequency" character varying(100) NOT NULL,
+    "StartDate" date NOT NULL,
+    "EndDate" date,
+    "Quantity" integer,
+    "Refills" integer NOT NULL DEFAULT 0,
+    "Status" integer NOT NULL DEFAULT 0,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL,
+    "DeletedAt" timestamp with time zone
+);
+
+CREATE TABLE IF NOT EXISTS "PrescriptionRefills" (
+    "Id" uuid NOT NULL PRIMARY KEY,
+    "PrescriptionId" uuid NOT NULL,
+    "RequestDate" date NOT NULL,
+    "Status" integer NOT NULL DEFAULT 0,
+    "ApprovedDate" date,
+    "ApprovedBy" uuid,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "UpdatedAt" timestamp with time zone NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS "IX_Prescriptions_PatientId" ON "Prescriptions" ("PatientId");
+CREATE INDEX IF NOT EXISTS "IX_Prescriptions_Status" ON "Prescriptions" ("Status");
+CREATE INDEX IF NOT EXISTS "IX_PrescriptionRefills_PrescriptionId" ON "PrescriptionRefills" ("PrescriptionId");
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- SCHEMA: Analytics Service
 -- ─────────────────────────────────────────────────────────────────────────────
 
