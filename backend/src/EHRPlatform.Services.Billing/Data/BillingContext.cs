@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 
 namespace EHRPlatform.Services.Billing.Data;
 
@@ -14,6 +15,9 @@ public class BillingContext : BaseDbContext
     public DbSet<LineItem> LineItems { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
     public DbSet<InsuranceClaim> InsuranceClaims { get; set; } = null!;
+    
+    // ✓ Outbox Event Pattern - Ensures consistency across stores
+    public DbSet<OutboxEvent> OutboxEvents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

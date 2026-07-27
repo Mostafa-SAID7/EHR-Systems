@@ -1,0 +1,322 @@
+{{- if .Values.infrastructure.postgresql.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: {{ .Values.namespace.name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.infrastructure.postgresql.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.infrastructure.postgresql.persistence.size }}
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: postgresql
+spec:
+  serviceName: postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+      - name: postgresql
+        image: {{ .Values.infrastructure.postgresql.image }}
+        ports:
+        - containerPort: {{ .Values.infrastructure.postgresql.port }}
+          name: postgres
+        
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.infrastructure.postgresql.env.POSTGRES_DB }}
+        - name: POSTGRES_USER
+          value: {{ .Values.infrastructure.postgresql.env.POSTGRES_USER }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ehr-database-secret
+              key: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        
+        resources:
+          requests:
+            cpu: {{ .Values.infrastructure.postgresql.resources.requests.cpu }}
+            memory: {{ .Values.infrastructure.postgresql.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.infrastructure.postgresql.resources.limits.cpu }}
+            memory: {{ .Values.infrastructure.postgresql.resources.limits.memory }}
+        
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U {{ .Values.infrastructure.postgresql.env.POSTGRES_USER }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U {{ .Values.infrastructure.postgresql.env.POSTGRES_USER }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+      
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: postgresql
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.infrastructure.postgresql.port }}
+    targetPort: postgres
+    protocol: TCP
+  selector:
+    app: postgresql
+{{- end }}
+
+{{- if .Values.infrastructure.redis.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: {{ .Values.namespace.name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.infrastructure.redis.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.infrastructure.redis.persistence.size }}
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: redis
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: {{ .Values.infrastructure.redis.image }}
+        command: {{ .Values.infrastructure.redis.command | toJson }}
+        ports:
+        - containerPort: {{ .Values.infrastructure.redis.port }}
+          name: redis
+        
+        resources:
+          requests:
+            cpu: {{ .Values.infrastructure.redis.resources.requests.cpu }}
+            memory: {{ .Values.infrastructure.redis.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.infrastructure.redis.resources.limits.cpu }}
+            memory: {{ .Values.infrastructure.redis.resources.limits.memory }}
+        
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+        
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.infrastructure.redis.port }}
+    targetPort: redis
+    protocol: TCP
+  selector:
+    app: redis
+{{- end }}
+
+{{- if .Values.infrastructure.elasticsearch.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-pvc
+  namespace: {{ .Values.namespace.name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.infrastructure.elasticsearch.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.infrastructure.elasticsearch.persistence.size }}
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: elasticsearch
+spec:
+  serviceName: elasticsearch
+  replicas: {{ .Values.infrastructure.elasticsearch.replicaCount }}
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+      - name: elasticsearch
+        image: {{ .Values.infrastructure.elasticsearch.image }}
+        ports:
+        - containerPort: {{ .Values.infrastructure.elasticsearch.port }}
+          name: es-http
+        - containerPort: 9300
+          name: es-transport
+        
+        env:
+        - name: discovery.type
+          value: {{ .Values.infrastructure.elasticsearch.env.discovery.type | quote }}
+        - name: ES_JAVA_OPTS
+          value: {{ .Values.infrastructure.elasticsearch.env.ES_JAVA_OPTS | quote }}
+        - name: xpack.security.enabled
+          value: {{ .Values.infrastructure.elasticsearch.env.xpack.security.enabled | quote }}
+        
+        resources:
+          requests:
+            cpu: {{ .Values.infrastructure.elasticsearch.resources.requests.cpu }}
+            memory: {{ .Values.infrastructure.elasticsearch.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.infrastructure.elasticsearch.resources.limits.cpu }}
+            memory: {{ .Values.infrastructure.elasticsearch.resources.limits.memory }}
+        
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: es-http
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: es-http
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        
+        volumeMounts:
+        - name: elasticsearch-storage
+          mountPath: /usr/share/elasticsearch/data
+        
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+      
+      volumes:
+      - name: elasticsearch-storage
+        persistentVolumeClaim:
+          claimName: elasticsearch-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: elasticsearch
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.infrastructure.elasticsearch.port }}
+    targetPort: es-http
+    protocol: TCP
+    name: http
+  - port: 9300
+    targetPort: es-transport
+    protocol: TCP
+    name: transport
+  selector:
+    app: elasticsearch
+{{- end }}

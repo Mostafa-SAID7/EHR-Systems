@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 
 namespace EHRPlatform.Services.Analytics.Data;
@@ -18,6 +19,9 @@ public class AnalyticsContext : BaseDbContext
     public DbSet<Report> Reports { get; set; } = null!;
     public DbSet<ReportExecution> ReportExecutions { get; set; } = null!;
     public DbSet<EventMetric> EventMetrics { get; set; } = null!;
+    
+    // ✓ Outbox Event Pattern - Ensures consistency across stores
+    public DbSet<OutboxEvent> OutboxEvents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

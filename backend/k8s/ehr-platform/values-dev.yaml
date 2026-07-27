@@ -1,0 +1,92 @@
+# Development environment overrides
+global:
+  environment: development
+  imagePullPolicy: Always
+
+apiGateway:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+services:
+  identity:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  
+  patient:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+  
+  appointment:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+  
+  analytics:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 1Gi
+
+infrastructure:
+  postgresql:
+    persistence:
+      size: 5Gi
+  
+  redis:
+    persistence:
+      size: 2Gi
+  
+  elasticsearch:
+    replicaCount: 1
+    persistence:
+      size: 10Gi
+    env:
+      ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+
+resourceQuota:
+  requests:
+    cpu: "2"
+    memory: "4Gi"
+  limits:
+    cpu: "4"
+    memory: "8Gi"
+
+ingress:
+  enabled: false

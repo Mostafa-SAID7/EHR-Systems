@@ -5,6 +5,8 @@ using EHRPlatform.Common.Search;
 using EHRPlatform.Common.Security;
 using EHRPlatform.Services.Identity.Application.Identity.Extensions;
 using EHRPlatform.Services.Identity.Data;
+using EHRPlatform.Services.Identity.Data.Repositories;
+using EHRPlatform.Services.Identity.Application.Services;
 using EHRPlatform.Services.Identity.Extensions;
 using EHRPlatform.Services.Identity.Security;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +72,12 @@ try
 
     // ── CQRS: handlers, validators, mappers ──────────────────────────────────
     builder.Services.AddIdentityServices();
+
+    // ── Outbox Event Repository ────────────────────────────────────────────────
+    builder.Services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
+
+    // ── Identity Services ────────────────────────────────────────────────────
+    builder.Services.AddScoped<IIdentityCacheService, IdentityCacheService>();
 
     // ── Security ─────────────────────────────────────────────────────────────
     var encryptionKey = builder.Configuration["Security:EncryptionKey"]

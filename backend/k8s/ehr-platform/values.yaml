@@ -1,0 +1,389 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# EHR Platform - Helm Chart Values
+# ─────────────────────────────────────────────────────────────────────────────
+# Default values for Kubernetes deployment.
+# Override with: helm install -f values-prod.yaml ehr ./ehr-platform
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Global Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+global:
+  environment: production
+  domain: ehr-platform.local
+  imagePullPolicy: IfNotPresent
+  
+  # Image registry for all services
+  imageRegistry: docker.io
+  # In production, use your private registry: myregistry.azurecr.io
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Namespace & RBAC
+# ─────────────────────────────────────────────────────────────────────────────
+namespace:
+  create: true
+  name: ehr-platform
+
+rbac:
+  create: true
+  
+serviceAccount:
+  create: true
+  name: ehr-platform-sa
+
+# ─────────────────────────────────────────────────────────────────────────────
+# API Gateway Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+apiGateway:
+  enabled: true
+  name: api-gateway
+  image: ehr-platform-api-gateway:1.0.0
+  replicaCount: 2
+  port: 5000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  env:
+    ASPNETCORE_ENVIRONMENT: Production
+    Logging__LogLevel__Default: Information
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Microservices Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+  identity:
+    enabled: true
+    name: identity-service
+    image: ehr-platform-identity:1.0.0
+    port: 5001
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 4
+
+  patient:
+    enabled: true
+    name: patient-service
+    image: ehr-platform-patient:1.0.0
+    port: 5002
+    replicaCount: 3
+    resources:
+      requests:
+        cpu: 150m
+        memory: 512Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 8
+
+  clinical:
+    enabled: true
+    name: clinical-service
+    image: ehr-platform-clinical:1.0.0
+    port: 5003
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  appointment:
+    enabled: true
+    name: appointment-service
+    image: ehr-platform-appointment:1.0.0
+    port: 5004
+    replicaCount: 3
+    resources:
+      requests:
+        cpu: 150m
+        memory: 512Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
+
+  notification:
+    enabled: true
+    name: notification-service
+    image: ehr-platform-notification:1.0.0
+    port: 5005
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  audit:
+    enabled: true
+    name: audit-service
+    image: ehr-platform-audit:1.0.0
+    port: 5006
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  billing:
+    enabled: true
+    name: billing-service
+    image: ehr-platform-billing:1.0.0
+    port: 5007
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 150m
+        memory: 512Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
+
+  prescription:
+    enabled: true
+    name: prescription-service
+    image: ehr-platform-prescription:1.0.0
+    port: 5008
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  analytics:
+    enabled: true
+    name: analytics-service
+    image: ehr-platform-analytics:1.0.0
+    port: 5009
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Infrastructure Services
+# ─────────────────────────────────────────────────────────────────────────────
+infrastructure:
+  # PostgreSQL Configuration
+  postgresql:
+    enabled: true
+    image: postgres:16-alpine
+    port: 5432
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: standard
+    env:
+      POSTGRES_DB: ehr_platform
+      POSTGRES_USER: ehr_user
+
+  # Redis Configuration
+  redis:
+    enabled: true
+    image: redis:7-alpine
+    port: 6379
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: standard
+    command:
+      - redis-server
+      - "--requirepass"
+      - "redis_password"
+      - "--maxmemory"
+      - "2gb"
+      - "--maxmemory-policy"
+      - "allkeys-lru"
+
+  # Elasticsearch Configuration
+  elasticsearch:
+    enabled: true
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    port: 9200
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: standard
+    env:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+      xpack.security.enabled: "false"
+
+  # Kafka & Zookeeper Configuration
+  kafka:
+    enabled: true
+    image: confluentinc/cp-kafka:7.5.0
+    port: 9092
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 300m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    persistence:
+      enabled: true
+      size: 30Gi
+      storageClass: standard
+    env:
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+
+  zookeeper:
+    enabled: true
+    image: confluentinc/cp-zookeeper:7.5.0
+    port: 2181
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: standard
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ingress Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: api.ehr-platform.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: ehr-platform-tls
+      hosts:
+        - api.ehr-platform.local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Network Policies
+# ─────────────────────────────────────────────────────────────────────────────
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Resource Quotas & Limits
+# ─────────────────────────────────────────────────────────────────────────────
+resourceQuota:
+  enabled: true
+  requests:
+    cpu: "10"
+    memory: "20Gi"
+  limits:
+    cpu: "20"
+    memory: "40Gi"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Monitoring & Observability
+# ─────────────────────────────────────────────────────────────────────────────
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    retention: 15d
+  grafana:
+    enabled: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Security Context
+# ─────────────────────────────────────────────────────────────────────────────
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pod Disruption Budgets
+# ─────────────────────────────────────────────────────────────────────────────
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Secrets & Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+secrets:
+  # Use External Secrets Operator or Sealed Secrets in production
+  jwtSecret: "your-super-secret-key-change-in-production-at-least-32-characters-long!"
+  postgresPassword: "ehr_password"
+  redisPassword: "redis_password"
+
+config:
+  jwtIssuer: "ehr-platform"
+  jwtAudience: "ehr-api"
+  jwtExpirationMinutes: 60

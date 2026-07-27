@@ -1,0 +1,162 @@
+{{- if .Values.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ehr-platform-ingress
+  namespace: {{ .Values.namespace.name }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ $.Values.apiGateway.name }}
+                port:
+                  number: {{ $.Values.apiGateway.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+
+{{- if .Values.networkPolicy.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ehr-platform-default-deny
+  namespace: {{ .Values.namespace.name }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ehr-platform-allow-ingress
+  namespace: {{ .Values.namespace.name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Values.apiGateway.name }}
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: {{ .Values.apiGateway.port }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ehr-platform-allow-internal
+  namespace: {{ .Values.namespace.name }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgresql
+    ports:
+    - protocol: TCP
+      port: {{ .Values.infrastructure.postgresql.port }}
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: {{ .Values.infrastructure.redis.port }}
+  - to:
+    - podSelector:
+        matchLabels:
+          app: elasticsearch
+    ports:
+    - protocol: TCP
+      port: {{ .Values.infrastructure.elasticsearch.port }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ehr-platform-allow-prometheus
+  namespace: {{ .Values.namespace.name }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: prometheus
+    ports:
+    - protocol: TCP
+      port: 5000
+    - protocol: TCP
+      port: 5001
+    - protocol: TCP
+      port: 5002
+    - protocol: TCP
+      port: 5003
+    - protocol: TCP
+      port: 5004
+    - protocol: TCP
+      port: 5005
+    - protocol: TCP
+      port: 5006
+    - protocol: TCP
+      port: 5007
+    - protocol: TCP
+      port: 5008
+    - protocol: TCP
+      port: 5009
+{{- end }}
+
+---
+apiVersion: v1
+kind: StorageClass
+metadata:
+  name: ehr-storage
+provisioner: kubernetes.io/local
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+parameters:
+  replication-factor: "3"

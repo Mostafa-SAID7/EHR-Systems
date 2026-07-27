@@ -1,0 +1,16 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using Xunit;
+global using Moq;
+global using Microsoft.EntityFrameworkCore;
+global using EHRPlatform.Common.Tags;
+global using EHRPlatform.Common.Data;
+global using MediatR;
+global using Microsoft.Extensions.DependencyInjection;
+global using EHRPlatform.Services.Patient.Domain.Entities;
+global using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
+global using EHRPlatform.Services.Billing.Domain.Entities;
+global using Microsoft.Extensions.Logging;

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Notification.Domain.Entities;
 
 namespace EHRPlatform.Services.Notification.Data;
@@ -15,6 +16,9 @@ public class NotificationContext : BaseDbContext
     public DbSet<NotificationEntity> Notifications { get; set; } = null!;
     public DbSet<NotificationTemplate> NotificationTemplates { get; set; } = null!;
     public DbSet<NotificationPreference> NotificationPreferences { get; set; } = null!;
+    
+    // ✓ Outbox Event Pattern
+    public DbSet<OutboxEvent> OutboxEvents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

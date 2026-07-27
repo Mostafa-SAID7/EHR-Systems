@@ -1,5 +1,6 @@
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Security;
+using EHRPlatform.Services.Prescription.Application.Services;
 using EHRPlatform.Services.Prescription.Data;
 using Serilog;
 
@@ -31,6 +32,9 @@ try
 
     // ── CQRS + Common ─────────────────────────────────────────────────────────
     builder.Services.AddCQRSFromCurrentAssembly();
+
+    // ── Cache Service (Wrapper for Redis) ──────────────────────────────────────
+    builder.Services.AddScoped<PrescriptionCacheService>();
 
     // ── Redis Caching (optional) ──────────────────────────────────────────────
     var redisConnStr = builder.Configuration["Redis:ConnectionString"]

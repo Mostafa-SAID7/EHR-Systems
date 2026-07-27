@@ -1,0 +1,92 @@
+# Staging environment overrides
+global:
+  environment: staging
+  imagePullPolicy: IfNotPresent
+
+apiGateway:
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 75
+
+services:
+  identity:
+    replicaCount: 2
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 3
+
+  patient:
+    replicaCount: 2
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+
+  appointment:
+    replicaCount: 2
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+
+  analytics:
+    replicaCount: 1
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 3
+
+infrastructure:
+  postgresql:
+    resources:
+      requests:
+        cpu: 300m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    persistence:
+      size: 20Gi
+  
+  redis:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    persistence:
+      size: 10Gi
+  
+  elasticsearch:
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 300m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    persistence:
+      size: 30Gi
+
+resourceQuota:
+  requests:
+    cpu: "6"
+    memory: "12Gi"
+  limits:
+    cpu: "12"
+    memory: "24Gi"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: api-staging.ehr-platform.local
+      paths:
+        - path: /
+          pathType: Prefix

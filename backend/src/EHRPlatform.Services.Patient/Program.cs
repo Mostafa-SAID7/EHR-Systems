@@ -5,6 +5,9 @@ using EHRPlatform.Common.Security;
 using EHRPlatform.Services.Patient.Data;
 using EHRPlatform.Services.Patient.Messaging.Consumers;
 using EHRPlatform.Services.Patient.Sagas;
+using EHRPlatform.Services.Patient.Application.Services;
+using EHRPlatform.Services.Patient.Infrastructure.HealthChecks;
+using Elastic.Clients.Elasticsearch;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -30,6 +33,10 @@ builder.Services.AddScoped<IOutboxRepository>(sp =>
 
 // ── CQRS (MediatR + FluentValidation + pipeline behaviors) ───────────────────
 builder.Services.AddCQRSFromCurrentAssembly();
+
+// ── Patient Services ──────────────────────────────────────────────────────────
+builder.Services.AddScoped<IPatientCacheService, PatientCacheService>();
+builder.Services.AddScoped<IPatientSearchService, PatientSearchService>();
 
 // ── Redis Caching (optional — degrades gracefully if unavailable) ─────────────
 var redisConnStr = builder.Configuration["Redis:ConnectionString"]
@@ -62,6 +69,9 @@ if (!string.IsNullOrEmpty(esUrl))
     try
     {
         builder.Services.AddElasticsearchSearch(esUrl);
+        var settings = new ElasticsearchClientSettings(new Uri(esUrl));
+        var client = new ElasticsearchClient(settings);
+        builder.Services.AddSingleton(client);
         Log.Information("Elasticsearch enabled for Patient Service at {Url}", esUrl);
     }
     catch (Exception ex)

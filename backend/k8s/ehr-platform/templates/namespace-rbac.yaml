@@ -1,0 +1,192 @@
+{{- if .Values.namespace.create }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace.name }}
+  labels:
+    name: {{ .Values.namespace.name }}
+    environment: {{ .Values.global.environment }}
+{{- end }}
+
+{{- if .Values.rbac.create }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.serviceAccount.name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: ehr-platform
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.serviceAccount.name }}-cluster-role
+  labels:
+    app: ehr-platform
+rules:
+# Allow reading ConfigMaps and Secrets
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+# Allow reading Services for service discovery
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+# Allow reading Pods (for pod disruption budget)
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+# Allow reading PersistentVolumeClaims
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "watch"]
+# Allow posting events
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.serviceAccount.name }}-cluster-role-binding
+  labels:
+    app: ehr-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Values.serviceAccount.name }}-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.serviceAccount.name }}
+  namespace: {{ .Values.namespace.name }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Values.serviceAccount.name }}-role
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: ehr-platform
+rules:
+# Allow reading ConfigMaps and Secrets in namespace
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+# Allow port-forwarding for debugging
+- apiGroups: [""]
+  resources: ["pods/portforward"]
+  verbs: ["create", "get"]
+# Allow reading logs
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.serviceAccount.name }}-role-binding
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: ehr-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Values.serviceAccount.name }}-role
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.serviceAccount.name }}
+  namespace: {{ .Values.namespace.name }}
+{{- end }}
+
+{{- if .Values.resourceQuota.enabled }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ .Values.namespace.name }}-quota
+  namespace: {{ .Values.namespace.name }}
+spec:
+  hard:
+    requests.cpu: {{ .Values.resourceQuota.requests.cpu | quote }}
+    requests.memory: {{ .Values.resourceQuota.requests.memory | quote }}
+    limits.cpu: {{ .Values.resourceQuota.limits.cpu | quote }}
+    limits.memory: {{ .Values.resourceQuota.limits.memory | quote }}
+    pods: "100"
+    services: "50"
+    persistentvolumeclaims: "20"
+  scopeSelector:
+    matchExpressions:
+    - operator: In
+      scopeName: PriorityClass
+      values: ["default"]
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ .Values.namespace.name }}-limits
+  namespace: {{ .Values.namespace.name }}
+spec:
+  limits:
+  - max:
+      cpu: "2000m"
+      memory: "2Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Pod
+  - max:
+      cpu: "2000m"
+      memory: "2Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi"
+    request:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+{{- end }}
+
+{{- if .Values.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.apiGateway.name }}-pdb
+  namespace: {{ .Values.namespace.name }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: {{ .Values.apiGateway.name }}
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: patient-service-pdb
+  namespace: {{ .Values.namespace.name }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: patient-service
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: appointment-service-pdb
+  namespace: {{ .Values.namespace.name }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: appointment-service
+{{- end }}

@@ -1,6 +1,9 @@
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Services.Notification.Consumers;
 using EHRPlatform.Services.Notification.Hubs;
+using EHRPlatform.Services.Notification.Data;
+using EHRPlatform.Services.Notification.Data.Repositories;
+using EHRPlatform.Services.Notification.Application.Services;
 using MassTransit;
 using Serilog;
 
@@ -12,6 +15,25 @@ builder.Host.UseSerilog((ctx, config) =>
 
 // ── OpenTelemetry Metrics ─────────────────────────────────────────────────────
 builder.Services.AddOpenTelemetryObservability("notification-service");
+
+// ── Database (PostgreSQL) ─────────────────────────────────────────────────────
+var connectionString = builder.Configuration.BuildPostgresConnectionString();
+builder.Services.AddPostgresDataAccess<NotificationContext>(connectionString);
+
+// ── Outbox Event Repository ────────────────────────────────────────────────────
+builder.Services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
+
+// ── Notification Services ────────────────────────────────────────────────────
+builder.Services.AddScoped<INotificationCacheService, NotificationCacheService>();
+
+// ── Redis Caching (optional) ──────────────────────────────────────────────────
+var redisConnStr = builder.Configuration["Redis:ConnectionString"]
+    ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
+if (!string.IsNullOrEmpty(redisConnStr))
+{
+    try { builder.Services.AddRedisCaching(redisConnStr); }
+    catch (Exception ex) { Log.Warning(ex, "Redis not available for Notification Service"); }
+}
 
 // ── SignalR ───────────────────────────────────────────────────────────────────
 builder.Services.AddSignalR(opts =>

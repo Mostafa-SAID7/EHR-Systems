@@ -35,6 +35,9 @@
     
     <!-- API Documentation -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    
+    <!-- Search -->
+    <PackageReference Include="Elastic.Clients.Elasticsearch" Version="8.10.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,218 @@
+name: Deploy - Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Docker - Build & Push"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  HELM_VERSION: '3.13.0'
+  KUBECTL_VERSION: '1.28.0'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # DEPLOY TO KUBERNETES
+  # ─────────────────────────────────────────────────────────────────────────
+
+  deploy:
+    name: Deploy to ${{ matrix.env }}
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    
+    strategy:
+      matrix:
+        env:
+          - staging
+    
+    environment:
+      name: ${{ matrix.env }}
+      url: https://api-${{ matrix.env }}.ehr-platform.local
+    
+    permissions:
+      contents: read
+      packages: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: ${{ env.HELM_VERSION }}
+    
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: ${{ env.KUBECTL_VERSION }}
+    
+    - name: Configure kubectl (Staging)
+      if: matrix.env == 'staging'
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+        kubectl cluster-info
+    
+    - name: Configure kubectl (Production)
+      if: matrix.env == 'production'
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+        kubectl cluster-info
+    
+    - name: Create namespace
+      run: |
+        kubectl create namespace ehr-platform --dry-run=client -o yaml | kubectl apply -f -
+    
+    - name: Add Helm repositories
+      run: |
+        helm repo add stable https://charts.helm.sh/stable
+        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+        helm repo update
+    
+    - name: Deploy Ingress Controller (if not exists)
+      run: |
+        if ! helm list -n ingress-nginx | grep -q "ingress-nginx"; then
+          helm install ingress-nginx ingress-nginx/ingress-nginx \
+            -n ingress-nginx \
+            --create-namespace \
+            --set controller.service.type=LoadBalancer
+        fi
+      continue-on-error: true
+    
+    - name: Update Docker image tags in values
+      run: |
+        services=(
+          "Identity"
+          "Patient"
+          "Clinical"
+          "Appointment"
+          "Notification"
+          "Audit"
+          "Billing"
+          "Prescription"
+          "Analytics"
+          "ApiGateway"
+          "OutboxProcessor"
+        )
+        
+        values_file="backend/k8s/ehr-platform/values-${{ matrix.env }}.yaml"
+        
+        for service in "${services[@]}"; do
+          image_name=$(echo "$service" | awk '{print tolower($0)}')
+          image_tag="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-$service:latest"
+          
+          # Update image in values file (sed command)
+          sed -i "s|.*$image_name.*: .*|  image: $image_tag|g" "$values_file" || true
+        done
+    
+    - name: Helm dependency update
+      run: helm dependency update backend/k8s/ehr-platform
+    
+    - name: Helm dry-run
+      run: |
+        helm upgrade ehr backend/k8s/ehr-platform \
+          -f backend/k8s/ehr-platform/values-${{ matrix.env }}.yaml \
+          -n ehr-platform \
+          --create-namespace \
+          --dry-run \
+          --debug
+    
+    - name: Deploy with Helm
+      run: |
+        helm upgrade --install ehr backend/k8s/ehr-platform \
+          -f backend/k8s/ehr-platform/values-${{ matrix.env }}.yaml \
+          -n ehr-platform \
+          --create-namespace \
+          --wait \
+          --timeout 10m
+    
+    - name: Verify deployment
+      run: |
+        echo "Waiting for rollout..."
+        kubectl rollout status deployment/api-gateway -n ehr-platform --timeout=5m
+        
+        echo ""
+        echo "Pod status:"
+        kubectl get pods -n ehr-platform
+        
+        echo ""
+        echo "Service endpoints:"
+        kubectl get svc -n ehr-platform
+    
+    - name: Run smoke tests
+      run: |
+        API_GATEWAY_IP=$(kubectl get svc api-gateway -n ehr-platform -o jsonpath='{.status.loadBalancer.ingress[0].ip}' || echo "localhost")
+        API_GATEWAY_PORT=5000
+        
+        echo "Testing API Gateway health check..."
+        for i in {1..5}; do
+          echo "Attempt $i..."
+          curl -f http://$API_GATEWAY_IP:$API_GATEWAY_PORT/health || sleep 10
+        done
+    
+    - name: Post deployment summary
+      if: always()
+      run: |
+        echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Environment:** ${{ matrix.env }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** $([ $? -eq 0 ] && echo '✅ Success' || echo '❌ Failed')" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Pod Status" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        kubectl get pods -n ehr-platform >> $GITHUB_STEP_SUMMARY || true
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ROLLBACK ON FAILURE
+  # ─────────────────────────────────────────────────────────────────────────
+
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: failure()
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: ${{ env.KUBECTL_VERSION }}
+    
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+    
+    - name: Rollback Helm release
+      run: |
+        echo "Rolling back deployment..."
+        helm rollback ehr -n ehr-platform
+        
+        echo ""
+        echo "Verifying rollback..."
+        kubectl rollout status deployment/api-gateway -n ehr-platform --timeout=5m

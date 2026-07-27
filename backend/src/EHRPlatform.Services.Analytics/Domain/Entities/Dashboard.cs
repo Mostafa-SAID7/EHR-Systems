@@ -2,16 +2,15 @@ using EHRPlatform.Common.Entities;
 
 namespace EHRPlatform.Services.Analytics.Domain.Entities;
 
-/// <summary>
-/// Dashboard configuration for users.
-/// </summary>
 public class Dashboard : BaseEntity
 {
     public Guid UserId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public bool IsDefault { get; set; }
-    public List<string> Widgets { get; set; } = new(); // Widget IDs/names to display
-
-    public ICollection<DashboardWidget> DashboardWidgets { get; } = new List<DashboardWidget>();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    
+    // Navigation
+    public ICollection<DashboardWidget> DashboardWidgets { get; set; } = new List<DashboardWidget>();
 }

@@ -12,6 +12,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.70" />
     <ProjectReference Include="..\..\src\EHRPlatform.Common\EHRPlatform.Common.csproj" />
+    <ProjectReference Include="..\..\src\EHRPlatform.Services.Patient\EHRPlatform.Services.Patient.csproj" />
+    <ProjectReference Include="..\..\src\EHRPlatform.Services.Billing\EHRPlatform.Services.Billing.csproj" />
   </ItemGroup>
 </Project>

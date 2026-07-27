@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Audit.Domain.Entities;
 
 namespace EHRPlatform.Services.Audit.Data;
@@ -17,6 +18,9 @@ public class AuditContext : BaseDbContext
     public DbSet<DataChangeAudit> DataChangeAudits { get; set; } = null!;
     public DbSet<ComplianceReport> ComplianceReports { get; set; } = null!;
     public DbSet<AuditLogExport> AuditLogExports { get; set; } = null!;
+    
+    // ✓ Outbox Event Pattern
+    public DbSet<OutboxEvent> OutboxEvents { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

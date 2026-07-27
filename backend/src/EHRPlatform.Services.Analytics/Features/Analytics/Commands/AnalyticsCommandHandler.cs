@@ -130,7 +130,7 @@ public class CreateReportCommandHandler : ICommandHandler<CreateReportCommand, R
         {
             Id = Guid.NewGuid(), UserId = command.UserId,
             Name = command.Name, Description = command.Description,
-            ReportType = command.ReportType, Metrics = command.Metrics,
+            ReportType = command.ReportType,
             Schedule = command.Schedule
         };
         var repo = _unitOfWork.Repository<Report>();

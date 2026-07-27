@@ -2,6 +2,8 @@ using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Health;
 using EHRPlatform.Common.Security;
 using EHRPlatform.Services.Audit.Data;
+using EHRPlatform.Services.Audit.Data.Repositories;
+using EHRPlatform.Services.Audit.Application.Services;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -34,6 +36,12 @@ try
 
     // ── CQRS ─────────────────────────────────────────────────────────────────
     builder.Services.AddCQRSFromCurrentAssembly();
+
+    // ── Outbox Event Repository ────────────────────────────────────────────────
+    builder.Services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
+
+    // ── Audit Services ────────────────────────────────────────────────────────
+    builder.Services.AddScoped<IAuditCacheService, AuditCacheService>();
 
     // ── Redis Caching (optional) ──────────────────────────────────────────────
     var redisConnStr = builder.Configuration["ConnectionStrings:Redis"]
