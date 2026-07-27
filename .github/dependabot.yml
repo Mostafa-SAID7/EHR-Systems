@@ -1,0 +1,111 @@
+version: 2
+
+updates:
+  # ─────────────────────────────────────────────────────────────────────────
+  # NuGet Dependencies (C# / .NET)
+  # ─────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "nuget"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 10
+    pull-request-branch-name:
+      separator: "/"
+    reviewers:
+      - "Mostafa-SAID7"
+    assignees:
+      - "Mostafa-SAID7"
+    labels:
+      - "dependencies"
+      - "dotnet"
+    commit-message:
+      prefix: "deps(nuget)"
+      prefix-scope: "backend"
+      include: "scope"
+    rebase-strategy: "auto"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    ignore:
+      # Ignore known problematic versions
+      - dependency-name: "OpenTelemetry.Instrumentation.Process"
+        versions: ["0.5.0-alpha"]
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # NPM Dependencies (Frontend/Node)
+  # ─────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:15"
+    open-pull-requests-limit: 10
+    pull-request-branch-name:
+      separator: "/"
+    reviewers:
+      - "Mostafa-SAID7"
+    assignees:
+      - "Mostafa-SAID7"
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "deps(npm)"
+      prefix-scope: "frontend"
+      include: "scope"
+    rebase-strategy: "auto"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # GitHub Actions
+  # ─────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:30"
+    open-pull-requests-limit: 5
+    pull-request-branch-name:
+      separator: "/"
+    reviewers:
+      - "Mostafa-SAID7"
+    assignees:
+      - "Mostafa-SAID7"
+    labels:
+      - "dependencies"
+      - "ci-cd"
+    commit-message:
+      prefix: "ci"
+      prefix-scope: "github-actions"
+      include: "scope"
+    rebase-strategy: "auto"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Docker (compose files)
+  # ─────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "03:00"
+    open-pull-requests-limit: 5
+    pull-request-branch-name:
+      separator: "/"
+    reviewers:
+      - "Mostafa-SAID7"
+    assignees:
+      - "Mostafa-SAID7"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "ci(docker)"
+      include: "scope"
+    rebase-strategy: "auto"
