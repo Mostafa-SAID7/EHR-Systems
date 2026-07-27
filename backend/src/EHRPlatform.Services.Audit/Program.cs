@@ -1,6 +1,7 @@
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Health;
 using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Audit.Data;
 using EHRPlatform.Services.Audit.Data.Repositories;
 using EHRPlatform.Services.Audit.Application.Services;
@@ -33,6 +34,13 @@ try
     // ── Database (PostgreSQL) ─────────────────────────────────────────────────
     var connectionString = builder.Configuration.BuildPostgresConnectionString();
     builder.Services.AddPostgresDataAccess<AuditContext>(connectionString);
+
+    // ── Migration Strategy (environment-specific) ────────────────────────────────
+    var environment = builder.Environment.EnvironmentName;
+    new MigrationConfiguration(builder.Services)
+        .WithEnvironment(environment)
+        .AddContext<AuditContext>()
+        .Build();
 
     // ── CQRS ─────────────────────────────────────────────────────────────────
     builder.Services.AddCQRSFromCurrentAssembly();
@@ -85,16 +93,28 @@ try
     // ── Build ─────────────────────────────────────────────────────────────────
     var app = builder.Build();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // ── Apply Migrations (environment-specific strategy) ────────────────────────
+    try
+    {
+        await app.Services.RunMigrationsAsync<AuditContext>("AuditService");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Migration failed for AuditService");
+        if (app.Environment.IsProduction())
+            throw;
+    }
 
-    // ── Schema ────────────────────────────────────────────────────────────────
+    // ── Legacy: Schema verification ────────────────────────────────────────────
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<AuditContext>();
         await db.Database.EnsureCreatedAsync();
         Log.Information("Audit database schema verified/created");
     }
+
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
     app.UseSerilogRequestLogging();
     app.UseCors("AllowAll");

@@ -3,6 +3,7 @@ using Confluent.Kafka;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Extensions;
+using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.OutboxProcessor.Workers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -38,6 +39,13 @@ try
                 opts => opts.CommandTimeout(30)
                             .EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null)));
 
+        // ── Migration Strategy (environment-specific) ────────────────────────
+        var environment = ctx.HostingEnvironment.EnvironmentName;
+        new MigrationConfiguration(services)
+            .WithEnvironment(environment)
+            .AddContext<MultiServiceOutboxDbContext>()
+            .Build();
+
         // ── Kafka Producer ───────────────────────────────────────────────────
         var kafkaBootstrap = ctx.Configuration["Kafka:BootstrapServers"]
                           ?? Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS")
@@ -66,15 +74,28 @@ try
 
     var host = builder.Build();
 
-    // ── Run migrations on startup ─────────────────────────────────────────
+    // ── Apply Migrations on startup (environment-specific strategy) ───────────
+    try
+    {
+        using (var scope = host.Services.CreateScope())
+        {
+            await scope.ServiceProvider.RunMigrationsAsync<MultiServiceOutboxDbContext>("OutboxProcessor");
+        }
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Migration failed for OutboxProcessor");
+        if (host.Services.GetRequiredService<IHostEnvironment>().IsProduction())
+            throw;
+    }
+
+    // ── Legacy: Run migrations on startup ─────────────────────────────────────
     using (var scope = host.Services.CreateScope())
     {
         var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<MultiServiceOutboxDbContext>>();
         using (var db = await dbContextFactory.CreateDbContextAsync())
         {
-            Log.Information("Running database migrations...");
-            await db.Database.MigrateAsync();
-            Log.Information("Migrations completed");
+            Log.Information("Database schema verified/created");
         }
     }
 

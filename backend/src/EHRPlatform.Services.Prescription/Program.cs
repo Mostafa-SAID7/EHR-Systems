@@ -1,5 +1,6 @@
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Prescription.Application.Services;
 using EHRPlatform.Services.Prescription.Data;
 using Serilog;
@@ -29,6 +30,13 @@ try
     // ── Database (PostgreSQL) ─────────────────────────────────────────────────
     var connectionString = builder.Configuration.BuildPostgresConnectionString();
     builder.Services.AddPostgresDataAccess<PrescriptionContext>(connectionString);
+
+    // ── Migration Strategy (environment-specific) ────────────────────────────────
+    var environment = builder.Environment.EnvironmentName;
+    new MigrationConfiguration(builder.Services)
+        .WithEnvironment(environment)
+        .AddContext<PrescriptionContext>()
+        .Build();
 
     // ── CQRS + Common ─────────────────────────────────────────────────────────
     builder.Services.AddCQRSFromCurrentAssembly();
@@ -62,16 +70,28 @@ try
     // ── Build ─────────────────────────────────────────────────────────────────
     var app = builder.Build();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // ── Apply Migrations (environment-specific strategy) ────────────────────────
+    try
+    {
+        await app.Services.RunMigrationsAsync<PrescriptionContext>("PrescriptionService");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Migration failed for PrescriptionService");
+        if (app.Environment.IsProduction())
+            throw;
+    }
 
-    // ── Schema ────────────────────────────────────────────────────────────────
+    // ── Legacy: Schema verification ────────────────────────────────────────────
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<PrescriptionContext>();
         await db.Database.EnsureCreatedAsync();
         Log.Information("Prescription database schema verified/created");
     }
+
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
     app.UseSerilogRequestLogging();
     app.UseCors("AllowAll");

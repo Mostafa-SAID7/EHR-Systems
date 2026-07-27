@@ -2,6 +2,7 @@ using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Health;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Patient.Data;
 using EHRPlatform.Services.Patient.Messaging.Consumers;
 using EHRPlatform.Services.Patient.Sagas;
@@ -26,6 +27,13 @@ builder.Services.AddSwaggerGen();
 // ── Database (PostgreSQL via Replit env vars or explicit connection string) ────
 var connectionString = builder.Configuration.BuildPostgresConnectionString();
 builder.Services.AddPostgresDataAccess<PatientContext>(connectionString);
+
+// ── Migration Strategy (environment-specific) ────────────────────────────────
+var environment = builder.Environment.EnvironmentName;
+new MigrationConfiguration(builder.Services)
+    .WithEnvironment(environment)
+    .AddContext<PatientContext>()
+    .Build();
 
 // ── Outbox repository (writes domain events atomically with patient data) ──────
 builder.Services.AddScoped<IOutboxRepository>(sp =>
@@ -202,7 +210,19 @@ if (!string.IsNullOrEmpty(mongoConnStr))
 // ── Build ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-// ── Migrations (runs pending EF Core migrations at startup) ──────────────────
+// ── Apply Migrations (environment-specific strategy) ────────────────────────────
+try
+{
+    await app.Services.RunMigrationsAsync<PatientContext>("PatientService");
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Migration failed for PatientService");
+    if (app.Environment.IsProduction())
+        throw;
+}
+
+// ── Legacy: Migrations (runs pending EF Core migrations at startup) ──────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PatientContext>();

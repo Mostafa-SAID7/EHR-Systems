@@ -1,4 +1,5 @@
 using EHRPlatform.Common.Extensions;
+using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Notification.Consumers;
 using EHRPlatform.Services.Notification.Hubs;
 using EHRPlatform.Services.Notification.Data;
@@ -19,6 +20,13 @@ builder.Services.AddOpenTelemetryObservability("notification-service");
 // ── Database (PostgreSQL) ─────────────────────────────────────────────────────
 var connectionString = builder.Configuration.BuildPostgresConnectionString();
 builder.Services.AddPostgresDataAccess<NotificationContext>(connectionString);
+
+// ── Migration Strategy (environment-specific) ────────────────────────────────
+var environment = builder.Environment.EnvironmentName;
+new MigrationConfiguration(builder.Services)
+    .WithEnvironment(environment)
+    .AddContext<NotificationContext>()
+    .Build();
 
 // ── Outbox Event Repository ────────────────────────────────────────────────────
 builder.Services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
@@ -83,6 +91,26 @@ builder.Services.AddSwaggerGen();
 
 // ── Build ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
+
+// ── Apply Migrations (environment-specific strategy) ────────────────────────────
+try
+{
+    await app.Services.RunMigrationsAsync<NotificationContext>("NotificationService");
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Migration failed for NotificationService");
+    if (app.Environment.IsProduction())
+        throw;
+}
+
+// ── Legacy: Schema verification ────────────────────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<NotificationContext>();
+    await db.Database.EnsureCreatedAsync();
+    Log.Information("Notification database schema verified/created");
+}
 
 if (app.Environment.IsDevelopment())
 {

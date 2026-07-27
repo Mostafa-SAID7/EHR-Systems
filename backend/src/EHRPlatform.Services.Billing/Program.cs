@@ -1,5 +1,6 @@
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Billing.Data;
 using EHRPlatform.Services.Billing.Data.Repositories;
 using EHRPlatform.Services.Billing.Application.Services;
@@ -32,6 +33,13 @@ try
     // ── Database (PostgreSQL) ─────────────────────────────────────────────────
     var connectionString = builder.Configuration.BuildPostgresConnectionString();
     builder.Services.AddPostgresDataAccess<BillingContext>(connectionString);
+
+    // ── Migration Strategy (environment-specific) ────────────────────────────────
+    var environment = builder.Environment.EnvironmentName;
+    new MigrationConfiguration(builder.Services)
+        .WithEnvironment(environment)
+        .AddContext<BillingContext>()
+        .Build();
 
     // ── CQRS + Common ─────────────────────────────────────────────────────────
     builder.Services.AddCQRSFromCurrentAssembly();
@@ -97,16 +105,28 @@ try
     // ── Build ─────────────────────────────────────────────────────────────────
     var app = builder.Build();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // ── Apply Migrations (environment-specific strategy) ────────────────────────
+    try
+    {
+        await app.Services.RunMigrationsAsync<BillingContext>("BillingService");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Migration failed for BillingService");
+        if (app.Environment.IsProduction())
+            throw;
+    }
 
-    // ── Schema ────────────────────────────────────────────────────────────────
+    // ── Legacy: Schema verification ────────────────────────────────────────────
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<BillingContext>();
         await db.Database.EnsureCreatedAsync();
         Log.Information("Billing database schema verified/created");
     }
+
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
     app.UseSerilogRequestLogging();
     app.UseCors("AllowAll");

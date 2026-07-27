@@ -3,6 +3,7 @@ using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Health;
 using EHRPlatform.Common.Search;
 using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Identity.Application.Identity.Extensions;
 using EHRPlatform.Services.Identity.Data;
 using EHRPlatform.Services.Identity.Data.Repositories;
@@ -69,6 +70,13 @@ try
     // ── Database (PostgreSQL) ─────────────────────────────────────────────────
     var connectionString = builder.Configuration.BuildPostgresConnectionString();
     builder.Services.AddPostgresDataAccess<IdentityContext>(connectionString);
+
+    // ── Migration Strategy (environment-specific) ────────────────────────────────
+    var environment = builder.Environment.EnvironmentName;
+    new MigrationConfiguration(builder.Services)
+        .WithEnvironment(environment)
+        .AddContext<IdentityContext>()
+        .Build();
 
     // ── CQRS: handlers, validators, mappers ──────────────────────────────────
     builder.Services.AddIdentityServices();
@@ -164,6 +172,29 @@ try
     // ── Build ─────────────────────────────────────────────────────────────────
     var app = builder.Build();
 
+    // ── Apply Migrations (environment-specific strategy) ────────────────────────
+    try
+    {
+        await app.Services.RunMigrationsAsync<IdentityContext>("IdentityService");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Migration failed for IdentityService");
+        if (app.Environment.IsProduction())
+            throw;
+    }
+
+    // ── Auto-create / migrate schema on first run ─────────────────────────────
+    // EnsureCreatedAsync: fast for development; switch to MigrateAsync once
+    // you generate the first EF migration with:
+    //   dotnet ef migrations add Initial --project src/EHRPlatform.Services.Identity
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<IdentityContext>();
+        await db.Database.EnsureCreatedAsync();
+        Log.Information("Identity database schema verified/created");
+    }
+
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
@@ -178,20 +209,6 @@ try
     app.MapControllers();
     app.MapHealthChecks("/health");
     // app.MapPrometheusMetricsEndpoint();
-
-    // ── Auto-create / migrate schema on first run ─────────────────────────────
-    // EnsureCreatedAsync: fast for development; switch to MigrateAsync once
-    // you generate the first EF migration with:
-    //   dotnet ef migrations add Initial --project src/EHRPlatform.Services.Identity
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<IdentityContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Identity database schema verified/created");
-    }
-
-    Log.Information("EHR Identity Service starting on http://0.0.0.0:5001");
-    await app.RunAsync();
 }
 catch (Exception ex)
 {
