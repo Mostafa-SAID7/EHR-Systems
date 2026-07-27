@@ -44,8 +44,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        cache: true
-        cache-dependency-path: backend/**/packages.lock.json
     
     - name: Restore dependencies
       run: dotnet restore backend/EHRPlatform.sln
@@ -93,7 +91,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        cache: true
     
     - name: Build ${{ matrix.service }}
       run: dotnet build backend/src/${{ matrix.service }}/${{ matrix.service }}.csproj --configuration Release --verbosity normal
@@ -119,7 +116,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        cache: true
     
     - name: Restore dependencies
       run: dotnet restore backend/EHRPlatform.sln
@@ -154,7 +150,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        cache: true
     
     - name: Restore dependencies
       run: dotnet restore backend/EHRPlatform.sln
