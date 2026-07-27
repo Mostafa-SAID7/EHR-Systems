@@ -1,0 +1,161 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: ehr-platform
+  name: ehr-config
+data:
+  # Service Configuration
+  ASPNETCORE_ENVIRONMENT: "Production"
+  SERVICE_NAMESPACE: "ehr-platform"
+  
+  # OpenTelemetry
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+  OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: "http://otel-collector:4318"
+  OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: "http://otel-collector:4317"
+  
+  # RabbitMQ
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_VHOST: "/ehr"
+  
+  # Redis
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  
+  # MongoDB
+  MONGODB_HOST: "mongodb"
+  MONGODB_PORT: "27017"
+  MONGODB_DATABASE: "ehr_platform"
+  
+  # PostgreSQL
+  POSTGRES_HOST_IDENTITY: "postgresql-identity"
+  POSTGRES_HOST_PATIENT: "postgresql-patient"
+  POSTGRES_HOST_CLINICAL: "postgresql-clinical"
+  POSTGRES_HOST_APPOINTMENTS: "postgresql-appointments"
+  POSTGRES_HOST_AUDIT: "postgresql-audit"
+  POSTGRES_PORT: "5432"
+  
+  # MySQL (Billing)
+  MYSQL_HOST: "mysql-billing"
+  MYSQL_PORT: "3306"
+  
+  # Elasticsearch
+  ELASTICSEARCH_HOST: "elasticsearch"
+  ELASTICSEARCH_PORT: "9200"
+  
+  # Kafka
+  KAFKA_BROKERS: "kafka:9092"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: ehr-platform
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'ehr-platform'
+        environment: 'production'
+
+    scrape_configs:
+      - job_name: 'otel-collector'
+        static_configs:
+          - targets: ['otel-collector:8888']
+
+      - job_name: 'services'
+        static_configs:
+          - targets: 
+            - 'api-gateway:5000'
+            - 'identity-service:5001'
+            - 'patient-service:5002'
+            - 'clinical-service:5003'
+            - 'appointment-service:5004'
+            - 'prescription-service:5005'
+            - 'billing-service:5006'
+            - 'audit-service:5007'
+            - 'notification-service:5008'
+            - 'analytics-service:5009'
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: ehr-platform
+  name: loki-config
+data:
+  loki-config.yml: |
+    auth_enabled: false
+    
+    ingester:
+      chunk_idle_period: 3m
+      max_chunk_age: 1h
+      max_streams_per_user: 5000
+      chunk_retain_period: 1m
+
+    limits_config:
+      max_streams_per_user: 10000
+
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+
+    server:
+      http_listen_port: 3100
+
+    storage_config:
+      filesystem:
+        directory: /loki/chunks
+      boltdb_shipper:
+        active_index_directory: /loki/boltdb-shipper-active
+        cache_location: /loki/boltdb-shipper-cache
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: ehr-platform
+  name: tempo-config
+data:
+  tempo-config.yml: |
+    server:
+      http_listen_port: 3200
+
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+
+    ingester:
+      trace_idle_period: 10s
+      max_trace_size: 5000000
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory
+
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /var/tempo/traces
+        wal:
+          path: /var/tempo/wal
+
+    querier:
+      frontend_worker:
+        frontend_address: tempo:3100

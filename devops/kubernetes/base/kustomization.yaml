@@ -3,15 +3,22 @@ kind: Kustomization
 
 namespace: ehr-platform
 
+commonLabels:
+  app.kubernetes.io/part-of: ehr-platform
+  app.kubernetes.io/managed-by: kustomize
+  environment: base
+
+commonAnnotations:
+  managed-by: "kubectl"
+  documentation: "https://github.com/Mostafa-SAID7/EHR-Systems-Microservices"
+
 resources:
-  - namespace.yaml
-  - rbac.yaml
-  - configmap.yaml
-  - secrets.yaml
-  - network-policy.yaml
-  - api-gateway.yaml
-  - identity-service.yaml
-  - patient-service.yaml
-  - services-remaining.yaml
-  - ingress.yaml
-  - hpa.yaml
+  - 00-namespace.yaml
+  - 01-configmaps.yaml
+  - 02-secrets.yaml
+  - 03-storage.yaml
+  - 04-policies.yaml
+
+replacements: []
+
+patchesStrategicMerge: []
