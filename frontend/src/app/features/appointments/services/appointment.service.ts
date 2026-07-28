@@ -285,6 +285,57 @@ export class AppointmentService {
   }
 
   // ============================================================
+  // NOTES
+  // ============================================================
+
+  /**
+   * Add a note to an appointment
+   */
+  addNote(appointmentId: string, content: string, createdById: string, privacyLevel: string = 'InternalOnly'): Observable<void> {
+    const payload = {
+      content,
+      createdById,
+      privacyLevel
+    };
+
+    return this.http.post<void>(
+      `${this.apiUrl}/${appointmentId}/notes`,
+      payload
+    ).pipe(
+      catchError(error => this.handleError('addNote', error))
+    );
+  }
+
+  // ============================================================
+  // RESCHEDULING
+  // ============================================================
+
+  /**
+   * Reschedule an appointment
+   */
+  rescheduleAppointment(
+    appointmentId: string,
+    newScheduledStart: Date,
+    durationMinutes: number,
+    reason?: string
+  ): Observable<void> {
+    const payload = {
+      newScheduledStart: newScheduledStart.toISOString(),
+      durationMinutes,
+      reason,
+      initiatedById: 'current-user-id', // Would come from auth service
+      initiatedBy: 'Patient'
+    };
+
+    return this.http.post<void>(
+      `${this.apiUrl}/${appointmentId}/reschedule`,
+      payload
+    ).pipe(
+      catchError(error => this.handleError('rescheduleAppointment', error))
+    );
+  }
+
+  // ============================================================
   // PRIVATE HELPERS
   // ============================================================
 

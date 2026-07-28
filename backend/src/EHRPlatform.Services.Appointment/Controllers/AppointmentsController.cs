@@ -256,6 +256,94 @@ public class AppointmentsController : ControllerBase
             availableProviders = status.AvailableProviders
         });
     }
+
+    /// <summary>
+    /// Add a note to an appointment.
+    /// </summary>
+    [HttpPost("{appointmentId}/notes")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddNote(
+        Guid appointmentId,
+        [FromBody] AddNoteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new AddNoteCommand
+        {
+            AppointmentId = appointmentId,
+            Content = request.Content,
+            CreatedById = request.CreatedById,
+            PrivacyLevel = request.PrivacyLevel,
+            Category = request.Category
+        };
+
+        await _mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(GetAppointment), new { id = appointmentId });
+    }
+
+    /// <summary>
+    /// Reschedule an appointment.
+    /// </summary>
+    [HttpPost("{appointmentId}/reschedule")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RescheduleAppointment(
+        Guid appointmentId,
+        [FromBody] RescheduleAppointmentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new RescheduleAppointmentCommand
+        {
+            AppointmentId = appointmentId,
+            NewScheduledStart = request.NewScheduledStart,
+            DurationMinutes = request.DurationMinutes,
+            InitiatedById = request.InitiatedById,
+            InitiatedBy = request.InitiatedBy ?? "Provider",
+            Reason = request.Reason
+        };
+
+        await _mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+}
+
+/// <summary>
+/// Request model for adding appointment notes.
+/// </summary>
+public class AddNoteRequest
+{
+    /// <summary>Gets or sets the note content.</summary>
+    public string Content { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the user ID who created the note.</summary>
+    public Guid CreatedById { get; set; }
+
+    /// <summary>Gets or sets the privacy level (Private, SharedWithPatient, InternalOnly).</summary>
+    public string? PrivacyLevel { get; set; } = "InternalOnly";
+
+    /// <summary>Gets or sets the note category.</summary>
+    public string? Category { get; set; }
+}
+
+/// <summary>
+/// Request model for rescheduling an appointment.
+/// </summary>
+public class RescheduleAppointmentRequest
+{
+    /// <summary>Gets or sets the new scheduled start time.</summary>
+    public DateTime NewScheduledStart { get; set; }
+
+    /// <summary>Gets or sets the duration in minutes.</summary>
+    public int DurationMinutes { get; set; }
+
+    /// <summary>Gets or sets the user ID who initiated the reschedule.</summary>
+    public Guid InitiatedById { get; set; }
+
+    /// <summary>Gets or sets who initiated (Patient, Provider, Admin).</summary>
+    public string? InitiatedBy { get; set; } = "Provider";
+
+    /// <summary>Gets or sets the reason for rescheduling.</summary>
+    public string? Reason { get; set; }
 }
 
 /// <summary>

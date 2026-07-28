@@ -80,6 +80,16 @@ public class Appointment : AuditableEntity
     /// </summary>
     public ICollection<AppointmentReminder> Reminders { get; } = new List<AppointmentReminder>();
 
+    /// <summary>
+    /// Gets the collection of notes for this appointment.
+    /// </summary>
+    public ICollection<AppointmentNote> Notes { get; } = new List<AppointmentNote>();
+
+    /// <summary>
+    /// Gets the collection of reschedule history for this appointment.
+    /// </summary>
+    public ICollection<RescheduleHistory> RescheduleHistory { get; } = new List<RescheduleHistory>();
+
     private readonly List<IntegrationEvent> _domainEvents = new();
 
     /// <summary>
@@ -174,6 +184,77 @@ public class Appointment : AuditableEntity
             reminder.Status = ReminderStatus.Sent;
             reminder.IsSent = true;
         }
+    }
+
+    /// <summary>
+    /// Adds a note to this appointment.
+    /// </summary>
+    /// <param name="content">Note content.</param>
+    /// <param name="createdById">User ID of note creator.</param>
+    /// <param name="privacyLevel">Privacy level for the note.</param>
+    /// <param name="category">Note category (optional).</param>
+    public void AddNote(string content, Guid createdById, NotePrivacyLevel privacyLevel = NotePrivacyLevel.InternalOnly, string? category = null)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            throw new ArgumentException("Note content cannot be empty");
+
+        var note = new AppointmentNote
+        {
+            Id = Guid.NewGuid(),
+            AppointmentId = Id,
+            CreatedById = createdById,
+            Content = content,
+            PrivacyLevel = privacyLevel,
+            Category = category,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        Notes.Add(note);
+        RaiseEvent(new AppointmentNoteAddedEvent(Id, createdById, content));
+    }
+
+    /// <summary>
+    /// Reschedules this appointment to a new time.
+    /// </summary>
+    /// <param name="newScheduledStart">New start time.</param>
+    /// <param name="durationMinutes">Duration in minutes.</param>
+    /// <param name="initiatedById">User ID who initiated reschedule.</param>
+    /// <param name="initiatedBy">Who initiated (Patient/Provider/Admin).</param>
+    /// <param name="reason">Reason for reschedule (optional).</param>
+    public void Reschedule(DateTime newScheduledStart, int durationMinutes, Guid initiatedById, string initiatedBy = "Provider", string? reason = null)
+    {
+        if (newScheduledStart <= DateTime.UtcNow)
+            throw new InvalidOperationException("New appointment time must be in the future");
+
+        if (Status == AppointmentStatus.Completed || Status == AppointmentStatus.Cancelled)
+            throw new InvalidOperationException($"Cannot reschedule {Status} appointment");
+
+        var oldStart = ScheduledStart;
+        
+        // Record history
+        var history = new RescheduleHistory
+        {
+            Id = Guid.NewGuid(),
+            AppointmentId = Id,
+            OriginalScheduledStart = oldStart,
+            NewScheduledStart = newScheduledStart,
+            InitiatedBy = initiatedBy,
+            InitiatedByUserId = initiatedById,
+            Reason = reason,
+            RescheduleDateTime = DateTime.UtcNow
+        };
+
+        RescheduleHistory.Add(history);
+
+        // Update appointment
+        ScheduledStart = newScheduledStart;
+        ScheduledEnd = newScheduledStart.AddMinutes(durationMinutes);
+        Status = AppointmentStatus.Rescheduled;
+
+        // Raise event
+        RaiseEvent(new AppointmentRescheduledEvent(
+            Id, PatientId, ProviderId, oldStart, newScheduledStart, reason));
     }
 
     /// <summary>

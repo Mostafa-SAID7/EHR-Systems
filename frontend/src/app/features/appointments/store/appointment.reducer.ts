@@ -340,5 +340,50 @@ export const appointmentReducer = createReducer(
     ...state,
     error,
     loading: false
+  })),
+
+  // ============================================================
+  // ADD NOTE
+  // ============================================================
+
+  on(AppointmentActions.addNote, (state) => ({
+    ...state,
+    actionInProgress: { ...state.actionInProgress, addNote: true },
+    error: null
+  })),
+
+  on(AppointmentActions.addNoteSuccess, (state) => ({
+    ...state,
+    actionInProgress: { ...state.actionInProgress, addNote: false }
+  })),
+
+  on(AppointmentActions.addNoteFailure, (state, { error }) => ({
+    ...state,
+    error,
+    actionInProgress: { ...state.actionInProgress, addNote: false }
+  })),
+
+  // ============================================================
+  // RESCHEDULE APPOINTMENT
+  // ============================================================
+
+  on(AppointmentActions.rescheduleAppointment, (state) => ({
+    ...state,
+    actionInProgress: { ...state.actionInProgress, reschedule: true },
+    error: null
+  })),
+
+  on(AppointmentActions.rescheduleAppointmentSuccess, (state, { appointmentId }) => ({
+    ...state,
+    appointments: state.appointments.map(a =>
+      a.id === appointmentId ? { ...a, status: AppointmentStatus.Rescheduled } : a
+    ),
+    actionInProgress: { ...state.actionInProgress, reschedule: false }
+  })),
+
+  on(AppointmentActions.rescheduleAppointmentFailure, (state, { error }) => ({
+    ...state,
+    error,
+    actionInProgress: { ...state.actionInProgress, reschedule: false }
   }))
 );

@@ -53,6 +53,31 @@ export interface AppointmentReminder {
   sentAt?: Date;
 }
 
+export interface AppointmentNote {
+  id: string;
+  appointmentId: string;
+  content: string;
+  createdBy: string;
+  createdById: string;
+  privacyLevel: 'Private' | 'SharedWithPatient' | 'InternalOnly';
+  category?: string;
+  isFollowUpRequired: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RescheduleHistoryItem {
+  id: string;
+  appointmentId: string;
+  originalScheduledStart: Date;
+  newScheduledStart: Date;
+  initiatedBy: string;
+  initiatedByUserId: string;
+  reason?: string;
+  isAutomatic: boolean;
+  rescheduleDateTime: Date;
+}
+
 export interface AppointmentResponseDto {
   id: string;
   patientId: string;
@@ -65,6 +90,8 @@ export interface AppointmentResponseDto {
   notes?: string;
   durationMinutes?: number;
   reminders?: AppointmentReminder[];
+  appointmentNotes?: AppointmentNote[];
+  rescheduleHistory?: RescheduleHistoryItem[];
   createdAt: Date;
   updatedAt: Date;
 }

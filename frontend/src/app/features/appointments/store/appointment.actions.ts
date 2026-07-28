@@ -286,3 +286,41 @@ export const getNotificationStatusFailure = createAction(
   '[Appointments] Get Notification Status Failure',
   props<{ error: string }>()
 );
+
+// ============================================================
+// ADD NOTE
+// ============================================================
+
+export const addNote = createAction(
+  '[Appointments] Add Note',
+  props<{ appointmentId: string; content: string; createdById: string; privacyLevel?: string }>()
+);
+
+export const addNoteSuccess = createAction(
+  '[Appointments] Add Note Success',
+  props<{ appointmentId: string }>()
+);
+
+export const addNoteFailure = createAction(
+  '[Appointments] Add Note Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// RESCHEDULE APPOINTMENT
+// ============================================================
+
+export const rescheduleAppointment = createAction(
+  '[Appointments] Reschedule Appointment',
+  props<{ appointmentId: string; newScheduledStart: Date; durationMinutes: number; reason?: string }>()
+);
+
+export const rescheduleAppointmentSuccess = createAction(
+  '[Appointments] Reschedule Appointment Success',
+  props<{ appointmentId: string }>()
+);
+
+export const rescheduleAppointmentFailure = createAction(
+  '[Appointments] Reschedule Appointment Failure',
+  props<{ error: string }>()
+);

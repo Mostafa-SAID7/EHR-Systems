@@ -335,6 +335,52 @@ export class AppointmentEffects {
     )
   );
 
+  // ============================================================
+  // ADD NOTE EFFECT
+  // ============================================================
+  addNote$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.addNote),
+      switchMap(({ appointmentId, content, createdById, privacyLevel }) =>
+        this.appointmentService.addNote(appointmentId, content, createdById, privacyLevel || 'InternalOnly').pipe(
+          map(() =>
+            AppointmentActions.addNoteSuccess({ appointmentId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.addNoteFailure({
+                error: error?.message || 'Failed to add note'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // RESCHEDULE APPOINTMENT EFFECT
+  // ============================================================
+  rescheduleAppointment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.rescheduleAppointment),
+      switchMap(({ appointmentId, newScheduledStart, durationMinutes, reason }) =>
+        this.appointmentService.rescheduleAppointment(appointmentId, newScheduledStart, durationMinutes, reason).pipe(
+          map(() =>
+            AppointmentActions.rescheduleAppointmentSuccess({ appointmentId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.rescheduleAppointmentFailure({
+                error: error?.message || 'Failed to reschedule appointment'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
   constructor(
     private actions$: Actions,
     private appointmentService: AppointmentService,
