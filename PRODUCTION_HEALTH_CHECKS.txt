@@ -1,0 +1,381 @@
+═══════════════════════════════════════════════════════════════════════════════
+  PRODUCTION HEALTH CHECKS & MONITORING
+═══════════════════════════════════════════════════════════════════════════════
+
+AUTOMATED HEALTH CHECK ENDPOINTS
+═════════════════════════════════
+
+1. BASIC SERVICE HEALTH
+   Endpoint: GET /api/v1/appointments/health
+   Frequency: Every 30 seconds
+   Timeout: 5 seconds
+   Expected Response:
+     HTTP 200 OK
+     {
+       "status": "healthy"
+     }
+   Alert if: No 200 response OR response time > 5 seconds
+
+2. DATABASE HEALTH
+   Query: SELECT COUNT(*) FROM Appointments
+   Frequency: Every 60 seconds
+   Expected: Query completes in < 100ms, returns a count
+   Alert if: Query fails OR takes > 500ms
+
+3. BACKGROUND SERVICE HEALTH
+   Check: ReminderBackgroundService is running
+   Method: Check if reminders processed in last 10 minutes
+   Query: SELECT COUNT(*) FROM AppointmentReminders WHERE SentAt >= NOW() - INTERVAL 10 MINUTE
+   Expected: Some reminders processed (or 0 if none scheduled)
+   Alert if: Service appears dead (no processing)
+
+═══════════════════════════════════════════════════════════════════════════════
+MONITORING METRICS & ALERTS
+═══════════════════════════════════════════════════════════════════════════════
+
+CRITICAL ALERTS (P1 - Immediate Action)
+────────────────────────────────────────
+Trigger Immediately if ANY of these occur:
+
+1. Service Unavailable
+   Condition: Health check fails for 2+ consecutive checks (1 minute)
+   Action: Page on-call engineer immediately
+   Response Time: 5 minutes
+
+2. Error Rate Spike
+   Condition: HTTP 5xx errors > 5% for 5 minutes
+   Action: Investigate logs, consider rollback
+   Threshold Alert: 100+ errors/minute
+
+3. Database Down
+   Condition: Database connection fails
+   Action: Check DB status, restart if needed
+   Recovery: Automatic failover (if configured)
+
+4. Response Time Degradation
+   Condition: P95 latency > 2 seconds for 5 minutes
+   Action: Check database, review slow queries
+   Acceptable P95: < 500ms
+
+5. Memory Leak
+   Condition: Memory usage increases > 90% of limit
+   Action: Restart service gracefully
+   Recovery: Automatic restart if configured
+
+HIGH PRIORITY ALERTS (P2 - Investigate Today)
+───────────────────────────────────────────────
+1. Error Rate Increase
+   Condition: HTTP 5xx errors > 1% (but < 5%)
+   Action: Investigate root cause
+   
+2. Database Connection Pool Exhaustion
+   Condition: Active connections > 80% of max
+   Action: Check for query leaks, increase pool if needed
+   
+3. Disk Usage High
+   Condition: Disk > 80%
+   Action: Clean up logs, archive old data
+   
+4. Backup Failed
+   Condition: Last backup > 24 hours old
+   Action: Check backup job logs, retry backup
+
+INFORMATIONAL ALERTS (P3 - Monitor Trend)
+──────────────────────────────────────────
+1. Gradually Increasing Latency
+   Condition: P50 latency increases > 20% over 1 week
+   Action: Plan performance optimization
+   
+2. Database Growth
+   Condition: Database size increases > 10% per day
+   Action: Monitor for unexpected growth
+   
+3. Warning Logs Increasing
+   Condition: Warning count doubles in 1 day
+   Action: Review warning source
+
+═══════════════════════════════════════════════════════════════════════════════
+METRICS TO TRACK
+═══════════════════════════════════════════════════════════════════════════════
+
+BACKEND PERFORMANCE
+───────────────────
+Request Metrics:
+  □ Total Requests (rate)
+  □ Successful Requests (2xx)
+  □ Client Errors (4xx)
+  □ Server Errors (5xx)
+  
+Latency Metrics (by endpoint):
+  □ P50 (median): Expected < 100ms
+  □ P95 (95th percentile): Expected < 500ms
+  □ P99 (99th percentile): Expected < 1000ms
+  □ Max: Track for spikes
+  
+By Endpoint:
+  POST   /api/v1/appointments                    (Create) - Target: < 200ms
+  GET    /api/v1/appointments/{id}               (Get)    - Target: < 100ms
+  GET    /api/v1/appointments/patient/{id}       (List)   - Target: < 300ms
+  POST   /api/v1/appointments/{id}/confirm       (Action) - Target: < 150ms
+  POST   /api/v1/appointments/{id}/cancel        (Action) - Target: < 150ms
+  POST   /api/v1/appointments/{id}/check-in      (Action) - Target: < 150ms
+  POST   /api/v1/appointments/{id}/complete      (Action) - Target: < 150ms
+  GET    /api/v1/appointments/by-type/{type}     (Filter) - Target: < 300ms
+  GET    /api/v1/health                          (Health) - Target: < 10ms
+  GET    /api/v1/providers/{id}/availability     (Query)  - Target: < 200ms
+
+DATABASE PERFORMANCE
+────────────────────
+  □ Query Time P50: Expected < 50ms
+  □ Query Time P95: Expected < 100ms
+  □ Active Connections: Expected < 20 (max 30)
+  □ Connection Wait Time: Expected < 100ms
+  □ Transaction Duration: Expected < 500ms
+  □ Table Sizes (in MB):
+      - Appointments: Monitor growth
+      - AppointmentReminders: Monitor growth
+  □ Backup Duration: Expected < 5 minutes
+  □ Backup Size: Monitor for expected growth
+
+SYSTEM RESOURCES
+────────────────
+  □ CPU Usage: Target < 50%, Alert if > 80%
+  □ Memory Usage: Target < 60%, Alert if > 90%
+  □ Disk Usage: Target < 60%, Alert if > 80%
+  □ Network I/O: Monitor for patterns
+  □ Database Connections: Target < 15, Alert if > 25
+
+BUSINESS METRICS
+────────────────
+  □ Appointments Scheduled (daily count)
+  □ Appointments Confirmed (ratio)
+  □ Appointments Cancelled (ratio)
+  □ Appointments Completed (ratio)
+  □ Average Appointment Duration
+  □ Peak Usage Time
+  □ Off-Peak Usage Time
+
+═══════════════════════════════════════════════════════════════════════════════
+DASHBOARD CONFIGURATION (Grafana / DataDog / CloudWatch)
+═══════════════════════════════════════════════════════════════════════════════
+
+Create dashboard with 4 main sections:
+
+1. SYSTEM HEALTH (Top Row)
+   ├─ Service Status (green/red indicator)
+   ├─ Database Status (green/red indicator)
+   ├─ Uptime (%)
+   └─ Last Deployment (timestamp)
+
+2. REQUEST METRICS (Second Row)
+   ├─ Request Rate (graph, per minute)
+   ├─ Error Rate (graph, percentage)
+   ├─ Success Rate (graph, percentage)
+   └─ Response Time (P50, P95, P99)
+
+3. RESOURCE USAGE (Third Row)
+   ├─ CPU Usage (%)
+   ├─ Memory Usage (%)
+   ├─ Disk Usage (%)
+   └─ Database Connections (count)
+
+4. ENDPOINT PERFORMANCE (Fourth Row)
+   ├─ Slowest Endpoints (bar chart)
+   ├─ Most Errors (pie chart)
+   ├─ Endpoint Availability (per endpoint)
+   └─ Traffic Distribution (stacked bar)
+
+═══════════════════════════════════════════════════════════════════════════════
+LOG AGGREGATION & SEARCHING
+═══════════════════════════════════════════════════════════════════════════════
+
+Centralized Logging (ELK Stack / Splunk / CloudWatch Logs)
+
+Log Levels:
+  ERROR   - Problems requiring immediate attention
+  WARN    - Potential issues, unexpected conditions
+  INFO    - Informational, normal operations
+  DEBUG   - Detailed troubleshooting info (not in production)
+
+Important Log Patterns to Monitor:
+
+Error Patterns:
+  □ "Exception during appointment scheduling"
+  □ "Database connection failed"
+  □ "Failed to send reminder"
+  □ "Unauthorized access"
+
+Warning Patterns:
+  □ "Slow database query"
+  □ "High memory usage"
+  □ "Connection pool nearly exhausted"
+
+Useful Queries:
+  - Last 1 hour errors: level:ERROR AND timestamp:[now-1h TO now]
+  - By endpoint: GET /api/v1/appointments
+  - By user/patient: patientId:{id}
+  - By operation: action:schedule OR action:confirm OR action:cancel
+  - Response time > 1 second: responseTime > 1000
+  - Failed appointments: status:failed
+
+═══════════════════════════════════════════════════════════════════════════════
+ALERTING RULES (Prometheus/Grafana Syntax)
+═══════════════════════════════════════════════════════════════════════════════
+
+# Critical Alerts
+alert: AppointmentServiceDown
+  expr: up{job="appointment-service"} == 0
+  for: 1m
+  severity: critical
+  
+alert: ErrorRateHigh
+  expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+  for: 5m
+  severity: critical
+  
+alert: ResponseTimeHigh
+  expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+  for: 5m
+  severity: critical
+  
+# High Priority
+alert: ErrorRateElevated
+  expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.01
+  for: 5m
+  severity: warning
+
+alert: DatabaseLatencyHigh
+  expr: rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m]) > 0.5
+  for: 5m
+  severity: warning
+
+═══════════════════════════════════════════════════════════════════════════════
+DAILY HEALTH CHECK CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Run Daily (Every Morning):
+
+□ Service Status
+  curl https://api.example.com/api/v1/appointments/health
+  Expected: HTTP 200 OK
+
+□ Database Health
+  SELECT COUNT(*) FROM Appointments;
+  SELECT COUNT(*) FROM AppointmentReminders;
+  Expected: Numbers make sense, queries fast
+
+□ Recent Errors
+  SELECT * FROM Logs WHERE level='ERROR' AND timestamp > NOW() - INTERVAL 1 DAY
+  Expected: Zero errors (or documented/addressed)
+
+□ Recent Warnings
+  SELECT * FROM Logs WHERE level='WARN' AND timestamp > NOW() - INTERVAL 1 DAY
+  Review warnings, address if any unexpected patterns
+
+□ Backup Status
+  SELECT * FROM BackupHistory ORDER BY started_at DESC LIMIT 1
+  Expected: Last backup successful, completed < 24 hours ago
+
+□ Performance Trend
+  Compare P95 latency from today vs yesterday vs 1 week ago
+  Expected: No significant increase
+
+□ User Activity
+  COUNT(*) of successful appointments scheduled in last 24 hours
+  Expected: Matches expected usage patterns
+
+□ Disk Space
+  df -h
+  Expected: No partition > 80%
+
+□ Certificate Expiration
+  openssl s_client -connect api.example.com:443 | grep "notAfter"
+  Expected: Cert valid for > 30 days
+
+═══════════════════════════════════════════════════════════════════════════════
+WEEKLY HEALTH REVIEW
+═══════════════════════════════════════════════════════════════════════════════
+
+Run Every Monday:
+
+□ Weekly Performance Summary
+  □ Highest error rates (by endpoint)
+  □ Slowest responses (by endpoint)
+  □ Most common errors
+  □ Resource usage trends
+
+□ Capacity Planning
+  □ Is current capacity sufficient?
+  □ Any trends suggesting scaling needed?
+  □ Database size growth acceptable?
+
+□ Cost Analysis
+  □ Infrastructure costs within budget?
+  □ Any optimization opportunities?
+
+□ Security Review
+  □ Any suspicious access patterns?
+  □ All deployments properly logged?
+  □ Credentials not exposed in logs?
+
+□ Update Check
+  □ Any critical security patches needed?
+  □ Dependencies up to date?
+  □ Framework updates available?
+
+═══════════════════════════════════════════════════════════════════════════════
+RUNBOOK: Common Issues & Recovery
+═══════════════════════════════════════════════════════════════════════════════
+
+ISSUE: Service not responding (HTTP timeouts)
+────────────────────────────────────────────
+1. Check service status: systemctl status appointment-service
+2. Check logs: tail -f /var/log/appointment-service/error.log
+3. If crashed: systemctl restart appointment-service
+4. Wait 30 seconds, verify health check passes
+5. If still failing: Check database connectivity
+6. If database is down: Follow database recovery procedure
+
+ISSUE: High error rate (5xx errors)
+───────────────────────────────────
+1. Check recent logs for error patterns: grep ERROR /var/log/appointment-service/error.log
+2. Check database: SELECT 1; (simple connectivity test)
+3. Check database connections: SHOW PROCESSLIST;
+4. If connection pool exhausted: Restart service
+5. If database issues: Contact DBA
+
+ISSUE: Slow response times (P95 > 1s)
+──────────────────────────────────────
+1. Check slow query log: SELECT * FROM slow_queries LIMIT 10
+2. Check database indexes: Are appointment lookups indexed?
+3. Restart database query cache: FLUSH QUERY CACHE;
+4. If persists: Run ANALYZE TABLE on main tables
+5. Last resort: Restart database service gracefully
+
+ISSUE: Database connection failures
+─────────────────────────────────────
+1. Test connection: mysql -u user -p -h database-host
+2. Check max connections: SHOW VARIABLES LIKE 'max_connections';
+3. Check current connections: SHOW PROCESSLIST; | wc -l
+4. If at max: Kill idle connections or restart service
+5. Increase max_connections if consistently high
+
+═══════════════════════════════════════════════════════════════════════════════
+SUCCESS METRICS (After 1 Week Production)
+═══════════════════════════════════════════════════════════════════════════════
+
+If all of these are true, Phase 1 deployment is SUCCESSFUL:
+
+✅ Uptime: > 99.9% (only ~8 seconds downtime acceptable)
+✅ Error Rate: < 0.1% (most requests succeed)
+✅ P95 Latency: < 500ms (95% of requests fast)
+✅ Appointments Scheduled: > 0 (real usage)
+✅ Database Integrity: All data consistent
+✅ Backups: Completed successfully every day
+✅ Security: No breaches, all logs clean
+✅ Team: Comfortable with procedures, no escalations
+✅ Users: No complaints, feature working as expected
+
+→ Ready to proceed with Phase 2 deployment
+
+═══════════════════════════════════════════════════════════════════════════════
