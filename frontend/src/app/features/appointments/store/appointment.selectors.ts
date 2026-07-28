@@ -183,3 +183,47 @@ export const selectPastAppointments = createSelector(
       );
   }
 );
+
+// ============================================================
+// REMINDER SELECTORS
+// ============================================================
+
+export const selectPendingReminders = createSelector(
+  selectAppointmentFeature,
+  (state: AppointmentState) => state.pendingReminders
+);
+
+export const selectPendingRemindersCount = createSelector(
+  selectPendingReminders,
+  (reminders) => reminders.length
+);
+
+export const selectEmailReminders = createSelector(
+  selectPendingReminders,
+  (reminders) => reminders.filter(r => r.reminderType === 'Email')
+);
+
+export const selectSMSReminders = createSelector(
+  selectPendingReminders,
+  (reminders) => reminders.filter(r => r.reminderType === 'SMS')
+);
+
+export const selectPushReminders = createSelector(
+  selectPendingReminders,
+  (reminders) => reminders.filter(r => r.reminderType === 'Push')
+);
+
+export const selectScheduleReminderInProgress = createSelector(
+  selectActionInProgress,
+  (actions) => actions['scheduleReminder'] || false
+);
+
+export const selectSendReminderInProgress = createSelector(
+  selectActionInProgress,
+  (actions) => actions['sendReminder'] || false
+);
+
+export const selectSendAllRemindersInProgress = createSelector(
+  selectActionInProgress,
+  (actions) => actions['sendAllReminders'] || false
+);

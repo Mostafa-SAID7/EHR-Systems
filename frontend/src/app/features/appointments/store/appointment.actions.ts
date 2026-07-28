@@ -194,3 +194,77 @@ export const updateFilter = createAction(
 // ============================================================
 
 export const clearError = createAction('[Appointments] Clear Error');
+
+// ============================================================
+// SCHEDULE REMINDER
+// ============================================================
+
+export const scheduleReminder = createAction(
+  '[Appointments] Schedule Reminder',
+  props<{ appointmentId: string; reminderTime: Date; reminderType: string }>()
+);
+
+export const scheduleReminderSuccess = createAction(
+  '[Appointments] Schedule Reminder Success',
+  props<{ appointmentId: string }>()
+);
+
+export const scheduleReminderFailure = createAction(
+  '[Appointments] Schedule Reminder Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// LOAD PENDING REMINDERS
+// ============================================================
+
+export const loadPendingReminders = createAction(
+  '[Appointments] Load Pending Reminders'
+);
+
+export const loadPendingRemindersSuccess = createAction(
+  '[Appointments] Load Pending Reminders Success',
+  props<{ reminders: any[] }>()
+);
+
+export const loadPendingRemindersFailure = createAction(
+  '[Appointments] Load Pending Reminders Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// SEND REMINDER
+// ============================================================
+
+export const sendReminder = createAction(
+  '[Appointments] Send Reminder',
+  props<{ reminderId: string }>()
+);
+
+export const sendReminderSuccess = createAction(
+  '[Appointments] Send Reminder Success',
+  props<{ reminderId: string }>()
+);
+
+export const sendReminderFailure = createAction(
+  '[Appointments] Send Reminder Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// SEND ALL PENDING REMINDERS
+// ============================================================
+
+export const sendAllPendingReminders = createAction(
+  '[Appointments] Send All Pending Reminders'
+);
+
+export const sendAllPendingRemindersSuccess = createAction(
+  '[Appointments] Send All Pending Reminders Success',
+  props<{ sentCount: number }>()
+);
+
+export const sendAllPendingRemindersFailure = createAction(
+  '[Appointments] Send All Pending Reminders Failure',
+  props<{ error: string }>()
+);

@@ -220,6 +220,98 @@ export class AppointmentEffects {
     )
   );
 
+  // ============================================================
+  // SCHEDULE REMINDER EFFECT
+  // ============================================================
+  scheduleReminder$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.scheduleReminder),
+      switchMap(({ appointmentId, reminderTime, reminderType }) =>
+        this.appointmentService.scheduleReminder(appointmentId, reminderTime, reminderType).pipe(
+          map(() =>
+            AppointmentActions.scheduleReminderSuccess({ appointmentId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.scheduleReminderFailure({
+                error: error?.message || 'Failed to schedule reminder'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // LOAD PENDING REMINDERS EFFECT
+  // ============================================================
+  loadPendingReminders$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.loadPendingReminders),
+      switchMap(() =>
+        this.appointmentService.getPendingReminders().pipe(
+          map(reminders =>
+            AppointmentActions.loadPendingRemindersSuccess({ reminders })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.loadPendingRemindersFailure({
+                error: error?.message || 'Failed to load pending reminders'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // SEND REMINDER EFFECT
+  // ============================================================
+  sendReminder$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.sendReminder),
+      switchMap(({ reminderId }) =>
+        this.appointmentService.sendReminder(reminderId).pipe(
+          map(() =>
+            AppointmentActions.sendReminderSuccess({ reminderId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.sendReminderFailure({
+                error: error?.message || 'Failed to send reminder'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // SEND ALL PENDING REMINDERS EFFECT
+  // ============================================================
+  sendAllPendingReminders$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.sendAllPendingReminders),
+      switchMap(() =>
+        this.appointmentService.sendAllPendingReminders().pipe(
+          map(({ sentCount }) =>
+            AppointmentActions.sendAllPendingRemindersSuccess({ sentCount })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.sendAllPendingRemindersFailure({
+                error: error?.message || 'Failed to send reminders'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
   constructor(
     private actions$: Actions,
     private appointmentService: AppointmentService,

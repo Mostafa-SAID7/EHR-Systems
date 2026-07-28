@@ -158,6 +158,62 @@ export class AppointmentService {
   }
 
   // ============================================================
+  // REMINDERS
+  // ============================================================
+
+  /**
+   * Schedule a reminder for an appointment
+   */
+  scheduleReminder(appointmentId: string, reminderTime: Date, reminderType: string): Observable<void> {
+    const payload = {
+      reminderTime: reminderTime.toISOString(),
+      reminderType
+    };
+
+    return this.http.post<void>(
+      `${this.apiUrl}/${appointmentId}/reminders`,
+      payload
+    ).pipe(
+      catchError(error => this.handleError('scheduleReminder', error))
+    );
+  }
+
+  /**
+   * Get all pending reminders
+   */
+  getPendingReminders(): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/reminders/pending`
+    ).pipe(
+      catchError(error => this.handleError('getPendingReminders', error))
+    );
+  }
+
+  /**
+   * Send a specific reminder
+   */
+  sendReminder(reminderId: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/reminders/${reminderId}/send`,
+      {}
+    ).pipe(
+      catchError(error => this.handleError('sendReminder', error))
+    );
+  }
+
+  /**
+   * Send all pending reminders
+   */
+  sendAllPendingReminders(): Observable<{ sentCount: number }> {
+    return this.http.post<{ sentCount: number }>(
+      `${this.apiUrl}/reminders/send-all`,
+      {}
+    ).pipe(
+      catchError(error => this.handleError('sendAllPendingReminders', error))
+    );
+  }
+
+  // ============================================================
   // PROVIDER AVAILABILITY
   // ============================================================
 

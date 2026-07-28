@@ -4,6 +4,7 @@ using EHRPlatform.Services.Appointment.Data;
 using EHRPlatform.Services.Appointment.Data.Repositories;
 using EHRPlatform.Services.Appointment.Application.Services;
 using EHRPlatform.Services.Appointment.Infrastructure.HealthChecks;
+using EHRPlatform.Services.Appointment.Services;
 using Elastic.Clients.Elasticsearch;
 using Serilog;
 
@@ -48,6 +49,8 @@ try
 
     // ── Appointment Services ──────────────────────────────────────────────────
     builder.Services.AddScoped<IAppointmentCacheService, AppointmentCacheService>();
+    builder.Services.AddScoped<IReminderService, ReminderService>();
+    builder.Services.AddHostedService<ReminderBackgroundService>();
 
     // ── Redis Caching (optional) ──────────────────────────────────────────────
     var redisConnStr = builder.Configuration["Redis:ConnectionString"]

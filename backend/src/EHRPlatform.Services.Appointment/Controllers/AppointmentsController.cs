@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
+using EHRPlatform.Services.Appointment.Services;
+using EHRPlatform.Services.Appointment.Domain.Enums;
 
 namespace EHRPlatform.Services.Appointment.Controllers;
 
@@ -15,13 +17,16 @@ namespace EHRPlatform.Services.Appointment.Controllers;
 public class AppointmentsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IReminderService _reminderService;
     private readonly ILogger<AppointmentsController> _logger;
 
     public AppointmentsController(
         IMediator mediator,
+        IReminderService reminderService,
         ILogger<AppointmentsController> logger)
     {
         _mediator = mediator;
+        _reminderService = reminderService;
         _logger = logger;
     }
 
@@ -168,6 +173,61 @@ public class AppointmentsController : ControllerBase
     }
 
     /// <summary>
+    /// Schedule a reminder for an appointment.
+    /// </summary>
+    [HttpPost("{appointmentId}/reminders")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ScheduleReminder(
+        Guid appointmentId,
+        [FromBody] ScheduleReminderRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await _reminderService.ScheduleReminderAsync(
+            appointmentId,
+            request.ReminderTime,
+            request.ReminderType,
+            cancellationToken);
+        return CreatedAtAction(nameof(GetPendingReminders), null);
+    }
+
+    /// <summary>
+    /// Gets pending reminders that need to be sent.
+    /// </summary>
+    [HttpGet("reminders/pending")]
+    [ProducesResponseType(typeof(IEnumerable<AppointmentReminderDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPendingReminders(CancellationToken cancellationToken = default)
+    {
+        var reminders = await _reminderService.GetPendingRemindersAsync(cancellationToken);
+        return Ok(reminders);
+    }
+
+    /// <summary>
+    /// Send a specific reminder.
+    /// </summary>
+    [HttpPost("reminders/{reminderId}/send")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SendReminder(
+        Guid reminderId,
+        CancellationToken cancellationToken = default)
+    {
+        await _reminderService.SendReminderAsync(reminderId, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Send all pending reminders.
+    /// </summary>
+    [HttpPost("reminders/send-all")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SendAllPendingReminders(CancellationToken cancellationToken = default)
+    {
+        var sentCount = await _reminderService.SendPendingRemindersAsync(cancellationToken);
+        return Ok(new { sentCount });
+    }
+
+    /// <summary>
     /// Health check endpoint.
     /// </summary>
     [HttpGet("health")]
@@ -176,4 +236,16 @@ public class AppointmentsController : ControllerBase
     {
         return Ok(new { status = "healthy" });
     }
+}
+
+/// <summary>
+/// Request model for scheduling a reminder.
+/// </summary>
+public class ScheduleReminderRequest
+{
+    /// <summary>Gets or sets the time to send the reminder.</summary>
+    public DateTime ReminderTime { get; set; }
+
+    /// <summary>Gets or sets the reminder type (Email, SMS, InApp, Push).</summary>
+    public ReminderType ReminderType { get; set; } = ReminderType.Email;
 }

@@ -231,5 +231,92 @@ export const appointmentReducer = createReducer(
   on(AppointmentActions.clearError, (state) => ({
     ...state,
     error: null
+  })),
+
+  // ============================================================
+  // SCHEDULE REMINDER
+  // ============================================================
+
+  on(AppointmentActions.scheduleReminder, (state) => ({
+    ...state,
+    actionInProgress: { ...state.actionInProgress, scheduleReminder: true },
+    error: null
+  })),
+
+  on(AppointmentActions.scheduleReminderSuccess, (state) => ({
+    ...state,
+    actionInProgress: { ...state.actionInProgress, scheduleReminder: false }
+  })),
+
+  on(AppointmentActions.scheduleReminderFailure, (state, { error }) => ({
+    ...state,
+    error,
+    actionInProgress: { ...state.actionInProgress, scheduleReminder: false }
+  })),
+
+  // ============================================================
+  // LOAD PENDING REMINDERS
+  // ============================================================
+
+  on(AppointmentActions.loadPendingReminders, (state) => ({
+    ...state,
+    loading: true,
+    error: null
+  })),
+
+  on(AppointmentActions.loadPendingRemindersSuccess, (state, { reminders }) => ({
+    ...state,
+    pendingReminders: reminders,
+    loading: false
+  })),
+
+  on(AppointmentActions.loadPendingRemindersFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false
+  })),
+
+  // ============================================================
+  // SEND REMINDER
+  // ============================================================
+
+  on(AppointmentActions.sendReminder, (state) => ({
+    ...state,
+    actionInProgress: { ...state.actionInProgress, sendReminder: true },
+    error: null
+  })),
+
+  on(AppointmentActions.sendReminderSuccess, (state, { reminderId }) => ({
+    ...state,
+    pendingReminders: state.pendingReminders.filter(r => r.id !== reminderId),
+    actionInProgress: { ...state.actionInProgress, sendReminder: false }
+  })),
+
+  on(AppointmentActions.sendReminderFailure, (state, { error }) => ({
+    ...state,
+    error,
+    actionInProgress: { ...state.actionInProgress, sendReminder: false }
+  })),
+
+  // ============================================================
+  // SEND ALL PENDING REMINDERS
+  // ============================================================
+
+  on(AppointmentActions.sendAllPendingReminders, (state) => ({
+    ...state,
+    actionInProgress: { ...state.actionInProgress, sendAllReminders: true },
+    error: null
+  })),
+
+  on(AppointmentActions.sendAllPendingRemindersSuccess, (state) => ({
+    ...state,
+    pendingReminders: [],
+    actionInProgress: { ...state.actionInProgress, sendAllReminders: false }
+  })),
+
+  on(AppointmentActions.sendAllPendingRemindersFailure, (state, { error }) => ({
+    ...state,
+    error,
+    actionInProgress: { ...state.actionInProgress, sendAllReminders: false }
   }))
 );
