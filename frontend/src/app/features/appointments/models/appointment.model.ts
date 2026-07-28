@@ -11,7 +11,9 @@ export enum AppointmentStatus {
   Confirmed = 'Confirmed',
   InProgress = 'InProgress',
   Completed = 'Completed',
-  Cancelled = 'Cancelled'
+  Cancelled = 'Cancelled',
+  NoShow = 'NoShow',
+  Rescheduled = 'Rescheduled'
 }
 
 export enum AppointmentType {
@@ -24,6 +26,17 @@ export enum ReminderType {
   Email = 'Email',
   SMS = 'SMS',
   Push = 'Push'
+}
+
+export enum CancellationReason {
+  PatientRequested = 'PatientRequested',
+  ProviderRequested = 'ProviderRequested',
+  Emergency = 'Emergency',
+  DoubleBooking = 'DoubleBooking',
+  SchedulingConflict = 'SchedulingConflict',
+  Weather = 'Weather',
+  SystemError = 'SystemError',
+  Other = 'Other'
 }
 
 // ============================================================
@@ -60,7 +73,7 @@ export interface AppointmentDetailedResponseDto extends AppointmentResponseDto {
   providerName: string;
   confirmedAt?: Date;
   cancelledAt?: Date;
-  cancelReason?: string;
+  cancelReason?: CancellationReason | string;
   reminderSent: boolean;
 }
 
@@ -92,7 +105,7 @@ export interface ScheduleAppointmentRequest {
 
 export interface CancelAppointmentRequest {
   appointmentId: string;
-  reason: string;
+  reason: CancellationReason | string;
 }
 
 export interface AppointmentActionRequest {
@@ -144,7 +157,9 @@ export function getStatusColor(status: AppointmentStatus): string {
     [AppointmentStatus.Confirmed]: 'success',
     [AppointmentStatus.InProgress]: 'warning',
     [AppointmentStatus.Completed]: 'success',
-    [AppointmentStatus.Cancelled]: 'danger'
+    [AppointmentStatus.Cancelled]: 'danger',
+    [AppointmentStatus.NoShow]: 'error',
+    [AppointmentStatus.Rescheduled]: 'info'
   };
   return colors[status] || 'default';
 }
@@ -155,7 +170,9 @@ export function getAvailableActions(status: AppointmentStatus): string[] {
     [AppointmentStatus.Confirmed]: ['CheckIn', 'Cancel'],
     [AppointmentStatus.InProgress]: ['Complete'],
     [AppointmentStatus.Completed]: [],
-    [AppointmentStatus.Cancelled]: []
+    [AppointmentStatus.Cancelled]: [],
+    [AppointmentStatus.NoShow]: [],
+    [AppointmentStatus.Rescheduled]: ['Confirm', 'Cancel']
   };
   return actions[status] || [];
 }

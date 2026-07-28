@@ -82,6 +82,18 @@ export const selectCancelledAppointments = createSelector(
     appointments.filter(a => a.status === AppointmentStatus.Cancelled)
 );
 
+export const selectNoShowAppointments = createSelector(
+  selectAppointments,
+  (appointments) =>
+    appointments.filter(a => a.status === AppointmentStatus.NoShow)
+);
+
+export const selectRescheduledAppointments = createSelector(
+  selectAppointments,
+  (appointments) =>
+    appointments.filter(a => a.status === AppointmentStatus.Rescheduled)
+);
+
 export const selectInProgressAppointments = createSelector(
   selectAppointments,
   (appointments) =>
@@ -133,7 +145,9 @@ export const selectAppointmentStats = createSelector(
     confirmed: appointments.filter(a => a.status === AppointmentStatus.Confirmed).length,
     inProgress: appointments.filter(a => a.status === AppointmentStatus.InProgress).length,
     completed: appointments.filter(a => a.status === AppointmentStatus.Completed).length,
-    cancelled: appointments.filter(a => a.status === AppointmentStatus.Cancelled).length
+    cancelled: appointments.filter(a => a.status === AppointmentStatus.Cancelled).length,
+    noShow: appointments.filter(a => a.status === AppointmentStatus.NoShow).length,
+    rescheduled: appointments.filter(a => a.status === AppointmentStatus.Rescheduled).length
   })
 );
 

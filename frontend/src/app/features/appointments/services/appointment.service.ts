@@ -19,7 +19,7 @@ import {
 })
 export class AppointmentService {
   private apiUrl = `${environment.apiUrl}/appointments`;
-  private availabilityUrl = `${environment.apiUrl}/provider-availability`;
+  private providerUrl = `${environment.apiUrl}/providers`;
 
   constructor(private http: HttpClient) {}
 
@@ -171,7 +171,6 @@ export class AppointmentService {
     appointmentType?: string
   ): Observable<ProviderAvailabilityDto[]> {
     let params = new HttpParams()
-      .set('providerId', providerId)
       .set('fromDate', fromDate.toISOString())
       .set('toDate', toDate.toISOString());
     
@@ -180,7 +179,7 @@ export class AppointmentService {
     }
 
     return this.http.get<ProviderAvailabilityDto[]>(
-      `${this.availabilityUrl}/slots`,
+      `${this.providerUrl}/${providerId}/availability`,
       { params }
     ).pipe(
       map(slots => slots.map(s => this.mapAvailabilityDates(s))),
@@ -199,7 +198,7 @@ export class AppointmentService {
     };
 
     return this.http.post<ProviderAvailabilityDto>(
-      `${this.availabilityUrl}/set`,
+      `${this.providerUrl}/${request.providerId}/availability`,
       payload
     ).pipe(
       map(av => this.mapAvailabilityDates(av)),
