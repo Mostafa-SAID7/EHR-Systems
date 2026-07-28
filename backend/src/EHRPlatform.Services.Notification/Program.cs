@@ -104,14 +104,6 @@ catch (Exception ex)
         throw;
 }
 
-// ── Legacy: Schema verification ────────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<NotificationContext>();
-    await db.Database.EnsureCreatedAsync();
-    Log.Information("Notification database schema verified/created");
-}
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

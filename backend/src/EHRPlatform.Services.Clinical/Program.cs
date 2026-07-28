@@ -1,9 +1,11 @@
+using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Extensions;
 using EHRPlatform.Common.Health;
 using EHRPlatform.Common.Security;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Clinical.Application.Services;
 using EHRPlatform.Services.Clinical.Data;
+using EHRPlatform.Services.Clinical.Data.Documents;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -41,6 +43,28 @@ try
 
     // ── CQRS + Common ─────────────────────────────────────────────────────────
     builder.Services.AddCQRSFromCurrentAssembly();
+
+    // ── MongoDB (optional — clinical note documents, SOAP free text, attachments) ─
+    var mongoConnStr = builder.Configuration.BuildMongoConnectionString();
+    var mongoDbName  = builder.Configuration.BuildMongoDatabaseName("ehr_clinical");
+    if (!string.IsNullOrEmpty(mongoConnStr))
+    {
+        try
+        {
+            builder.Services.AddMongoDataAccess(mongoConnStr, mongoDbName);
+            builder.Services.AddScoped<IMongoRepository<ClinicalNoteDocument>,
+                MongoRepository<ClinicalNoteDocument>>();
+            Log.Information("MongoDB enabled for Clinical Service — database: {Db}", mongoDbName);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "MongoDB not available — clinical document store disabled");
+        }
+    }
+    else
+    {
+        Log.Warning("MONGODB_URI not configured — clinical document store disabled");
+    }
 
     // ── Cache Service (Wrapper for Redis) ──────────────────────────────────────
     builder.Services.AddScoped<ClinicalCacheService>();
@@ -95,14 +119,6 @@ try
         app.Logger.LogError(ex, "Migration failed for ClinicalService");
         if (app.Environment.IsProduction())
             throw;
-    }
-
-    // ── Legacy: Schema verification ────────────────────────────────────────────
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<ClinicalContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Clinical database schema verified/created");
     }
 
     app.UseSwagger();

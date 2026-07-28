@@ -184,17 +184,6 @@ try
             throw;
     }
 
-    // ── Auto-create / migrate schema on first run ─────────────────────────────
-    // EnsureCreatedAsync: fast for development; switch to MigrateAsync once
-    // you generate the first EF migration with:
-    //   dotnet ef migrations add Initial --project src/EHRPlatform.Services.Identity
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<IdentityContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Identity database schema verified/created");
-    }
-
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {

@@ -222,13 +222,6 @@ catch (Exception ex)
         throw;
 }
 
-// ── Legacy: Migrations (runs pending EF Core migrations at startup) ──────────────────
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<PatientContext>();
-    await db.Database.EnsureCreatedAsync();
-    Log.Information("Patient database schema verified/created");
-}
 
 // ── Pipeline ──────────────────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())

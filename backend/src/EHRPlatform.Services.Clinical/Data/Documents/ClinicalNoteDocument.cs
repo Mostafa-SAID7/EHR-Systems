@@ -1,80 +1,97 @@
 #nullable enable
 
 using EHRPlatform.Common.Data;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace EHRPlatform.Services.Clinical.Data.Documents;
 
 /// <summary>
-/// MongoDB document that stores the full SOAP content of a clinical note.
+/// MongoDB document representation of a clinical note.
 ///
-/// Design rationale — dual-store pattern:
-///   PostgreSQL  → structured metadata (NoteId, PatientId, Status, EncounterDate,
-///                 ICD-10 codes, CPT procedures). Relational integrity, FK support.
-///   MongoDB     → unstructured SOAP narrative (Subjective, Objective, Assessment,
-///                 Plan). Unbounded text; schema-flexible for future HL7 extensions.
+/// Why MongoDB for this entity:
+///   SOAP notes (Subjective / Objective / Assessment / Plan) are free-form
+///   rich text with no fixed column width, highly variable length, and
+///   provider-specific schemas.  Storing them as TEXT in PostgreSQL works
+///   but loses the ability to:
+///     - Embed attachments / addenda as sub-documents
+///     - Query across flexible section structures without schema migrations
+///     - Store future discrete data (structured reason-codes, multimedia refs)
+///       alongside the free text without table alterations
 ///
-/// The two stores are linked by <see cref="NoteId"/> (the PostgreSQL PK).
-/// On write: save the EF entity first, then upsert this document using NoteId.
-/// On read: fetch the EF entity for metadata; join this document for full content.
+///   The EntityId links back to the canonical ClinicalNote row in PostgreSQL
+///   (PatientId, ProviderId, EncounterDate, Status) so joins are possible.
+///   Structured, indexed data stays relational; rich text content lives here.
 /// </summary>
 public class ClinicalNoteDocument : MongoBaseDocument
 {
-    /// <summary>
-    /// The PostgreSQL ClinicalNote.Id — join key between stores.
-    /// Stored as a separate field (not just EntityId) to be explicit.
-    /// </summary>
-    [BsonElement("noteId")]
-    public Guid NoteId { get; set; }
+    // ── Link to PostgreSQL canonical record ───────────────────────────────────
 
-    [BsonElement("patientId")]
+    /// <summary>The ClinicalNote.Id from the PostgreSQL ClinicalContext.</summary>
+    public Guid ClinicalNoteId
+    {
+        get => EntityId;
+        set => EntityId = value;
+    }
+
+    /// <summary>Denormalized for fast document-only queries.</summary>
     public Guid PatientId { get; set; }
 
-    [BsonElement("providerId")]
+    /// <summary>Denormalized for fast document-only queries.</summary>
     public Guid ProviderId { get; set; }
 
-    /// <summary>
-    /// Encounter date — duplicated here to support time-range filtering without
-    /// round-tripping to PostgreSQL.
-    /// </summary>
-    [BsonElement("encounterDate")]
     public DateTime EncounterDate { get; set; }
 
-    /// <summary>
-    /// Note status: Draft | Finalized | Locked.
-    /// Mirrors the PostgreSQL field for query convenience.
-    /// </summary>
-    [BsonElement("status")]
-    public string Status { get; set; } = "Draft";
+    // ── SOAP free-text content ────────────────────────────────────────────────
 
-    // ── SOAP components (unbounded narrative text) ────────────────────────────
-
-    /// <summary>
-    /// Subjective — patient's reported symptoms, complaints, and history.
-    /// No length limit; free-form clinical narrative.
-    /// </summary>
-    [BsonElement("subjective")]
+    /// <summary>Subjective: patient complaint and symptom history in provider's own words.</summary>
     public string Subjective { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Objective — clinician observations, physical exam findings, lab results.
-    /// </summary>
-    [BsonElement("objective")]
+    /// <summary>Objective: physical exam findings, vital-sign narratives, lab interpretations.</summary>
     public string Objective { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Assessment — diagnosis and clinical impression.
-    /// </summary>
-    [BsonElement("assessment")]
+    /// <summary>Assessment: differential diagnosis and clinical impression.</summary>
     public string Assessment { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Plan — treatment decisions, medications ordered, follow-up instructions.
-    /// </summary>
-    [BsonElement("plan")]
+    /// <summary>Plan: treatment decisions, prescriptions, referrals, follow-up instructions.</summary>
     public string Plan { get; set; } = string.Empty;
 
-    // ── Schema versioning ─────────────────────────────────────────────────────
-    // Inherited SchemaVersion from MongoBaseDocument (starts at 1).
-    // Increment and migrate via MongoMigrationExecutor when SOAP shape changes.
+    // ── Extended content (document-model advantages) ──────────────────────────
+
+    /// <summary>
+    /// Addenda appended after the note was finalized (common in signed notes).
+    /// Each addendum is timestamped and attributed to a provider.
+    /// </summary>
+    public List<NoteAddendum> Addenda { get; set; } = new();
+
+    /// <summary>
+    /// References to attached files (scanned consents, wound photos, ECG strips).
+    /// Stored as metadata only — binary content lives in object storage.
+    /// </summary>
+    public List<NoteAttachmentRef> Attachments { get; set; } = new();
+
+    /// <summary>
+    /// Arbitrary provider-defined key/value extensions.
+    /// Avoids schema migrations for clinic-specific discrete fields.
+    /// Examples: "telehealthPlatform" → "Zoom", "interpretingLanguage" → "Arabic"
+    /// </summary>
+    public Dictionary<string, string> Extensions { get; set; } = new();
+}
+
+/// <summary>An addendum appended to a finalized clinical note.</summary>
+public class NoteAddendum
+{
+    public Guid ProviderId { get; set; }
+    public DateTime AddedAt { get; set; }
+    public string Content { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty; // Correction, Clarification, LateLab
+}
+
+/// <summary>Metadata reference to a file attached to a clinical note.</summary>
+public class NoteAttachmentRef
+{
+    public string FileName { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty; // image/jpeg, application/pdf …
+    public long SizeBytes { get; set; }
+    public string StorageKey { get; set; } = string.Empty; // S3 / object-storage key
+    public DateTime UploadedAt { get; set; }
+    public Guid UploadedBy { get; set; }
 }
