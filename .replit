@@ -1,4 +1,4 @@
-modules = ["dotnet-7.0", "nodejs-20", "web"]
+modules = ["nodejs-20", "web", "dotnet-8.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -63,7 +63,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd backend && dotnet run --project src/EHRPlatform.Services.Identity"
+args = "cd backend && ASPNETCORE_URLS=http://0.0.0.0:5001 dotnet run --project src/EHRPlatform.Services.Identity"
 
 [[workflows.workflow]]
 name = "API Gateway"

@@ -166,9 +166,6 @@ try
     if (!string.IsNullOrEmpty(esUrl))
         healthBuilder.AddElasticsearchHealthCheck("elasticsearch-identity");
 
-    // ── Kestrel: listen on port 5001 (Gateway routes identity here) ──────────
-    builder.WebHost.UseUrls("http://0.0.0.0:5001");
-
     // ── Build ─────────────────────────────────────────────────────────────────
     var app = builder.Build();
 
@@ -198,6 +195,8 @@ try
     app.MapControllers();
     app.MapHealthChecks("/health");
     // app.MapPrometheusMetricsEndpoint();
+
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
