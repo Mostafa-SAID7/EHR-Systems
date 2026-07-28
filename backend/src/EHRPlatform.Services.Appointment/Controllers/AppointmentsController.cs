@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
+using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 
@@ -57,15 +57,26 @@ public class AppointmentsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets appointments for a patient.
+    /// Gets appointments for a patient with optional date range and pagination.
     /// </summary>
     [HttpGet("patient/{patientId}")]
-    [ProducesResponseType(typeof(IEnumerable<AppointmentResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedResult<AppointmentResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPatientAppointments(
         Guid patientId,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetAppointmentsQuery { PatientId = patientId };
+        var query = new GetPatientAppointmentsQuery
+        {
+            PatientId = patientId,
+            FromDate = fromDate,
+            ToDate = toDate,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -129,6 +140,31 @@ public class AppointmentsController : ControllerBase
         var command = new CompleteAppointmentCommand { AppointmentId = id };
         await _mediator.Send(command, cancellationToken);
         return Ok();
+    }
+
+    /// <summary>
+    /// Gets appointments by type (Office, Telehealth, Phone).
+    /// </summary>
+    [HttpGet("by-type/{appointmentType}")]
+    [ProducesResponseType(typeof(PagedResult<AppointmentResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAppointmentsByType(
+        string appointmentType,
+        [FromQuery] Guid? patientId = null,
+        [FromQuery] Guid? providerId = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAppointmentsByTypeQuery
+        {
+            AppointmentType = appointmentType,
+            PatientId = patientId,
+            ProviderId = providerId,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

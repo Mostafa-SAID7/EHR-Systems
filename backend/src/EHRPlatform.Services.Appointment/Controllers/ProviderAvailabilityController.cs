@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
+using EHRPlatform.Services.Appointment.Features.ProviderAvailability.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
+using EHRPlatform.Services.Appointment.Features.ProviderAvailability.Queries;
 
 namespace EHRPlatform.Services.Appointment.Controllers;
 
@@ -25,15 +27,23 @@ public class ProviderAvailabilityController : ControllerBase
     }
 
     /// <summary>
-    /// Gets provider calendar (all appointments).
+    /// Gets provider calendar (all appointments for a specific date).
     /// </summary>
     [HttpGet("{providerId}/calendar")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProviderCalendar(
         Guid providerId,
+        [FromQuery] DateTime? date = null,
+        [FromQuery] string? statusFilter = null,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetProviderAppointmentsQuery { ProviderId = providerId };
+        var calendarDate = date ?? DateTime.UtcNow.Date;
+        var query = new GetProviderAppointmentsQuery
+        {
+            ProviderId = providerId,
+            CalendarDate = calendarDate,
+            StatusFilter = statusFilter
+        };
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }

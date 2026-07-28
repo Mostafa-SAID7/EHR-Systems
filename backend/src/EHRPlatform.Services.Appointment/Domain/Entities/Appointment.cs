@@ -1,4 +1,5 @@
 using EHRPlatform.Common.Entities;
+using EHRPlatform.Services.Appointment.Domain.Enums;
 using EHRPlatform.Common.Events;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
@@ -30,16 +31,14 @@ public class Appointment : AuditableEntity
     public DateTime ScheduledEnd { get; set; }
 
     /// <summary>
-    /// Gets or sets the appointment type.
-    /// Possible values: Office, Telehealth, Phone
+    /// Gets or sets the appointment type (Office, Telehealth, Phone).
     /// </summary>
-    public string AppointmentType { get; set; } = string.Empty;
+    public AppointmentType AppointmentType { get; set; }
 
     /// <summary>
     /// Gets or sets the current appointment status.
-    /// Possible values: Scheduled, Confirmed, CheckedIn, Completed, Cancelled, NoShow
     /// </summary>
-    public string Status { get; set; } = "Scheduled";
+    public AppointmentStatus Status { get; set; } = AppointmentStatus.Scheduled;
 
     /// <summary>
     /// Gets or sets the reason for visit.
@@ -74,7 +73,7 @@ public class Appointment : AuditableEntity
     /// <summary>
     /// Gets or sets the cancellation reason.
     /// </summary>
-    public string? CancellationReason { get; set; }
+    public CancellationReason? CancellationReason { get; set; }
 
     /// <summary>
     /// Gets the collection of reminders for this appointment.
@@ -86,7 +85,7 @@ public class Appointment : AuditableEntity
     /// <summary>
     /// Gets a value indicating whether the appointment is available (scheduled and in the future).
     /// </summary>
-    public bool IsAvailable => Status == "Scheduled" && ScheduledStart > DateTime.UtcNow;
+    public bool IsAvailable => Status == AppointmentStatus.Scheduled && ScheduledStart > DateTime.UtcNow;
 
     /// <summary>
     /// Confirms the appointment.
@@ -94,10 +93,10 @@ public class Appointment : AuditableEntity
     /// <exception cref="InvalidOperationException">Thrown if appointment is not scheduled.</exception>
     public void Confirm()
     {
-        if (Status != "Scheduled")
+        if (Status != AppointmentStatus.Scheduled)
             throw new InvalidOperationException("Only scheduled appointments can be confirmed");
 
-        Status = "Confirmed";
+        Status = AppointmentStatus.Confirmed;
         ConfirmedAt = DateTime.UtcNow;
         RaiseEvent(new AppointmentConfirmedEvent(Id, PatientId, ProviderId, ScheduledStart));
     }
@@ -107,15 +106,15 @@ public class Appointment : AuditableEntity
     /// </summary>
     /// <param name="reason">Reason for cancellation.</param>
     /// <exception cref="InvalidOperationException">Thrown if appointment is completed or already cancelled.</exception>
-    public void Cancel(string reason = "")
+    public void Cancel(CancellationReason reason)
     {
-        if (Status == "Completed" || Status == "Cancelled")
+        if (Status == AppointmentStatus.Completed || Status == AppointmentStatus.Cancelled)
             throw new InvalidOperationException($"Cannot cancel {Status} appointment");
 
-        Status = "Cancelled";
+        Status = AppointmentStatus.Cancelled;
         CancelledAt = DateTime.UtcNow;
         CancellationReason = reason;
-        RaiseEvent(new AppointmentCancelledEvent(Id, PatientId, ProviderId, reason));
+        RaiseEvent(new AppointmentCancelledEvent(Id, PatientId, ProviderId, reason.ToString()));
     }
 
     /// <summary>
@@ -124,10 +123,10 @@ public class Appointment : AuditableEntity
     /// <exception cref="InvalidOperationException">Thrown if appointment is not confirmed.</exception>
     public void CheckIn()
     {
-        if (Status != "Confirmed")
+        if (Status != AppointmentStatus.Confirmed)
             throw new InvalidOperationException("Only confirmed appointments can be checked in");
 
-        Status = "CheckedIn";
+        Status = AppointmentStatus.InProgress;
         RaiseEvent(new AppointmentCheckedInEvent(Id, PatientId, ProviderId, DateTime.UtcNow));
     }
 
@@ -137,10 +136,10 @@ public class Appointment : AuditableEntity
     /// <exception cref="InvalidOperationException">Thrown if appointment is not checked in.</exception>
     public void Complete()
     {
-        if (Status != "CheckedIn")
+        if (Status != AppointmentStatus.InProgress)
             throw new InvalidOperationException("Only checked-in appointments can be completed");
 
-        Status = "Completed";
+        Status = AppointmentStatus.Completed;
         RaiseEvent(new AppointmentCompletedEvent(Id, PatientId, ProviderId, DateTime.UtcNow));
     }
 
@@ -148,8 +147,8 @@ public class Appointment : AuditableEntity
     /// Adds a reminder for this appointment.
     /// </summary>
     /// <param name="reminderTime">The time for the reminder.</param>
-    /// <param name="method">The reminder method (Email, SMS, InApp).</param>
-    public void AddReminder(DateTime reminderTime, string method = "Email")
+    /// <param name="method">The reminder method.</param>
+    public void AddReminder(DateTime reminderTime, ReminderType method = ReminderType.Email)
     {
         var reminder = new AppointmentReminder
         {
@@ -157,6 +156,7 @@ public class Appointment : AuditableEntity
             AppointmentId = Id,
             ReminderTime = reminderTime,
             Method = method,
+            Status = ReminderStatus.Scheduled,
             IsSent = false
         };
         Reminders.Add(reminder);
@@ -170,7 +170,10 @@ public class Appointment : AuditableEntity
     {
         var reminder = Reminders.FirstOrDefault(r => r.Id == reminderId);
         if (reminder != null)
+        {
+            reminder.Status = ReminderStatus.Sent;
             reminder.IsSent = true;
+        }
     }
 
     /// <summary>

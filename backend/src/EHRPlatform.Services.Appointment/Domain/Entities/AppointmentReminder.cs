@@ -1,4 +1,5 @@
 using EHRPlatform.Common.Entities;
+using EHRPlatform.Services.Appointment.Domain.Enums;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -19,10 +20,14 @@ public class AppointmentReminder : BaseEntity
     public DateTime ReminderTime { get; set; }
 
     /// <summary>
-    /// Gets or sets the reminder method.
-    /// Possible values: Email, SMS, InApp
+    /// Gets or sets the reminder method (Email, SMS, InApp, Push).
     /// </summary>
-    public string Method { get; set; } = string.Empty;
+    public ReminderType Method { get; set; }
+
+    /// <summary>
+    /// Gets or sets the reminder status (Scheduled, Sent, Failed, Cancelled).
+    /// </summary>
+    public ReminderStatus Status { get; set; } = ReminderStatus.Scheduled;
 
     /// <summary>
     /// Gets or sets a value indicating whether the reminder has been sent.
