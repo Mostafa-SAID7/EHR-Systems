@@ -51,20 +51,38 @@ builder.Services.AddSignalR(opts =>
 });
 
 // ── MassTransit: RabbitMQ (background jobs) + Kafka rider (domain events) ────
-builder.Services.AddMassTransitHybrid(
-    builder.Configuration,
-    configureRabbitMqConsumers: x =>
+// Both transports are optional — service starts in in-memory mode when unavailable.
+var rabbitHost = builder.Configuration["RabbitMQ:Host"]
+    ?? Environment.GetEnvironmentVariable("RABBITMQ_HOST");
+var kafkaServers = builder.Configuration["Kafka:BootstrapServers"]
+    ?? Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS");
+var messagingConfigured = !string.IsNullOrEmpty(rabbitHost) && !string.IsNullOrEmpty(kafkaServers);
+
+if (messagingConfigured)
+{
+    builder.Services.AddMassTransitHybrid(
+        builder.Configuration,
+        configureRabbitMqConsumers: x =>
+        {
+            x.AddConsumer<SendWelcomeNotificationConsumer>();
+        },
+        configureKafkaRider: rider =>
+        {
+            // Bridge: Kafka domain events → SignalR push
+            rider.AddConsumer<LabResultConsumer>();
+        });
+    Log.Information("Notification Service messaging: RabbitMQ + Kafka enabled");
+}
+else
+{
+    // Fall back to in-memory bus — notifications work via SignalR direct push
+    builder.Services.AddMassTransit(x =>
     {
         x.AddConsumer<SendWelcomeNotificationConsumer>();
-    },
-    configureKafkaRider: rider =>
-    {
-        // Bridge: Kafka domain events → SignalR push
-        rider.AddConsumer<LabResultConsumer>();
-        // Add more Kafka consumers here as clinical events are added:
-        //   rider.AddConsumer<VitalAlertConsumer>();
-        //   rider.AddConsumer<AppointmentReminderConsumer>();
+        x.UsingInMemory((ctx, cfg) => cfg.ConfigureEndpoints(ctx));
     });
+    Log.Warning("Notification Service messaging: RabbitMQ/Kafka not configured — in-memory fallback");
+}
 
 // ── OpenTelemetry ─────────────────────────────────────────────────────────────
 builder.Services.AddEHRTelemetry(builder.Configuration, "notification-service");
