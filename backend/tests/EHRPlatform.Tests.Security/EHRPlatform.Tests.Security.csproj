@@ -14,11 +14,12 @@
     </PackageReference>
     <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="FluentAssertions" Version="6.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="NUnit" Version="4.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
     <ProjectReference Include="..\..\src\EHRPlatform.Common\EHRPlatform.Common.csproj" />
-    <ProjectReference Include="..\..\src\EHRPlatform.Services.Patient\EHRPlatform.Services.Patient.csproj" />
-    <ProjectReference Include="..\..\src\EHRPlatform.Services.Billing\EHRPlatform.Services.Billing.csproj" />
+    <ProjectReference Include="..\..\src\EHRPlatform.Services.Identity\EHRPlatform.Services.Identity.csproj" />
     <ProjectReference Include="..\..\src\EHRPlatform.Services.Audit\EHRPlatform.Services.Audit.csproj" />
-    <ProjectReference Include="..\EHRPlatform.Tests.Common\EHRPlatform.Tests.Common.csproj" />
   </ItemGroup>
 </Project>
