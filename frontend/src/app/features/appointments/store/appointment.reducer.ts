@@ -385,5 +385,57 @@ export const appointmentReducer = createReducer(
     ...state,
     error,
     actionInProgress: { ...state.actionInProgress, reschedule: false }
+  })),
+
+  // ============================================================
+  // REAL-TIME UPDATES
+  // ============================================================
+
+  on(AppointmentActions.connectRealtime, (state) => ({
+    ...state,
+    loading: true
+  })),
+
+  on(AppointmentActions.connectRealtimeSuccess, (state) => ({
+    ...state,
+    realtimeConnected: true,
+    loading: false
+  })),
+
+  on(AppointmentActions.connectRealtimeFailure, (state, { error }) => ({
+    ...state,
+    error,
+    realtimeConnected: false,
+    loading: false
+  })),
+
+  on(AppointmentActions.disconnectRealtime, (state) => ({
+    ...state,
+    realtimeConnected: false
+  })),
+
+  on(AppointmentActions.appointmentRealtimeUpdate, (state, { update }) => {
+    // Handle real-time updates based on type
+    if (update.type === 'statusChanged') {
+      return {
+        ...state,
+        appointments: state.appointments.map(a =>
+          a.id === update.appointmentId ? { ...a, status: update.newStatus } : a
+        )
+      };
+    } else if (update.type === 'rescheduled') {
+      return {
+        ...state,
+        appointments: state.appointments.map(a =>
+          a.id === update.appointmentId ? { ...a, status: AppointmentStatus.Rescheduled } : a
+        )
+      };
+    }
+    return state;
+  }),
+
+  on(AppointmentActions.realtimeConnectionStateChanged, (state, { connected }) => ({
+    ...state,
+    realtimeConnected: connected
   }))
 );

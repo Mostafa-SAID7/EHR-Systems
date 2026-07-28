@@ -247,3 +247,8 @@ export const selectPushNotificationEnabled = createSelector(
   selectNotificationStatus,
   (status) => status?.push || false
 );
+
+export const selectRealtimeConnected = createSelector(
+  selectAppointmentFeature,
+  (state: AppointmentState) => state.realtimeConnected
+);

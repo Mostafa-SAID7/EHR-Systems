@@ -28,6 +28,9 @@ export interface AppointmentState {
   loading: boolean;
   error: string | null;
   actionInProgress: { [key: string]: boolean };
+  
+  // Real-time
+  realtimeConnected: boolean;
 }
 
 export const initialAppointmentState: AppointmentState = {
@@ -40,5 +43,6 @@ export const initialAppointmentState: AppointmentState = {
   filter: {},
   loading: false,
   error: null,
-  actionInProgress: {}
+  actionInProgress: {},
+  realtimeConnected: false
 };

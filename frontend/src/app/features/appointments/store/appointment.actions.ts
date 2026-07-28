@@ -324,3 +324,39 @@ export const rescheduleAppointmentFailure = createAction(
   '[Appointments] Reschedule Appointment Failure',
   props<{ error: string }>()
 );
+
+// ============================================================
+// REAL-TIME UPDATES
+// ============================================================
+
+export const connectRealtime = createAction(
+  '[Appointments] Connect Real-Time'
+);
+
+export const connectRealtimeSuccess = createAction(
+  '[Appointments] Connect Real-Time Success'
+);
+
+export const connectRealtimeFailure = createAction(
+  '[Appointments] Connect Real-Time Failure',
+  props<{ error: string }>()
+);
+
+export const disconnectRealtime = createAction(
+  '[Appointments] Disconnect Real-Time'
+);
+
+export const subscribeToAppointmentRealtime = createAction(
+  '[Appointments] Subscribe to Appointment Real-Time',
+  props<{ appointmentId: string }>()
+);
+
+export const appointmentRealtimeUpdate = createAction(
+  '[Appointments] Appointment Real-Time Update',
+  props<{ update: any }>()
+);
+
+export const realtimeConnectionStateChanged = createAction(
+  '[Appointments] Real-Time Connection State Changed',
+  props<{ connected: boolean }>()
+);

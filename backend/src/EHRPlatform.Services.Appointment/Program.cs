@@ -6,6 +6,7 @@ using EHRPlatform.Services.Appointment.Application.Services;
 using EHRPlatform.Services.Appointment.Infrastructure.HealthChecks;
 using EHRPlatform.Services.Appointment.Services;
 using EHRPlatform.Services.Appointment.Services.Notifications;
+using EHRPlatform.Services.Appointment.Hubs;
 using Elastic.Clients.Elasticsearch;
 using Serilog;
 
@@ -30,6 +31,9 @@ try
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
+    // ── SignalR for Real-Time Updates ─────────────────────────────────────────
+    builder.Services.AddSignalR();
 
     // ── Database (PostgreSQL) ─────────────────────────────────────────────────
     var connectionString = builder.Configuration.BuildPostgresConnectionString();
@@ -136,6 +140,7 @@ try
     app.UseAuthorization();
     app.MapControllers();
     app.MapHealthChecks("/health");
+    app.MapHub<AppointmentHub>("/hubs/appointments");
     // app.MapPrometheusMetricsEndpoint();
 
     Log.Information("EHR Appointment Service starting");
