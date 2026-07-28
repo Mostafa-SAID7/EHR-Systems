@@ -1,0 +1,196 @@
+import { createAction, props } from '@ngrx/store';
+import {
+  AppointmentResponseDto,
+  AppointmentDetailedResponseDto,
+  ScheduleAppointmentRequest,
+  CancelAppointmentRequest,
+  AppointmentFilter,
+  ProviderAvailabilityDto,
+  SetProviderAvailabilityRequest
+} from '../models/appointment.model';
+
+// ============================================================
+// LOAD APPOINTMENTS
+// ============================================================
+
+export const loadAppointments = createAction(
+  '[Appointments] Load Appointments',
+  props<{ patientId: string; filter?: AppointmentFilter }>()
+);
+
+export const loadAppointmentsSuccess = createAction(
+  '[Appointments] Load Appointments Success',
+  props<{ appointments: AppointmentResponseDto[]; total: number }>()
+);
+
+export const loadAppointmentsFailure = createAction(
+  '[Appointments] Load Appointments Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// LOAD APPOINTMENT DETAIL
+// ============================================================
+
+export const loadAppointmentDetail = createAction(
+  '[Appointments] Load Appointment Detail',
+  props<{ appointmentId: string }>()
+);
+
+export const loadAppointmentDetailSuccess = createAction(
+  '[Appointments] Load Appointment Detail Success',
+  props<{ appointment: AppointmentDetailedResponseDto }>()
+);
+
+export const loadAppointmentDetailFailure = createAction(
+  '[Appointments] Load Appointment Detail Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// SCHEDULE APPOINTMENT
+// ============================================================
+
+export const scheduleAppointment = createAction(
+  '[Appointments] Schedule Appointment',
+  props<{ request: ScheduleAppointmentRequest }>()
+);
+
+export const scheduleAppointmentSuccess = createAction(
+  '[Appointments] Schedule Appointment Success',
+  props<{ appointment: AppointmentResponseDto }>()
+);
+
+export const scheduleAppointmentFailure = createAction(
+  '[Appointments] Schedule Appointment Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// CANCEL APPOINTMENT
+// ============================================================
+
+export const cancelAppointment = createAction(
+  '[Appointments] Cancel Appointment',
+  props<{ appointmentId: string; reason: string }>()
+);
+
+export const cancelAppointmentSuccess = createAction(
+  '[Appointments] Cancel Appointment Success',
+  props<{ appointmentId: string }>()
+);
+
+export const cancelAppointmentFailure = createAction(
+  '[Appointments] Cancel Appointment Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// CONFIRM APPOINTMENT
+// ============================================================
+
+export const confirmAppointment = createAction(
+  '[Appointments] Confirm Appointment',
+  props<{ appointmentId: string }>()
+);
+
+export const confirmAppointmentSuccess = createAction(
+  '[Appointments] Confirm Appointment Success',
+  props<{ appointmentId: string }>()
+);
+
+export const confirmAppointmentFailure = createAction(
+  '[Appointments] Confirm Appointment Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// CHECK-IN APPOINTMENT
+// ============================================================
+
+export const checkInAppointment = createAction(
+  '[Appointments] CheckIn Appointment',
+  props<{ appointmentId: string }>()
+);
+
+export const checkInAppointmentSuccess = createAction(
+  '[Appointments] CheckIn Appointment Success',
+  props<{ appointmentId: string }>()
+);
+
+export const checkInAppointmentFailure = createAction(
+  '[Appointments] CheckIn Appointment Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// COMPLETE APPOINTMENT
+// ============================================================
+
+export const completeAppointment = createAction(
+  '[Appointments] Complete Appointment',
+  props<{ appointmentId: string }>()
+);
+
+export const completeAppointmentSuccess = createAction(
+  '[Appointments] Complete Appointment Success',
+  props<{ appointmentId: string }>()
+);
+
+export const completeAppointmentFailure = createAction(
+  '[Appointments] Complete Appointment Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// LOAD AVAILABLE SLOTS
+// ============================================================
+
+export const loadAvailableSlots = createAction(
+  '[Appointments] Load Available Slots',
+  props<{ providerId: string; fromDate: Date; toDate: Date; appointmentType?: string }>()
+);
+
+export const loadAvailableSlotsSuccess = createAction(
+  '[Appointments] Load Available Slots Success',
+  props<{ slots: ProviderAvailabilityDto[] }>()
+);
+
+export const loadAvailableSlotsFailure = createAction(
+  '[Appointments] Load Available Slots Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// SET PROVIDER AVAILABILITY
+// ============================================================
+
+export const setProviderAvailability = createAction(
+  '[Appointments] Set Provider Availability',
+  props<{ request: SetProviderAvailabilityRequest }>()
+);
+
+export const setProviderAvailabilitySuccess = createAction(
+  '[Appointments] Set Provider Availability Success',
+  props<{ availability: ProviderAvailabilityDto }>()
+);
+
+export const setProviderAvailabilityFailure = createAction(
+  '[Appointments] Set Provider Availability Failure',
+  props<{ error: string }>()
+);
+
+// ============================================================
+// UPDATE FILTER
+// ============================================================
+
+export const updateFilter = createAction(
+  '[Appointments] Update Filter',
+  props<{ filter: AppointmentFilter }>()
+);
+
+// ============================================================
+// CLEAR ERROR
+// ============================================================
+
+export const clearError = createAction('[Appointments] Clear Error');

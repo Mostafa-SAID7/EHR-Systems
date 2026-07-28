@@ -11,6 +11,7 @@ import { appRoutes } from './routes/app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { appReducers } from './store/app.reducer';
+import { AppointmentEffects } from './features/appointments/store/appointment.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,7 +26,7 @@ export const appConfig: ApplicationConfig = {
     
     // NgRx Store Configuration
     provideStore(appReducers),
-    provideEffects(),
+    provideEffects([AppointmentEffects]),
     provideRouterStore(),
     provideStoreDevtools({
       maxAge: 25,

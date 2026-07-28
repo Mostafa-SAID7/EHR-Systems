@@ -2,6 +2,7 @@ using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
+using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Handlers;

@@ -3,8 +3,9 @@ using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
-using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Mappers;
-using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
+using EHRPlatform.Services.Appointment.Application.Appointments.Mappers;
+using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
+using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Handlers;

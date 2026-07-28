@@ -1,7 +1,7 @@
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace EHRPlatform.Services.Billing.Infrastructure.HealthChecks;
+namespace EHRPlatform.Common.HealthChecks;
 
 public class ElasticsearchHealthCheck : IHealthCheck
 {

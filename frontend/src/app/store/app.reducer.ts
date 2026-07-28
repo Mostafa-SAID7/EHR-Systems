@@ -2,4 +2,8 @@
  * Root Reducers
  * Combines all feature reducers
  */
-export const appReducers = {};
+import { appointmentReducer } from '../features/appointments/store/appointment.reducer';
+
+export const appReducers = {
+  appointments: appointmentReducer
+};

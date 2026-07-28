@@ -1,0 +1,228 @@
+import { Injectable } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { of } from 'rxjs';
+import { catchError, map, switchMap, withLatestFrom, mergeMap } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import * as AppointmentActions from './appointment.actions';
+import { AppointmentService } from '../services/appointment.service';
+
+@Injectable()
+export class AppointmentEffects {
+  // ============================================================
+  // LOAD APPOINTMENTS EFFECT
+  // ============================================================
+  loadAppointments$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.loadAppointments),
+      switchMap(({ patientId, filter }) =>
+        this.appointmentService.getPatientAppointments(patientId, filter).pipe(
+          map(result =>
+            AppointmentActions.loadAppointmentsSuccess({
+              appointments: result.items,
+              total: result.totalCount
+            })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.loadAppointmentsFailure({
+                error: error?.message || 'Failed to load appointments'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // LOAD APPOINTMENT DETAIL EFFECT
+  // ============================================================
+  loadAppointmentDetail$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.loadAppointmentDetail),
+      switchMap(({ appointmentId }) =>
+        this.appointmentService.getAppointmentById(appointmentId).pipe(
+          map(appointment =>
+            AppointmentActions.loadAppointmentDetailSuccess({ appointment })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.loadAppointmentDetailFailure({
+                error: error?.message || 'Failed to load appointment details'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // SCHEDULE APPOINTMENT EFFECT
+  // ============================================================
+  scheduleAppointment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.scheduleAppointment),
+      switchMap(({ request }) =>
+        this.appointmentService.scheduleAppointment(request).pipe(
+          map(appointment =>
+            AppointmentActions.scheduleAppointmentSuccess({ appointment })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.scheduleAppointmentFailure({
+                error: error?.message || 'Failed to schedule appointment'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // CANCEL APPOINTMENT EFFECT
+  // ============================================================
+  cancelAppointment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.cancelAppointment),
+      switchMap(({ appointmentId, reason }) =>
+        this.appointmentService.cancelAppointment(appointmentId, reason).pipe(
+          map(() =>
+            AppointmentActions.cancelAppointmentSuccess({ appointmentId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.cancelAppointmentFailure({
+                error: error?.message || 'Failed to cancel appointment'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // CONFIRM APPOINTMENT EFFECT
+  // ============================================================
+  confirmAppointment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.confirmAppointment),
+      switchMap(({ appointmentId }) =>
+        this.appointmentService.confirmAppointment(appointmentId).pipe(
+          map(() =>
+            AppointmentActions.confirmAppointmentSuccess({ appointmentId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.confirmAppointmentFailure({
+                error: error?.message || 'Failed to confirm appointment'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // CHECK-IN APPOINTMENT EFFECT
+  // ============================================================
+  checkInAppointment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.checkInAppointment),
+      switchMap(({ appointmentId }) =>
+        this.appointmentService.checkInAppointment(appointmentId).pipe(
+          map(() =>
+            AppointmentActions.checkInAppointmentSuccess({ appointmentId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.checkInAppointmentFailure({
+                error: error?.message || 'Failed to check-in appointment'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // COMPLETE APPOINTMENT EFFECT
+  // ============================================================
+  completeAppointment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.completeAppointment),
+      switchMap(({ appointmentId }) =>
+        this.appointmentService.completeAppointment(appointmentId).pipe(
+          map(() =>
+            AppointmentActions.completeAppointmentSuccess({ appointmentId })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.completeAppointmentFailure({
+                error: error?.message || 'Failed to complete appointment'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // ============================================================
+  // LOAD AVAILABLE SLOTS EFFECT
+  // ============================================================
+  loadAvailableSlots$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.loadAvailableSlots),
+      switchMap(({ providerId, fromDate, toDate, appointmentType }) =>
+        this.appointmentService
+          .getAvailableSlots(providerId, fromDate, toDate, appointmentType)
+          .pipe(
+            map(slots =>
+              AppointmentActions.loadAvailableSlotsSuccess({ slots })
+            ),
+            catchError(error =>
+              of(
+                AppointmentActions.loadAvailableSlotsFailure({
+                  error: error?.message || 'Failed to load available slots'
+                })
+              )
+            )
+          )
+      )
+    )
+  );
+
+  // ============================================================
+  // SET PROVIDER AVAILABILITY EFFECT
+  // ============================================================
+  setProviderAvailability$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.setProviderAvailability),
+      switchMap(({ request }) =>
+        this.appointmentService.setProviderAvailability(request).pipe(
+          map(availability =>
+            AppointmentActions.setProviderAvailabilitySuccess({ availability })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.setProviderAvailabilityFailure({
+                error: error?.message || 'Failed to set provider availability'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  constructor(
+    private actions$: Actions,
+    private appointmentService: AppointmentService,
+    private store: Store
+  ) {}
+}

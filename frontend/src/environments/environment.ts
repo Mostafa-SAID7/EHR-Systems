@@ -3,7 +3,7 @@
  */
 export const environment = {
   production: false,
-  apiUrl: '/api',
+  apiUrl: 'http://localhost:5000/api/v1',
   wsUrl: '',
   appName: 'EHR Platform',
   appVersion: '0.0.1',

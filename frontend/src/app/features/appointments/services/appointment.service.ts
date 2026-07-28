@@ -1,127 +1,273 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '@env/environment';
+import {
+  AppointmentResponseDto,
+  AppointmentDetailedResponseDto,
+  ScheduleAppointmentRequest,
+  CancelAppointmentRequest,
+  AppointmentFilter,
+  PagedResult,
+  ProviderAvailabilityDto,
+  SetProviderAvailabilityRequest
+} from '../models/appointment.model';
 
-export interface Appointment {
-  id: string;
-  patientId: string;
-  patientName: string;
-  providerId: string;
-  providerName: string;
-  startTime: Date;
-  endTime: Date;
-  type: 'consultation' | 'follow-up' | 'procedure' | 'emergency';
-  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled' | 'no-show';
-  location: string;
-  notes?: string;
-  reason: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface AppointmentQuery {
-  providerId?: string;
-  patientId?: string;
-  startDate?: Date;
-  endDate?: Date;
-  status?: string;
-}
-
-/**
- * Appointment Service
- * Handles appointment scheduling and management
- */
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AppointmentService {
   private apiUrl = `${environment.apiUrl}/appointments`;
+  private availabilityUrl = `${environment.apiUrl}/provider-availability`;
 
   constructor(private http: HttpClient) {}
 
+  // ============================================================
+  // APPOINTMENT QUERIES
+  // ============================================================
+
   /**
-   * Get appointments
+   * Get all appointments for a patient
    */
-  getAppointments(query: AppointmentQuery): Observable<Appointment[]> {
-    // Mock implementation
-    const mockAppointments: Appointment[] = [
-      {
-        id: 'apt-1',
-        patientId: 'pat-1',
-        patientName: 'Robert Wilson',
-        providerId: 'user-1',
-        providerName: 'John Smith',
-        startTime: new Date(Date.now() + 86400000),
-        endTime: new Date(Date.now() + 90000000),
-        type: 'consultation',
-        status: 'scheduled',
-        location: 'Room 101',
-        reason: 'Annual checkup',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-    return of(mockAppointments).pipe(delay(300));
+  getPatientAppointments(
+    patientId: string,
+    filter?: AppointmentFilter
+  ): Observable<PagedResult<AppointmentResponseDto>> {
+    let params = new HttpParams();
+    
+    if (filter?.startDate) params = params.set('fromDate', filter.startDate.toISOString());
+    if (filter?.endDate) params = params.set('toDate', filter.endDate.toISOString());
+    if (filter?.pageNumber) params = params.set('pageNumber', filter.pageNumber.toString());
+    if (filter?.pageSize) params = params.set('pageSize', filter.pageSize.toString());
+
+    return this.http.get<PagedResult<AppointmentResponseDto>>(
+      `${this.apiUrl}/patient/${patientId}`,
+      { params }
+    ).pipe(
+      map(result => this.mapPagedResult(result)),
+      catchError(error => this.handleError('getPatientAppointments', error))
+    );
   }
 
   /**
    * Get appointment by ID
    */
-  getAppointmentById(id: string): Observable<Appointment> {
-    // Mock implementation
-    return of({} as Appointment).pipe(delay(300));
+  getAppointmentById(appointmentId: string): Observable<AppointmentDetailedResponseDto> {
+    return this.http.get<AppointmentDetailedResponseDto>(
+      `${this.apiUrl}/${appointmentId}`
+    ).pipe(
+      map(apt => this.mapAppointmentDates(apt)),
+      catchError(error => this.handleError('getAppointmentById', error))
+    );
   }
 
   /**
-   * Create appointment
+   * Get appointments by type
    */
-  createAppointment(appointment: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Observable<Appointment> {
-    // Mock implementation
-    const newAppointment: Appointment = {
-      ...appointment,
-      id: `apt-${Date.now()}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  getAppointmentsByType(
+    appointmentType: string,
+    pageNumber: number = 1,
+    pageSize: number = 20
+  ): Observable<PagedResult<AppointmentResponseDto>> {
+    const params = new HttpParams()
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+
+    return this.http.get<PagedResult<AppointmentResponseDto>>(
+      `${this.apiUrl}/by-type/${appointmentType}`,
+      { params }
+    ).pipe(
+      map(result => this.mapPagedResult(result)),
+      catchError(error => this.handleError('getAppointmentsByType', error))
+    );
+  }
+
+  // ============================================================
+  // APPOINTMENT COMMANDS
+  // ============================================================
+
+  /**
+   * Schedule new appointment
+   */
+  scheduleAppointment(request: ScheduleAppointmentRequest): Observable<AppointmentResponseDto> {
+    const payload = {
+      ...request,
+      scheduledStart: request.scheduledStart.toISOString(),
+      durationMinutes: request.durationMinutes
     };
-    return of(newAppointment).pipe(delay(500));
-  }
 
-  /**
-   * Update appointment
-   */
-  updateAppointment(id: string, updates: Partial<Appointment>): Observable<Appointment> {
-    // Mock implementation
-    return of({} as Appointment).pipe(delay(500));
+    return this.http.post<AppointmentResponseDto>(
+      this.apiUrl,
+      payload
+    ).pipe(
+      map(apt => this.mapAppointmentDates(apt)),
+      catchError(error => this.handleError('scheduleAppointment', error))
+    );
   }
 
   /**
    * Cancel appointment
    */
-  cancelAppointment(id: string, reason: string): Observable<void> {
-    // Mock implementation
-    return of(void 0).pipe(delay(500));
+  cancelAppointment(appointmentId: string, reason: string): Observable<void> {
+    const params = new HttpParams().set('reason', reason);
+    
+    return this.http.post<void>(
+      `${this.apiUrl}/${appointmentId}/cancel`,
+      {},
+      { params }
+    ).pipe(
+      catchError(error => this.handleError('cancelAppointment', error))
+    );
   }
 
   /**
-   * Get available slots
+   * Confirm appointment
    */
-  getAvailableSlots(providerId: string, date: Date): Observable<Date[]> {
-    // Mock implementation
-    const slots: Date[] = [];
-    const baseDate = new Date(date);
-    for (let hour = 9; hour < 17; hour++) {
-      slots.push(new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), hour, 0));
+  confirmAppointment(appointmentId: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/${appointmentId}/confirm`,
+      {}
+    ).pipe(
+      catchError(error => this.handleError('confirmAppointment', error))
+    );
+  }
+
+  /**
+   * Check in to appointment
+   */
+  checkInAppointment(appointmentId: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/${appointmentId}/check-in`,
+      {}
+    ).pipe(
+      catchError(error => this.handleError('checkInAppointment', error))
+    );
+  }
+
+  /**
+   * Complete appointment
+   */
+  completeAppointment(appointmentId: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/${appointmentId}/complete`,
+      {}
+    ).pipe(
+      catchError(error => this.handleError('completeAppointment', error))
+    );
+  }
+
+  // ============================================================
+  // PROVIDER AVAILABILITY
+  // ============================================================
+
+  /**
+   * Get available slots for provider
+   */
+  getAvailableSlots(
+    providerId: string,
+    fromDate: Date,
+    toDate: Date,
+    appointmentType?: string
+  ): Observable<ProviderAvailabilityDto[]> {
+    let params = new HttpParams()
+      .set('providerId', providerId)
+      .set('fromDate', fromDate.toISOString())
+      .set('toDate', toDate.toISOString());
+    
+    if (appointmentType) {
+      params = params.set('appointmentType', appointmentType);
     }
-    return of(slots).pipe(delay(300));
+
+    return this.http.get<ProviderAvailabilityDto[]>(
+      `${this.availabilityUrl}/slots`,
+      { params }
+    ).pipe(
+      map(slots => slots.map(s => this.mapAvailabilityDates(s))),
+      catchError(error => this.handleError('getAvailableSlots', error))
+    );
   }
 
   /**
-   * Check provider availability
+   * Set provider availability
    */
-  isProviderAvailable(providerId: string, startTime: Date, endTime: Date): Observable<boolean> {
-    // Mock implementation
-    return of(true).pipe(delay(200));
+  setProviderAvailability(request: SetProviderAvailabilityRequest): Observable<ProviderAvailabilityDto> {
+    const payload = {
+      ...request,
+      slotStart: request.slotStart.toISOString(),
+      slotEnd: request.slotEnd.toISOString()
+    };
+
+    return this.http.post<ProviderAvailabilityDto>(
+      `${this.availabilityUrl}/set`,
+      payload
+    ).pipe(
+      map(av => this.mapAvailabilityDates(av)),
+      catchError(error => this.handleError('setProviderAvailability', error))
+    );
+  }
+
+  // ============================================================
+  // HEALTH CHECK
+  // ============================================================
+
+  /**
+   * Check appointment service health
+   */
+  healthCheck(): Observable<{ status: string }> {
+    return this.http.get<{ status: string }>(`${this.apiUrl}/health`).pipe(
+      catchError(error => this.handleError('healthCheck', error))
+    );
+  }
+
+  // ============================================================
+  // PRIVATE HELPERS
+  // ============================================================
+
+  private mapAppointmentDates(apt: any): AppointmentDetailedResponseDto {
+    return {
+      ...apt,
+      scheduledStart: new Date(apt.scheduledStart),
+      scheduledEnd: new Date(apt.scheduledEnd),
+      createdAt: new Date(apt.createdAt),
+      updatedAt: new Date(apt.updatedAt),
+      confirmedAt: apt.confirmedAt ? new Date(apt.confirmedAt) : undefined,
+      cancelledAt: apt.cancelledAt ? new Date(apt.cancelledAt) : undefined
+    };
+  }
+
+  private mapAvailabilityDates(av: any): ProviderAvailabilityDto {
+    return {
+      ...av,
+      slotStart: new Date(av.slotStart),
+      slotEnd: new Date(av.slotEnd)
+    };
+  }
+
+  private mapPagedResult<T>(result: any): PagedResult<T> {
+    return {
+      items: result.items || result.data || [],
+      totalCount: result.totalCount || 0,
+      pageNumber: result.pageNumber || 1,
+      pageSize: result.pageSize || 20,
+      totalPages: result.totalPages || 0,
+      hasNextPage: result.hasNextPage || false,
+      hasPreviousPage: result.hasPreviousPage || false
+    };
+  }
+
+  private handleError(operation: string, error: any): Observable<never> {
+    console.error(`Appointment service error in ${operation}:`, error);
+    
+    const message = error?.error?.message || 
+                   error?.statusText || 
+                   'An unexpected error occurred';
+    
+    return throwError(() => ({
+      message,
+      operation,
+      status: error?.status,
+      error
+    }));
   }
 }
