@@ -312,6 +312,29 @@ export class AppointmentEffects {
     )
   );
 
+  // ============================================================
+  // GET NOTIFICATION STATUS EFFECT
+  // ============================================================
+  getNotificationStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AppointmentActions.getNotificationStatus),
+      switchMap(() =>
+        this.appointmentService.getNotificationStatus().pipe(
+          map(status =>
+            AppointmentActions.getNotificationStatusSuccess({ status })
+          ),
+          catchError(error =>
+            of(
+              AppointmentActions.getNotificationStatusFailure({
+                error: error?.message || 'Failed to get notification status'
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
   constructor(
     private actions$: Actions,
     private appointmentService: AppointmentService,

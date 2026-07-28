@@ -236,6 +236,26 @@ public class AppointmentsController : ControllerBase
     {
         return Ok(new { status = "healthy" });
     }
+
+    /// <summary>
+    /// Get notification provider status.
+    /// </summary>
+    [HttpGet("health/notifications")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNotificationHealth(
+        [FromServices] NotificationOrchestrator orchestrator,
+        CancellationToken cancellationToken = default)
+    {
+        var status = await orchestrator.GetProviderStatusAsync();
+        return Ok(new
+        {
+            email = status.EmailAvailable,
+            sms = status.SmsAvailable,
+            push = status.PushAvailable,
+            inApp = status.InAppAvailable,
+            availableProviders = status.AvailableProviders
+        });
+    }
 }
 
 /// <summary>

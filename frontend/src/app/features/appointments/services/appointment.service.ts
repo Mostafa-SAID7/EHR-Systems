@@ -275,6 +275,15 @@ export class AppointmentService {
     );
   }
 
+  /**
+   * Get notification provider status
+   */
+  getNotificationStatus(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/health/notifications`).pipe(
+      catchError(error => this.handleError('getNotificationStatus', error))
+    );
+  }
+
   // ============================================================
   // PRIVATE HELPERS
   // ============================================================

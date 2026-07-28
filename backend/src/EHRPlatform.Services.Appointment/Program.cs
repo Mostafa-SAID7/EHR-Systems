@@ -5,6 +5,7 @@ using EHRPlatform.Services.Appointment.Data.Repositories;
 using EHRPlatform.Services.Appointment.Application.Services;
 using EHRPlatform.Services.Appointment.Infrastructure.HealthChecks;
 using EHRPlatform.Services.Appointment.Services;
+using EHRPlatform.Services.Appointment.Services.Notifications;
 using Elastic.Clients.Elasticsearch;
 using Serilog;
 
@@ -50,6 +51,13 @@ try
     // ── Appointment Services ──────────────────────────────────────────────────
     builder.Services.AddScoped<IAppointmentCacheService, AppointmentCacheService>();
     builder.Services.AddScoped<IReminderService, ReminderService>();
+    
+    // ── Notification Providers ────────────────────────────────────────────────
+    builder.Services.AddScoped<IEmailProvider, SmtpEmailProvider>();
+    builder.Services.AddScoped<ISmsProvider, LoggingSmsProvider>();
+    builder.Services.AddScoped<IPushNotificationProvider, LoggingPushProvider>();
+    builder.Services.AddScoped<NotificationOrchestrator>();
+    
     builder.Services.AddHostedService<ReminderBackgroundService>();
 
     // ── Redis Caching (optional) ──────────────────────────────────────────────

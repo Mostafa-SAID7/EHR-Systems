@@ -268,3 +268,21 @@ export const sendAllPendingRemindersFailure = createAction(
   '[Appointments] Send All Pending Reminders Failure',
   props<{ error: string }>()
 );
+
+// ============================================================
+// GET NOTIFICATION STATUS
+// ============================================================
+
+export const getNotificationStatus = createAction(
+  '[Appointments] Get Notification Status'
+);
+
+export const getNotificationStatusSuccess = createAction(
+  '[Appointments] Get Notification Status Success',
+  props<{ status: any }>()
+);
+
+export const getNotificationStatusFailure = createAction(
+  '[Appointments] Get Notification Status Failure',
+  props<{ error: string }>()
+);

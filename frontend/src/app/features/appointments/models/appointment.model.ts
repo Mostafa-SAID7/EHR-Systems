@@ -25,7 +25,8 @@ export enum AppointmentType {
 export enum ReminderType {
   Email = 'Email',
   SMS = 'SMS',
-  Push = 'Push'
+  Push = 'Push',
+  InApp = 'InApp'
 }
 
 export enum CancellationReason {
@@ -150,6 +151,14 @@ export interface PagedResult<T> {
 // ============================================================
 // HELPER FUNCTIONS
 // ============================================================
+
+export interface NotificationProviderStatus {
+  email: boolean;
+  sms: boolean;
+  push: boolean;
+  inApp: boolean;
+  availableProviders: number;
+}
 
 export function getStatusColor(status: AppointmentStatus): string {
   const colors: Record<AppointmentStatus, string> = {

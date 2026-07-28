@@ -12,6 +12,7 @@ export interface AppointmentState {
   selectedAppointment: AppointmentDetailedResponseDto | null;
   availableSlots: ProviderAvailabilityDto[];
   pendingReminders: AppointmentReminder[];
+  notificationStatus: any;
   
   // Paging
   paging: {
@@ -34,6 +35,7 @@ export const initialAppointmentState: AppointmentState = {
   selectedAppointment: null,
   availableSlots: [],
   pendingReminders: [],
+  notificationStatus: null,
   paging: { pageNumber: 1, pageSize: 20, total: 0 },
   filter: {},
   loading: false,

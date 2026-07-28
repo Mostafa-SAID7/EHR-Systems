@@ -227,3 +227,23 @@ export const selectSendAllRemindersInProgress = createSelector(
   selectActionInProgress,
   (actions) => actions['sendAllReminders'] || false
 );
+
+export const selectNotificationStatus = createSelector(
+  selectAppointmentFeature,
+  (state: AppointmentState) => state.notificationStatus
+);
+
+export const selectEmailNotificationEnabled = createSelector(
+  selectNotificationStatus,
+  (status) => status?.email || false
+);
+
+export const selectSmsNotificationEnabled = createSelector(
+  selectNotificationStatus,
+  (status) => status?.sms || false
+);
+
+export const selectPushNotificationEnabled = createSelector(
+  selectNotificationStatus,
+  (status) => status?.push || false
+);

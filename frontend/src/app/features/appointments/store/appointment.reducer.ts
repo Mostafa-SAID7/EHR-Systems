@@ -318,5 +318,27 @@ export const appointmentReducer = createReducer(
     ...state,
     error,
     actionInProgress: { ...state.actionInProgress, sendAllReminders: false }
+  })),
+
+  // ============================================================
+  // GET NOTIFICATION STATUS
+  // ============================================================
+
+  on(AppointmentActions.getNotificationStatus, (state) => ({
+    ...state,
+    loading: true,
+    error: null
+  })),
+
+  on(AppointmentActions.getNotificationStatusSuccess, (state, { status }) => ({
+    ...state,
+    notificationStatus: status,
+    loading: false
+  })),
+
+  on(AppointmentActions.getNotificationStatusFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false
   }))
 );
