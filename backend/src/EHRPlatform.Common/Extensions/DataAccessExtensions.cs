@@ -49,6 +49,30 @@ public static class DataAccessExtensions
     }
 
     /// <summary>
+    /// Register data-access with a MySQL connection string (Pomelo).
+    /// </summary>
+    public static IServiceCollection AddMySqlDataAccess<TDbContext>(
+        this IServiceCollection services,
+        string? connectionString)
+        where TDbContext : BaseDbContext
+    {
+        if (string.IsNullOrEmpty(connectionString))
+            throw new ArgumentException("MySQL connection string is required.", nameof(connectionString));
+
+        return services.AddDataAccess<TDbContext>(options =>
+            options
+                .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), mysql =>
+                {
+                    mysql.CommandTimeout(30);
+                    mysql.EnableRetryOnFailure(
+                        maxRetryCount:  5,
+                        maxRetryDelay:  TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                })
+                .EnableDetailedErrors());
+    }
+
+    /// <summary>
     /// Register data-access with a PostgreSQL connection string (Npgsql).
     /// </summary>
     public static IServiceCollection AddPostgresDataAccess<TDbContext>(
