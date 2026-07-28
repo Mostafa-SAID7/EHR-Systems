@@ -49,6 +49,30 @@ public static class DataAccessExtensions
     }
 
     /// <summary>
+    /// Register data-access with a MySQL connection string (Pomelo).
+    /// </summary>
+    public static IServiceCollection AddMySqlDataAccess<TDbContext>(
+        this IServiceCollection services,
+        string? connectionString)
+        where TDbContext : BaseDbContext
+    {
+        if (string.IsNullOrEmpty(connectionString))
+            throw new ArgumentException("MySQL connection string is required.", nameof(connectionString));
+
+        return services.AddDataAccess<TDbContext>(options =>
+            options
+                .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), mysql =>
+                {
+                    mysql.CommandTimeout(30);
+                    mysql.EnableRetryOnFailure(
+                        maxRetryCount:  5,
+                        maxRetryDelay:  TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                })
+                .EnableDetailedErrors());
+    }
+
+    /// <summary>
     /// Register data-access with a PostgreSQL connection string (Npgsql).
     /// </summary>
     public static IServiceCollection AddPostgresDataAccess<TDbContext>(
@@ -72,34 +96,6 @@ public static class DataAccessExtensions
                         errorCodesToAdd: null);
                 })
                 .EnableDetailedErrors());
-    }
-
-    /// <summary>
-    /// Register data-access with a MySQL connection string (MySqlConnector / Pomelo).
-    /// Uses MySqlConnector directly (no EF Core provider — raw ADO.NET + Dapper).
-    ///
-    /// Use when a service needs MySQL for a specific aggregate or reporting store
-    /// (e.g. legacy billing tables).  For full EF Core MySQL support add
-    /// Pomelo.EntityFrameworkCore.MySql and call UseMySQL inside the options action.
-    /// </summary>
-    public static IServiceCollection AddMySqlDataAccess(
-        this IServiceCollection services,
-        string? connectionString)
-    {
-        if (string.IsNullOrEmpty(connectionString))
-            throw new ArgumentException("MySQL connection string is required.", nameof(connectionString));
-
-        // Register a named factory so services can open raw MySqlConnection instances.
-        services.AddScoped<Func<MySqlConnector.MySqlConnection>>(_ =>
-            () => new MySqlConnector.MySqlConnection(connectionString));
-
-        // Register the migration executor for manual schema management.
-        services.AddScoped<Migrations.MySqlMigrationExecutor>(sp =>
-            new Migrations.MySqlMigrationExecutor(
-                connectionString,
-                sp.GetRequiredService<ILogger<Migrations.MySqlMigrationExecutor>>()));
-
-        return services;
     }
 
     /// <summary>

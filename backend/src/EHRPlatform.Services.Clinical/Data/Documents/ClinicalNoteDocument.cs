@@ -6,75 +6,102 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace EHRPlatform.Services.Clinical.Data.Documents;
 
 /// <summary>
-/// MongoDB document that stores the full SOAP content of a clinical note.
+/// MongoDB document for a ClinicalNote — PRIMARY store for clinical data.
 ///
-/// Design rationale — dual-store pattern:
-///   PostgreSQL  → structured metadata (NoteId, PatientId, Status, EncounterDate,
-///                 ICD-10 codes, CPT procedures). Relational integrity, FK support.
-///   MongoDB     → unstructured SOAP narrative (Subjective, Objective, Assessment,
-///                 Plan). Unbounded text; schema-flexible for future HL7 extensions.
+/// Why MongoDB:
+///   A clinical encounter is a document, not a row. VitalSigns, Diagnoses,
+///   and Procedures naturally embed inside the note — they are meaningless
+///   without their parent note and are always queried together. Storing them
+///   as separate Postgres tables forces costly JOINs on every read and adds
+///   migration overhead when note schemas evolve (structured reason codes,
+///   multimedia references, genomic annotations, etc.).
 ///
-/// The two stores are linked by <see cref="NoteId"/> (the PostgreSQL PK).
-/// On write: save the EF entity first, then upsert this document using NoteId.
-/// On read: fetch the EF entity for metadata; join this document for full content.
+///   PatientId / ProviderId are indexed for fast per-patient timelines.
+///   EntityId = ClinicalNote domain Id (Guid).
 /// </summary>
 public class ClinicalNoteDocument : MongoBaseDocument
 {
-    /// <summary>
-    /// The PostgreSQL ClinicalNote.Id — join key between stores.
-    /// Stored as a separate field (not just EntityId) to be explicit.
-    /// </summary>
-    [BsonElement("noteId")]
-    public Guid NoteId { get; set; }
-
-    [BsonElement("patientId")]
-    public Guid PatientId { get; set; }
-
-    [BsonElement("providerId")]
+    // ── Identity / denormalised keys ──────────────────────────────────────────
+    public Guid ClinicalNoteId { get => EntityId; set => EntityId = value; }
+    public Guid PatientId  { get; set; }
     public Guid ProviderId { get; set; }
 
-    /// <summary>
-    /// Encounter date — duplicated here to support time-range filtering without
-    /// round-tripping to PostgreSQL.
-    /// </summary>
-    [BsonElement("encounterDate")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime EncounterDate { get; set; }
+    public string EncounterType { get; set; } = string.Empty;
+    public string Status { get; set; } = "Draft";   // Draft | Finalized
 
-    /// <summary>
-    /// Note status: Draft | Finalized | Locked.
-    /// Mirrors the PostgreSQL field for query convenience.
-    /// </summary>
-    [BsonElement("status")]
-    public string Status { get; set; } = "Draft";
+    // ── SOAP narrative ────────────────────────────────────────────────────────
+    public string Subjective  { get; set; } = string.Empty;
+    public string Objective   { get; set; } = string.Empty;
+    public string Assessment  { get; set; } = string.Empty;
+    public string Plan        { get; set; } = string.Empty;
 
-    // ── SOAP components (unbounded narrative text) ────────────────────────────
+    // ── Embedded observations (replaces 3 separate PG tables) ─────────────────
+    /// <summary>VitalSigns recorded during this encounter.</summary>
+    public List<VitalSignsEmbedded> VitalSigns { get; set; } = new();
 
-    /// <summary>
-    /// Subjective — patient's reported symptoms, complaints, and history.
-    /// No length limit; free-form clinical narrative.
-    /// </summary>
-    [BsonElement("subjective")]
-    public string Subjective { get; set; } = string.Empty;
+    /// <summary>ICD-10 diagnoses linked to this encounter.</summary>
+    public List<DiagnosisEmbedded> Diagnoses { get; set; } = new();
 
-    /// <summary>
-    /// Objective — clinician observations, physical exam findings, lab results.
-    /// </summary>
-    [BsonElement("objective")]
-    public string Objective { get; set; } = string.Empty;
+    /// <summary>CPT/SNOMED procedures performed during this encounter.</summary>
+    public List<ProcedureEmbedded> Procedures { get; set; } = new();
 
-    /// <summary>
-    /// Assessment — diagnosis and clinical impression.
-    /// </summary>
-    [BsonElement("assessment")]
-    public string Assessment { get; set; } = string.Empty;
+    // ── Extended content ──────────────────────────────────────────────────────
+    public List<NoteAddendum>     Addenda     { get; set; } = new();
+    public List<NoteAttachmentRef> Attachments { get; set; } = new();
+    public Dictionary<string, string> Extensions { get; set; } = new();
+}
 
-    /// <summary>
-    /// Plan — treatment decisions, medications ordered, follow-up instructions.
-    /// </summary>
-    [BsonElement("plan")]
-    public string Plan { get; set; } = string.Empty;
+// ── Embedded sub-documents ─────────────────────────────────────────────────────
 
-    // ── Schema versioning ─────────────────────────────────────────────────────
-    // Inherited SchemaVersion from MongoBaseDocument (starts at 1).
-    // Increment and migrate via MongoMigrationExecutor when SOAP shape changes.
+public class VitalSignsEmbedded
+{
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime RecordedAt    { get; set; } = DateTime.UtcNow;
+    public decimal  Temperature   { get; set; }
+    public int      SystolicBP    { get; set; }
+    public int      DiastolicBP   { get; set; }
+    public int      HeartRate     { get; set; }
+    public int      RespiratoryRate { get; set; }
+    public decimal? Weight        { get; set; }
+    public int?     OxygenSaturation { get; set; }
+}
+
+public class DiagnosisEmbedded
+{
+    public string DiagnosisCode { get; set; } = string.Empty;
+    public string DiagnosisText { get; set; } = string.Empty;
+    public string DiagnosisType { get; set; } = string.Empty;  // Primary | Secondary
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime RecordedAt  { get; set; } = DateTime.UtcNow;
+}
+
+public class ProcedureEmbedded
+{
+    public string   ProcedureName { get; set; } = string.Empty;
+    public string   ProcedureCode { get; set; } = string.Empty;
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime PerformedAt   { get; set; }
+    public string   Result        { get; set; } = string.Empty;
+}
+
+public class NoteAddendum
+{
+    public Guid     ProviderId { get; set; }
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime AddedAt    { get; set; }
+    public string   Content    { get; set; } = string.Empty;
+    public string   Reason     { get; set; } = string.Empty;
+}
+
+public class NoteAttachmentRef
+{
+    public string   FileName    { get; set; } = string.Empty;
+    public string   ContentType { get; set; } = string.Empty;
+    public long     SizeBytes   { get; set; }
+    public string   StorageKey  { get; set; } = string.Empty;
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime UploadedAt  { get; set; }
+    public Guid     UploadedBy  { get; set; }
 }

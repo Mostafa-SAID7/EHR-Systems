@@ -4,6 +4,7 @@ using EHRPlatform.Common.Security;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Audit.Data;
 using EHRPlatform.Services.Audit.Data.Repositories;
+using EHRPlatform.Services.Audit.Data.Queries;
 using EHRPlatform.Services.Audit.Application.Services;
 using Serilog;
 
@@ -50,6 +51,9 @@ try
 
     // ── Audit Services ────────────────────────────────────────────────────────
     builder.Services.AddScoped<IAuditCacheService, AuditCacheService>();
+
+    // ── Audit Dapper (bulk HIPAA compliance read queries) ─────────────────────
+    builder.Services.AddScoped<IAuditDapperRepository, AuditDapperRepository>();
 
     // ── Redis Caching (optional) ──────────────────────────────────────────────
     var redisConnStr = builder.Configuration["ConnectionStrings:Redis"]
@@ -103,14 +107,6 @@ try
         app.Logger.LogError(ex, "Migration failed for AuditService");
         if (app.Environment.IsProduction())
             throw;
-    }
-
-    // ── Legacy: Schema verification ────────────────────────────────────────────
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AuditContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Audit database schema verified/created");
     }
 
     app.UseSwagger();

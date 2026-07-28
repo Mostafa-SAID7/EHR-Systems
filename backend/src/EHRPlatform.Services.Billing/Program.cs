@@ -3,6 +3,7 @@ using EHRPlatform.Common.Security;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Billing.Data;
 using EHRPlatform.Services.Billing.Data.Repositories;
+using EHRPlatform.Services.Billing.Data.Queries;
 using EHRPlatform.Services.Billing.Application.Services;
 using EHRPlatform.Services.Billing.Infrastructure.HealthChecks;
 using Elastic.Clients.Elasticsearch;
@@ -49,6 +50,9 @@ try
 
     // ── Billing Services ──────────────────────────────────────────────────────
     builder.Services.AddScoped<IBillingCacheService, BillingCacheService>();
+
+    // ── Billing Dapper (invoice reporting & financial aggregations) ───────────
+    builder.Services.AddScoped<IBillingDapperRepository, BillingDapperRepository>();
 
     // ── Redis Caching (optional) ──────────────────────────────────────────────
     var redisConnStr = builder.Configuration["Redis:ConnectionString"]
@@ -115,14 +119,6 @@ try
         app.Logger.LogError(ex, "Migration failed for BillingService");
         if (app.Environment.IsProduction())
             throw;
-    }
-
-    // ── Legacy: Schema verification ────────────────────────────────────────────
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<BillingContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Billing database schema verified/created");
     }
 
     app.UseSwagger();

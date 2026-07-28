@@ -116,14 +116,6 @@ try
             throw;
     }
 
-    // ── Legacy: Schema verification ────────────────────────────────────────────
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AppointmentContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Appointment database schema verified/created");
-    }
-
     app.UseSwagger();
     app.UseSwaggerUI();
 

@@ -54,6 +54,41 @@ public static class ConfigurationExtensions
             "or ConnectionStrings__DefaultConnection.");
     }
 
+    // ─── MySQL ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Build a MySQL connection string from MYSQL_* environment variables,
+    /// falling back to an explicit connection string in configuration.
+    ///
+    /// Priority:
+    ///   1. MYSQL_* env vars (wins when MYSQL_HOST is set).
+    ///   2. Explicit ConnectionStrings:MySqlConnection that does NOT contain "localhost".
+    ///   3. Returns null — callers should decide whether to throw.
+    /// </summary>
+    public static string? BuildMysqlConnectionString(this IConfiguration config)
+    {
+        var host = Environment.GetEnvironmentVariable("MYSQL_HOST")
+                ?? Environment.GetEnvironmentVariable("MYSQLHOST");
+        var port = Environment.GetEnvironmentVariable("MYSQL_PORT")
+                ?? Environment.GetEnvironmentVariable("MYSQLPORT") ?? "3306";
+        var db   = Environment.GetEnvironmentVariable("MYSQL_DATABASE")
+                ?? Environment.GetEnvironmentVariable("MYSQLDATABASE");
+        var user = Environment.GetEnvironmentVariable("MYSQL_USER")
+                ?? Environment.GetEnvironmentVariable("MYSQLUSER");
+        var pass = Environment.GetEnvironmentVariable("MYSQL_PASSWORD")
+                ?? Environment.GetEnvironmentVariable("MYSQLPASSWORD");
+
+        if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(db))
+        {
+            return $"Server={host};Port={port};Database={db};User={user};Password={pass};AllowPublicKeyRetrieval=true;SslMode=preferred;";
+        }
+
+        var explicit_ = config.GetConnectionString("MySqlConnection");
+        if (!string.IsNullOrEmpty(explicit_)) return explicit_;
+
+        return null;
+    }
+
     // ─── MongoDB ─────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -86,34 +121,4 @@ public static class ConfigurationExtensions
             ?? fallbackName;
     }
 
-    // ─── MySQL ────────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Build a MySQL connection string from environment variables or configuration.
-    ///
-    /// Environment variable priority:
-    ///   1. MYSQL_CONNECTION_STRING — full DSN (wins immediately when set).
-    ///   2. MYSQL_HOST / MYSQL_PORT / MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD
-    ///      individual variables (mirrors common Docker/Kubernetes patterns).
-    ///   3. ConnectionStrings:MySqlConnection in appsettings.json.
-    ///   4. Returns <c>null</c> when none is configured.
-    /// </summary>
-    public static string? BuildMySqlConnectionString(this IConfiguration config)
-    {
-        // Full DSN takes highest priority
-        var fullDsn = Environment.GetEnvironmentVariable("MYSQL_CONNECTION_STRING")
-            ?? config.GetConnectionString("MySqlConnection");
-        if (!string.IsNullOrEmpty(fullDsn)) return fullDsn;
-
-        // Build from parts
-        var host = Environment.GetEnvironmentVariable("MYSQL_HOST") ?? config["MySQL:Host"];
-        if (string.IsNullOrEmpty(host)) return null;
-
-        var port   = Environment.GetEnvironmentVariable("MYSQL_PORT")     ?? config["MySQL:Port"]     ?? "3306";
-        var db     = Environment.GetEnvironmentVariable("MYSQL_DATABASE") ?? config["MySQL:Database"] ?? string.Empty;
-        var user   = Environment.GetEnvironmentVariable("MYSQL_USER")     ?? config["MySQL:Username"] ?? "root";
-        var pass   = Environment.GetEnvironmentVariable("MYSQL_PASSWORD") ?? config["MySQL:Password"] ?? string.Empty;
-
-        return $"Server={host};Port={port};Database={db};Uid={user};Pwd={pass};CharSet=utf8mb4;AllowPublicKeyRetrieval=true;SslMode=None;";
-    }
 }

@@ -117,14 +117,6 @@ try
             throw;
     }
 
-    // ── Legacy: Schema verification ────────────────────────────────────────────
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AnalyticsContext>();
-        await db.Database.EnsureCreatedAsync();
-        Log.Information("Analytics database schema verified/created");
-    }
-
     app.UseSwagger();
     app.UseSwaggerUI();
 
