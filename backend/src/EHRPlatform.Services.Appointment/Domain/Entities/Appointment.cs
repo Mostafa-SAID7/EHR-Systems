@@ -83,7 +83,7 @@ public class Appointment : AuditableEntity
     /// <summary>
     /// Gets the collection of notes for this appointment.
     /// </summary>
-    public ICollection<AppointmentNote> Notes { get; } = new List<AppointmentNote>();
+    public ICollection<AppointmentNote> AppointmentNotes { get; } = new List<AppointmentNote>();
 
     /// <summary>
     /// Gets the collection of reschedule history for this appointment.

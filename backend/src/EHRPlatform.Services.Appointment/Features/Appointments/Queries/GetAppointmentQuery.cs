@@ -1,7 +1,7 @@
 using EHRPlatform.Common.Behaviors;
 using EHRPlatform.Common.CQRS;
 using EHRPlatform.Common.DTOs;
-using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
+using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 
@@ -31,27 +31,3 @@ public record GetPatientAppointmentsQuery : IQuery<PagedResult<AppointmentRespon
     public TimeSpan? Duration => TimeSpan.FromSeconds(600);
 }
 
-/// <summary>
-/// Get provider appointments (calendar view).
-/// </summary>
-public record GetProviderAppointmentsQuery : IQuery<ProviderAppointmentCalendarDto>, ICachedQuery
-{
-    public Guid ProviderId { get; init; }
-    public DateTime Date { get; init; }
-
-    public string CacheKey => $"appointments_provider_{ProviderId}_{Date:yyyyMMdd}";
-    public TimeSpan? Duration => TimeSpan.FromSeconds(300);
-}
-
-/// <summary>
-/// Get provider availability slots.
-/// </summary>
-public record GetProviderAvailabilityQuery : IQuery<ProviderAvailabilityListDto>, ICachedQuery
-{
-    public Guid ProviderId { get; init; }
-    public DateTime FromDate { get; init; }
-    public DateTime ToDate { get; init; }
-
-    public string CacheKey => $"availability_{ProviderId}_{FromDate:yyyyMMdd}_{ToDate:yyyyMMdd}";
-    public TimeSpan? Duration => TimeSpan.FromSeconds(300);
-}

@@ -1,5 +1,6 @@
 using System.Reflection;
 using EHRPlatform.Common.Behaviors;
+using EHRPlatform.Common.CQRS;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
@@ -34,6 +35,10 @@ public static class CQRSExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
+
+        // Dispatcher facades over IMediator
+        services.AddTransient<ICommandDispatcher, MediatRCommandDispatcher>();
+        services.AddTransient<IQueryDispatcher, MediatRQueryDispatcher>();
 
         return services;
     }

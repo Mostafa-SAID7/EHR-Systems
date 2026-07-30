@@ -6,7 +6,7 @@ namespace EHRPlatform.Services.Appointment.Hubs;
 /// SignalR hub for real-time appointment updates.
 /// Handles connections and broadcasts appointment changes to connected clients.
 /// </summary>
-public class AppointmentHub : Hub
+public class AppointmentHub : Hub<IAppointmentHubClient>
 {
     private readonly ILogger<AppointmentHub> _logger;
 
@@ -31,7 +31,7 @@ public class AppointmentHub : Hub
                 Context.ConnectionId, appointmentId);
 
             // Notify subscribers
-            await Clients.Group(groupName).SendAsync("UserJoined", new
+            await Clients.Group(groupName).UserJoined(new
             {
                 userId = Context.ConnectionId,
                 timestamp = DateTime.UtcNow

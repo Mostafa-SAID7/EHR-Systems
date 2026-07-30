@@ -1,5 +1,5 @@
 using EHRPlatform.Common.CQRS;
-using EHRPlatform.Services.Analytics.Features.Analytics.Dtos.Responses;
+using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 
 namespace EHRPlatform.Services.Analytics.Features.Analytics.Commands;
 
@@ -19,7 +19,7 @@ public record AggregateMetricsCommand : ICommand
 }
 
 /// <summary>Create dashboard command.</summary>
-public record CreateDashboardCommand : ICommand<DashboardResponseDto>
+public record CreateDashboardCommand : ICommand<DashboardResponse>
 {
     public Guid UserId { get; init; }
     public string Name { get; init; } = string.Empty;
@@ -37,7 +37,7 @@ public record AddDashboardWidgetCommand : ICommand
 }
 
 /// <summary>Create report template command.</summary>
-public record CreateReportCommand : ICommand<ReportResponseDto>
+public record CreateReportCommand : ICommand<ReportResponse>
 {
     public Guid UserId { get; init; }
     public string Name { get; init; } = string.Empty;
@@ -48,7 +48,7 @@ public record CreateReportCommand : ICommand<ReportResponseDto>
 }
 
 /// <summary>Generate report command.</summary>
-public record GenerateReportCommand : ICommand<ReportExecutionResponseDto>
+public record GenerateReportCommand : ICommand<ReportResponse>
 {
     public Guid ReportId { get; init; }
 }

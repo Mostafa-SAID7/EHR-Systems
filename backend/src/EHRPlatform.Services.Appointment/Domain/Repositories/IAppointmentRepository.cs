@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Data;
-using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
+using Appointment = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
 
 namespace EHRPlatform.Services.Appointment.Domain.Repositories;
 
