@@ -7,7 +7,6 @@ using EHRPlatform.Services.Patient.Data;
 using EHRPlatform.Services.Patient.Messaging.Consumers;
 using EHRPlatform.Services.Patient.Sagas;
 using EHRPlatform.Services.Patient.Application.Services;
-using EHRPlatform.Services.Patient.Infrastructure.HealthChecks;
 using Elastic.Clients.Elasticsearch;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;

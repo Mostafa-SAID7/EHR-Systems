@@ -1,5 +1,6 @@
 using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Common.HealthChecks;
 

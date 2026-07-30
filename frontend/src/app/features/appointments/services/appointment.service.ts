@@ -45,7 +45,7 @@ export class AppointmentService {
       `${this.apiUrl}/patient/${patientId}`,
       { params }
     ).pipe(
-      map(result => this.mapPagedResult(result)),
+      map(result => this.mapPagedResult<AppointmentResponseDto>(result)),
       catchError(error => this.handleError('getPatientAppointments', error))
     );
   }
@@ -78,7 +78,7 @@ export class AppointmentService {
       `${this.apiUrl}/by-type/${appointmentType}`,
       { params }
     ).pipe(
-      map(result => this.mapPagedResult(result)),
+      map(result => this.mapPagedResult<AppointmentResponseDto>(result)),
       catchError(error => this.handleError('getAppointmentsByType', error))
     );
   }

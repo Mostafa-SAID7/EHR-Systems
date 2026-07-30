@@ -40,6 +40,9 @@ public class NotificationOrchestrator
 
         try
         {
+            templateVars.TryGetValue("AppointmentDate", out var appointmentDate);
+            var pushTitle = "Appointment: " + (appointmentDate ?? "Upcoming");
+
             var messageId = reminderType.ToLower() switch
             {
                 "email" => await _emailProvider.SendEmailFromTemplateAsync(
@@ -50,7 +53,7 @@ public class NotificationOrchestrator
 
                 "push" => await _pushProvider.SendPushAsync(
                     recipientIdentifier,
-                    $"Appointment: {templateVars.TryGetValue("AppointmentDate", out var d) ? d : "Upcoming"}",
+                    pushTitle,
                     "You have an appointment reminder",
                     templateVars,
                     cancellationToken),
