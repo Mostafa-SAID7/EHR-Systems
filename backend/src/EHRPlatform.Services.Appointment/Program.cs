@@ -3,7 +3,6 @@ using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Appointment.Data;
 using EHRPlatform.Services.Appointment.Data.Repositories;
 using EHRPlatform.Services.Appointment.Application.Services;
-using EHRPlatform.Services.Appointment.Infrastructure.HealthChecks;
 using EHRPlatform.Services.Appointment.Services;
 using EHRPlatform.Services.Appointment.Services.Notifications;
 using EHRPlatform.Services.Appointment.Hubs;

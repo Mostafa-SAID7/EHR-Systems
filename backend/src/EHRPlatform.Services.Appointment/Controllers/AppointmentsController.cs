@@ -5,6 +5,8 @@ using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 using EHRPlatform.Services.Appointment.Services;
 using EHRPlatform.Services.Appointment.Domain.Enums;
+using EHRPlatform.Common.DTOs;
+using EHRPlatform.Services.Appointment.Services.Notifications;
 
 namespace EHRPlatform.Services.Appointment.Controllers;
 
