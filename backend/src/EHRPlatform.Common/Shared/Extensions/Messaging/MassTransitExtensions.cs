@@ -5,7 +5,7 @@ using MassTransit.Monitoring;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Messaging;
 
 /// <summary>
 /// MassTransit DI registration helpers.

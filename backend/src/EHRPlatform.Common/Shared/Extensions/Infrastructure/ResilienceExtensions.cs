@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Infrastructure;
 
 /// <summary>
 /// DI extensions for Polly-based resilience wiring across EHR services.

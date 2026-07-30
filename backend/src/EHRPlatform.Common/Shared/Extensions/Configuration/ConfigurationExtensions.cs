@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Configuration;
 
 /// <summary>
 /// Extension methods for <see cref="IConfiguration"/> used across all EHR microservices.

@@ -4,7 +4,7 @@ using EHRPlatform.Common.Infrastructure.Health;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Data;
 
 /// <summary>
 /// DI extension methods for MongoDB data access.

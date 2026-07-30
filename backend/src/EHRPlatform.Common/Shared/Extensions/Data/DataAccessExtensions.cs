@@ -1,29 +1,24 @@
-using Elastic.Clients.Elasticsearch;
-using EHRPlatform.Common.Infrastructure.Caching;
 using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Data.Implementations;
 using EHRPlatform.Common.Data.Contexts;
-using EHRPlatform.Common.Infrastructure.EventDriven;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Data;
 
 /// <summary>
-/// DI extensions for the data-access layer: EF Core, repositories, unit of work,
-/// Redis caching, and Elasticsearch search.
+/// DI extensions for the data-access layer: EF Core, repositories, unit of work, and migrations.
+///
+/// For Redis caching, use CachingExtensions.AddRedisCaching().
+/// For Elasticsearch search, use SearchExtensions.AddElasticsearchSearch().
 ///
 /// Typical microservice Program.cs usage:
 /// <code>
 /// builder.Services
-///     .AddPostgresDataAccess&lt;MyDbContext&gt;(connectionString)
-///     .AddRedisCaching(redisConnectionString)
-///     .AddElasticsearchSearch(elasticsearchUrl);
+///     .AddPostgresDataAccess&lt;MyDbContext&gt;(connectionString);
 /// </code>
 /// </summary>
 public static class DataAccessExtensions
@@ -101,50 +96,6 @@ public static class DataAccessExtensions
     }
 
     /// <summary>
-    /// Register Redis distributed caching.
-    /// </summary>
-    public static IServiceCollection AddRedisCaching(
-        this IServiceCollection services,
-        string? connectionString)
-    {
-        if (string.IsNullOrEmpty(connectionString))
-            throw new ArgumentException("Redis connection string is required.", nameof(connectionString));
-
-        services.AddSingleton<IConnectionMultiplexer>(_ =>
-        {
-            var opts = ConfigurationOptions.Parse(connectionString);
-            opts.AbortOnConnectFail = false;
-            opts.ConnectTimeout     = 5_000;
-            opts.SyncTimeout        = 5_000;
-            return ConnectionMultiplexer.Connect(opts);
-        });
-
-        services.AddSingleton<ICacheService, RedisCacheService>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Register Elasticsearch search service.
-    /// </summary>
-    public static IServiceCollection AddElasticsearchSearch(
-        this IServiceCollection services,
-        string? elasticsearchUrl)
-    {
-        if (string.IsNullOrEmpty(elasticsearchUrl))
-            throw new ArgumentException("Elasticsearch URL is required.", nameof(elasticsearchUrl));
-
-        var settings = new ElasticsearchClientSettings(new Uri(elasticsearchUrl))
-            .DisableDirectStreaming()
-            .ThrowExceptions();
-
-        services.AddSingleton(new ElasticsearchClient(settings));
-        services.AddSingleton<ISearchService, ElasticsearchService>();
-
-        return services;
-    }
-
-    /// <summary>
     /// Add a hosted service that runs pending EF Core migrations at startup.
     /// </summary>
     public static IServiceCollection AddMigrationHostedService(this IServiceCollection services)
@@ -173,7 +124,7 @@ public static class DataAccessExtensions
 /// <summary>
 /// Simple health check that verifies a DbContext can connect by calling CanConnectAsync.
 /// </summary>
-internal sealed class DbContextHealthCheck<TDbContext> : IHealthCheck
+public sealed class DbContextHealthCheck<TDbContext> : IHealthCheck
     where TDbContext : DbContext
 {
     private readonly TDbContext _context;

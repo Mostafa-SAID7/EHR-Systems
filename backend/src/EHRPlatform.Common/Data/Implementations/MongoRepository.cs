@@ -2,6 +2,7 @@
 
 using System.Linq.Expressions;
 using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Models;
 using MongoDB.Driver;
 
 namespace EHRPlatform.Common.Data.Implementations;

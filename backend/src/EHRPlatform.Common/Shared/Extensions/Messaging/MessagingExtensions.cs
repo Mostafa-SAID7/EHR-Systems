@@ -1,10 +1,11 @@
 using Confluent.Kafka;
-using EHRPlatform.Common.Infrastructure.EventDriven;
+using EHRPlatform.Common.Events;
+using EHRPlatform.Common.Messaging;
 using EHRPlatform.Common.Shared.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Messaging;
 
 /// <summary>
 /// DI extensions for Kafka messaging and the outbox pattern.

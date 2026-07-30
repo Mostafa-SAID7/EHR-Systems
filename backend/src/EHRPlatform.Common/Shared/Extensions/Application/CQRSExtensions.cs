@@ -6,7 +6,7 @@ using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Application;
 
 /// <summary>
 /// DI extensions for registering CQRS infrastructure (MediatR, validators, pipeline behaviors).

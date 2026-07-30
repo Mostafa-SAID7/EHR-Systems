@@ -9,10 +9,13 @@ using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Common.Infrastructure.Health;
 using EHRPlatform.Common.Application.Behaviors;
 using EHRPlatform.Common.Shared.Middleware;
-using EHRPlatform.Common.Infrastructure.EventDriven;
+using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Shared.Utilities;
 using EHRPlatform.Common.Shared.Contracts;
 using EHRPlatform.Common.Infrastructure.Services;
+using EHRPlatform.Common.Shared.Extensions.Application;
+using EHRPlatform.Common.CDC;
+using EHRPlatform.Common.Slugs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 

@@ -111,7 +111,7 @@ public sealed class GlobalExceptionMiddleware
             ConflictException       => (409, "Conflict",                  "CONFLICT"),
             BusinessRuleException   => (422, "Business Rule Violation",   "BUSINESS_RULE_VIOLATION"),
             ExternalServiceException=> (502, "Upstream Service Error",    "EXTERNAL_SERVICE_ERROR"),
-            Exceptions.TimeoutException => (504, "Request Timeout",       "TIMEOUT"),
+            Domain.Exceptions.TimeoutException => (504, "Request Timeout",       "TIMEOUT"),
             _                       => (500, "An unexpected error occurred.", "INTERNAL_ERROR")
         };
 }

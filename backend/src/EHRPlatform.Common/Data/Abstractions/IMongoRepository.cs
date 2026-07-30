@@ -1,6 +1,7 @@
 #nullable enable
 
 using System.Linq.Expressions;
+using EHRPlatform.Common.Data.Models;
 
 namespace EHRPlatform.Common.Data.Abstractions;
 

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.Mime;
 using System.Text.Json;
 
-namespace EHRPlatform.Common.Shared.Extensions;
+namespace EHRPlatform.Common.Shared.Extensions.Infrastructure;
 
 /// <summary>
 /// Health check extensions for comprehensive service health monitoring.
