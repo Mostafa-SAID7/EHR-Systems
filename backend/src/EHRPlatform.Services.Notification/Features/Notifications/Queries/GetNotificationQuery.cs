@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Notification.Features.Notifications.Dtos.Responses;
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Queries;
@@ -37,3 +37,4 @@ public record GetUserPreferencesQuery : ICachedQuery<List<PreferenceDto>>
     public string CacheKey => $"preferences_user_{UserId}";
     public int CacheDurationSeconds => 900;
 }
+

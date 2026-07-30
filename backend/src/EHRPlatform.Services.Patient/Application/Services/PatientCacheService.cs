@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Caching;
+using EHRPlatform.Common.Infrastructure.Caching;
 
 namespace EHRPlatform.Services.Patient.Application.Services;
 
@@ -91,3 +91,4 @@ public class PatientCacheService : IPatientCacheService
     public Task SetPatientAllergiesAsync<T>(Guid patientId, T value, CancellationToken ct = default) where T : class
         => SetAsync($"{AllergyKeyPrefix}{patientId}", value, TimeSpan.FromHours(6), ct);
 }
+

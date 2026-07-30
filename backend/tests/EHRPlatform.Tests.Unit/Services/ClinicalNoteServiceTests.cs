@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Moq;
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Clinical.Domain.Entities;
@@ -317,3 +317,4 @@ public class ClinicalNoteServiceTests
         _mockRepository.Verify(r => r.UpdateAsync(note, It.IsAny<CancellationToken>()), Times.Once);
     }
 }
+

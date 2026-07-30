@@ -1,8 +1,8 @@
 #nullable enable
 
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Exceptions;
+using EHRPlatform.Common.Domain.Exceptions;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Users.Commands;
@@ -99,3 +99,4 @@ public class UserUpdatedEvent : EHRPlatform.Common.Entities.DomainEvent
     public Guid UserId { get; set; }
     public string Email { get; set; } = string.Empty;
 }
+

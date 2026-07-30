@@ -1,7 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Behaviors;
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.Behaviors;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 
 namespace EHRPlatform.Services.Identity.Features.Auth.Queries;
@@ -29,3 +29,4 @@ public class GetUserPermissionsQuery : IQuery<GetUserPermissionsResponse>, ICach
     /// </summary>
     public TimeSpan? Duration => TimeSpan.FromSeconds(600);
 }
+

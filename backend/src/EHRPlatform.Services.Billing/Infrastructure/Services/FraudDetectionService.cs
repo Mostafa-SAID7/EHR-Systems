@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 
 namespace EHRPlatform.Services.Billing.Infrastructure.Services;
 
@@ -61,3 +61,4 @@ public class FraudDetectionService : IFraudDetectionService
         });
     }
 }
+

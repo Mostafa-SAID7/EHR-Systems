@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Behaviors;
+using EHRPlatform.Common.Application.Behaviors;
 using EHRPlatform.Services.Identity.Application.Identity.Mappers;
 using EHRPlatform.Services.Identity.Features.Auth.Handlers;
 using EHRPlatform.Services.Identity.Features.Auth.Validation;
@@ -40,3 +40,4 @@ public static class ServiceCollectionExtensions
         return services;
     }
 }
+

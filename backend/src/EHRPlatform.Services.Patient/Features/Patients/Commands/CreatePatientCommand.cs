@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Commands;
@@ -19,3 +19,4 @@ public record CreatePatientCommand : ICommand<PatientResponseDto>
     public string? EmergencyContact { get; init; }
     public string? EmergencyPhone { get; init; }
 }
+

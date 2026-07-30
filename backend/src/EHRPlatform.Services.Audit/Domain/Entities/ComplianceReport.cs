@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Audit.Domain.Entities;
 
@@ -20,3 +20,4 @@ public class ComplianceReport : BaseEntity
     public DateTime? SignedAt { get; set; }
     public string? DigitalSignature { get; set; }
 }
+

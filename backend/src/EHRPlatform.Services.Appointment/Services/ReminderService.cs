@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 using EHRPlatform.Services.Appointment.Domain.Enums;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
@@ -128,3 +128,4 @@ public class ReminderService : IReminderService
         _logger.LogInformation("Reminder {ReminderId} cancelled successfully", reminderId);
     }
 }
+

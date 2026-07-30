@@ -1,5 +1,5 @@
 using BenchmarkDotNet.Attributes;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Security;
 using EHRPlatform.Tests.Common.Base;
@@ -359,3 +359,4 @@ public class IdentityServiceBenchmarks
         return _jwtTokenService.GenerateAccessToken(_testUser, new[] { "Doctor", "Admin" });
     }
 }
+

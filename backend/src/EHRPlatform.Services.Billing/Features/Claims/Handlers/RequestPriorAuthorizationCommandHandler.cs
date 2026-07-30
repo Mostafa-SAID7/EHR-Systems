@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Billing.Domain.Entities;
@@ -82,3 +82,4 @@ public class RequestPriorAuthorizationCommandHandler : ICommandHandler<RequestPr
         _logger.LogInformation("Prior Auth {PaId} created with status {Status}", pa.Id, pa.Status);
     }
 }
+

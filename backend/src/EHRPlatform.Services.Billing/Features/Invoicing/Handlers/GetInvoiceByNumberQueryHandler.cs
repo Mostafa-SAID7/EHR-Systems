@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Slugs;
 using EHRPlatform.Services.Billing.Features.Invoicing.Queries;
@@ -55,3 +55,4 @@ public class GetInvoiceByNumberQueryHandler : IQueryHandler<GetInvoiceByNumberQu
         return dto;
     }
 }
+

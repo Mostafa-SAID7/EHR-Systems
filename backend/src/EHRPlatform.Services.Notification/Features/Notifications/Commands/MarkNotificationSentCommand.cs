@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Commands;
 
@@ -11,3 +11,4 @@ public record MarkNotificationSentCommand : ICommand
     public Guid NotificationId { get; init; }
     public string? MessageId { get; init; }
 }
+

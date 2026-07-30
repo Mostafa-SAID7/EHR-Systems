@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Caching;
+using EHRPlatform.Common.Infrastructure.Caching;
 
 namespace EHRPlatform.Services.Appointment.Application.Services;
 
@@ -100,3 +100,4 @@ public class AppointmentCacheService : IAppointmentCacheService
     public Task SetPatientAppointmentsAsync<T>(Guid patientId, T value, CancellationToken ct = default) where T : class
         => SetAsync($"{PatientApptKeyPrefix}{patientId}", value, TimeSpan.FromHours(2), ct);
 }
+

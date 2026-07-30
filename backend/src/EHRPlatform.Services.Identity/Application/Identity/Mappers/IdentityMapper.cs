@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.Application.Mapping;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -97,3 +97,4 @@ public class IdentityMapper : MappingServiceBase<User, UserResponseDto>
             .ToList();
     }
 }
+

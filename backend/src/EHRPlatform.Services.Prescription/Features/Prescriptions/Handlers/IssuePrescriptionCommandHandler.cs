@@ -1,4 +1,4 @@
-﻿using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
@@ -78,4 +78,5 @@ public class IssuePrescriptionCommandHandler : ICommandHandler<IssuePrescription
         return prescription.Adapt<PrescriptionResponseDto>();
     }
 }
+
 

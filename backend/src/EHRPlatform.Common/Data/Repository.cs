@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EHRPlatform.Common.Data;
@@ -297,3 +297,4 @@ internal static class ArgumentGuard
             throw new ArgumentException("Value cannot be null or empty", parameterName);
     }
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Billing.Features.Invoicing.Commands;
@@ -91,3 +91,4 @@ public class CreateInvoiceCommandHandler : ICommandHandler<CreateInvoiceCommand,
         return $"INV-{timestamp}-{random}";
     }
 }
+

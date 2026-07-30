@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Appointment.Application.Appointments.Mappers;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
@@ -43,3 +43,4 @@ public class GetAppointmentQueryHandler : IQueryHandler<GetAppointmentQuery, App
         return _mapper.MapToResponseDto(appointment);
     }
 }
+

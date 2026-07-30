@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
@@ -75,3 +75,4 @@ public class RegisterPatientCommandHandler : ICommandHandler<RegisterPatientComm
         return _mapper.MapToResponse(patient);
     }
 }
+

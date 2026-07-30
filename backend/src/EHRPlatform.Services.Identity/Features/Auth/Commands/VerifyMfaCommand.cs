@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 
 namespace EHRPlatform.Services.Identity.Features.Auth.Commands;
@@ -20,3 +20,4 @@ public class VerifyMfaCommand : ICommand<VerifyMfaResponse>
     /// </summary>
     public string Code { get; set; } = string.Empty;
 }
+

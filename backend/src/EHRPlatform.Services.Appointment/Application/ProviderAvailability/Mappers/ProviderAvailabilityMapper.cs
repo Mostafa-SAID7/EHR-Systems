@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.Application.Mapping;
 using EHRPlatform.Services.Appointment.Application.ProviderAvailability.Responses;
 using Microsoft.Extensions.Logging;
 using ProvAvailEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.ProviderAvailability;
@@ -54,3 +54,4 @@ public class ProviderAvailabilityMapper : MappingServiceBase<ProvAvailEntity, Pr
         };
     }
 }
+

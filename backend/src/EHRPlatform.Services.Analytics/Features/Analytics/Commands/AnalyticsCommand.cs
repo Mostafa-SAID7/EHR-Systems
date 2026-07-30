@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 
 namespace EHRPlatform.Services.Analytics.Features.Analytics.Commands;
@@ -52,3 +52,4 @@ public record GenerateReportCommand : ICommand<ReportResponse>
 {
     public Guid ReportId { get; init; }
 }
+

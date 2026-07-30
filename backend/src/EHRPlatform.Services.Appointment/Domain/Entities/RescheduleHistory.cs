@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -54,3 +54,4 @@ public class RescheduleHistory : BaseEntity
     /// </summary>
     public Appointment Appointment { get; set; } = null!;
 }
+

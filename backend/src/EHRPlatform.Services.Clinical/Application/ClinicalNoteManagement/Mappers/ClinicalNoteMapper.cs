@@ -1,6 +1,6 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Application.Mapping;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 
@@ -79,3 +79,4 @@ public class ClinicalNoteMapper : MappingServiceBase<ClinicalNote, ClinicalNoteR
         return clinicalNotes.Adapt<List<ClinicalNoteResponseDto>>();
     }
 }
+

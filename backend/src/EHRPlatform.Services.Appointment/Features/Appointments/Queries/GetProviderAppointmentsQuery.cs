@@ -1,5 +1,5 @@
-using EHRPlatform.Common.CQRS;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
@@ -18,3 +18,4 @@ public record GetProviderAppointmentsQuery : IQuery<ProviderAppointmentCalendarD
     /// <summary>Optional status filter (e.g., "Scheduled", "Confirmed", "Completed").</summary>
     public string? StatusFilter { get; init; }
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
@@ -48,3 +48,4 @@ public class SendReminderCommandHandler : ICommandHandler<SendReminderCommand>
         _logger.LogInformation("Reminder {ReminderId} sent successfully", command.ReminderId);
     }
 }
+

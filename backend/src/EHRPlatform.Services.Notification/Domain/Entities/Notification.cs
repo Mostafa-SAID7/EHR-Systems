@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Notification.Domain.Events;
 
@@ -69,3 +69,4 @@ public class Notification : AuditableEntity
     public new IReadOnlyList<IntegrationEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
     public new void ClearDomainEvents() => _domainEvents.Clear();
 }
+

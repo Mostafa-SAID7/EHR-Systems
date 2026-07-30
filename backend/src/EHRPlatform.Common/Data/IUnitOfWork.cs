@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -112,3 +112,4 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
         Func<IUnitOfWork, Task<T>> action,
         CancellationToken cancellationToken = default);
 }
+

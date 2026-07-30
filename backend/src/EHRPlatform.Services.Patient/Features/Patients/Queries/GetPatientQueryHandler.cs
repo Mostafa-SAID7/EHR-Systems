@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Search;
 // Domain entities via GlobalUsings (Domain.Entities)
@@ -196,3 +196,4 @@ public class GetPatientDetailQueryHandler : IQueryHandler<GetPatientDetailQuery,
         return detail;
     }
 }
+

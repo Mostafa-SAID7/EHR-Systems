@@ -1,9 +1,9 @@
 #nullable enable
 
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Exceptions;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Domain.Exceptions;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Domain.Events;
@@ -89,3 +89,4 @@ public class VerifyMfaCommandHandler : ICommandHandler<VerifyMfaCommand, VerifyM
     private static bool ValidateTotpCode(string code, string secret) =>
         !string.IsNullOrEmpty(code) && code.Length == 6 && int.TryParse(code, out _);
 }
+

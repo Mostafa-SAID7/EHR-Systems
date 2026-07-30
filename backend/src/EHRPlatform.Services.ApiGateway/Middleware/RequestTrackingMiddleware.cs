@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using EHRPlatform.Common.Telemetry;
+using EHRPlatform.Common.Infrastructure.Telemetry;
 using Serilog.Context;
 
 namespace EHRPlatform.Services.ApiGateway.Middleware;
@@ -135,3 +135,4 @@ public static class RequestTrackingMiddlewareExtensions
     public static IApplicationBuilder UseRequestTracking(this IApplicationBuilder builder)
         => builder.UseMiddleware<RequestTrackingMiddleware>();
 }
+

@@ -1,6 +1,6 @@
-﻿using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 using Mapster;
@@ -46,4 +46,5 @@ public class GetPatientPrescriptionHistoryQueryHandler : IQueryHandler<GetPatien
         return PagedResult<PrescriptionResponseDto>.Create(items, total, request.PageNumber, request.PageSize);
     }
 }
+
 

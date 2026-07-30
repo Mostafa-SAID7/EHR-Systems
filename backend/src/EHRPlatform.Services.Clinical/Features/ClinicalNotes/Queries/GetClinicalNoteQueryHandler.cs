@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
@@ -67,3 +67,4 @@ public class GetClinicalNoteQueryHandler : IQueryHandler<GetClinicalNoteQuery, C
         return dto;
     }
 }
+

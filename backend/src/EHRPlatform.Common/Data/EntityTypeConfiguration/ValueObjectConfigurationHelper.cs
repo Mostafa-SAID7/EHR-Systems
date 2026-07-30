@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,3 +24,4 @@ public static class ValueObjectConfigurationHelper
         return builder.OwnsOne(navigationExpression);
     }
 }
+

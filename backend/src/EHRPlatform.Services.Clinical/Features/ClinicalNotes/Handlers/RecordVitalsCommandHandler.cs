@@ -1,7 +1,6 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.Common.Infrastructure.EventDriven;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Services.Clinical.Domain.Events;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
@@ -66,3 +65,4 @@ public class RecordVitalsCommandHandler : ICommandHandler<RecordVitalsCommand, C
         return new ClinicalNoteResponse { Id = note.Id, PatientId = note.PatientId };
     }
 }
+

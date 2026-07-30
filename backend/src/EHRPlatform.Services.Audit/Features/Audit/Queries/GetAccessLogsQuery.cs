@@ -1,5 +1,5 @@
-using EHRPlatform.Common.CQRS;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Queries;
@@ -20,3 +20,4 @@ public record GetAccessLogsQuery : ICachedQuery<PagedResult<AccessLogResponse>>
     public string CacheKey => $"access_logs_{UserId}_{ResourceType}_{StartDate:yyyyMMdd}_{EndDate:yyyyMMdd}_{PageNumber}_{PageSize}";
     public int CacheDurationSeconds => 600;
 }
+

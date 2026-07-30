@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 
@@ -10,3 +10,4 @@ public record CancelAppointmentCommand : ICommand
     public Guid AppointmentId { get; init; }
     public string Reason { get; init; } = string.Empty;
 }
+

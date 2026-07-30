@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Clinical.Domain.Entities;
 
@@ -14,3 +14,4 @@ public class ClinicalProcedure : BaseEntity
     public string Result { get; set; } = string.Empty;
     public ClinicalNote ClinicalNote { get; set; } = null!;
 }
+

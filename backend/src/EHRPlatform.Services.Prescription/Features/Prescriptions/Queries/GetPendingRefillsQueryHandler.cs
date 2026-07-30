@@ -1,6 +1,6 @@
-﻿using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 
@@ -54,4 +54,5 @@ public class GetPendingRefillsQueryHandler : IQueryHandler<GetPendingRefillsQuer
         return PagedResult<RefillRequestDto>.Create(items, pendingRefills.Count, request.PageNumber, request.PageSize);
     }
 }
+
 

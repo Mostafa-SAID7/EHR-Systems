@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Notification.Features.Notifications.Commands;
@@ -85,3 +85,4 @@ public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCo
         return notification.Adapt<NotificationResponseDto>();
     }
 }
+

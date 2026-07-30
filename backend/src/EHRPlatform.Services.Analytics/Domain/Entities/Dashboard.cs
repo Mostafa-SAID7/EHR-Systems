@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Analytics.Domain.Entities;
 
@@ -14,3 +14,4 @@ public class Dashboard : BaseEntity
     // Navigation
     public ICollection<DashboardWidget> DashboardWidgets { get; set; } = new List<DashboardWidget>();
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Clinical.Domain.Entities;
 
@@ -13,3 +13,4 @@ public class ClinicalDiagnosis : BaseEntity
     public string DiagnosisType { get; set; } = string.Empty; // Principal, Secondary
     public ClinicalNote ClinicalNote { get; set; } = null!;
 }
+

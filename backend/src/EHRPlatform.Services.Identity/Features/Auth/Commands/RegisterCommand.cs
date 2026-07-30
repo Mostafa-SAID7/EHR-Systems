@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 
 namespace EHRPlatform.Services.Identity.Features.Auth.Commands;
@@ -30,3 +30,4 @@ public class RegisterCommand : ICommand<RegisterResponse>
     /// </summary>
     public string Password { get; set; } = string.Empty;
 }
+

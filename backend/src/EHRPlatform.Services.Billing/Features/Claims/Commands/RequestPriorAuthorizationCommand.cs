@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Billing.Domain.Enums;
 
 namespace EHRPlatform.Services.Billing.Features.Claims.Commands;
@@ -30,3 +30,4 @@ public record PriorAuthorizationResponseDto
     public DateTime? DecisionAt { get; init; }
     public string? DenialReason { get; init; }
 }
+

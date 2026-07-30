@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Caching;
+using EHRPlatform.Common.Infrastructure.Caching;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -200,3 +200,4 @@ public class ClinicalCacheService
         _logger.LogDebug($"Invalidated procedures cache for note {clinicalNoteId}");
     }
 }
+

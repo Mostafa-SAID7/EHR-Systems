@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 using EHRPlatform.Services.Analytics.Domain.Entities;
@@ -35,3 +35,4 @@ public class CreateDashboardCommandHandler : ICommandHandler<CreateDashboardComm
         return dashboard.Adapt<DashboardResponse>();
     }
 }
+

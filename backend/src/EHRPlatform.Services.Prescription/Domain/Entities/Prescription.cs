@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Prescription.Domain.Events;
 
@@ -99,3 +99,4 @@ public class Prescription : AuditableEntity
     public IReadOnlyList<IntegrationEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
     public void ClearDomainEvents() => _domainEvents.Clear();
 }
+

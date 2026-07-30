@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Services.Billing.Domain.Enums;
 
 namespace EHRPlatform.Services.Billing.Domain.Entities;
@@ -64,3 +64,4 @@ public class InsuranceClaim : BaseEntity
         FraudFlags = fraudFlag;
     }
 }
+

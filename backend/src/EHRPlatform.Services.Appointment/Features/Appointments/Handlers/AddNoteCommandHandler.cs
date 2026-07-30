@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
@@ -55,3 +55,4 @@ public class AddNoteCommandHandler : ICommandHandler<AddNoteCommand>
             command.AppointmentId);
     }
 }
+

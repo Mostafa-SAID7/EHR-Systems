@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Patient.Domain.Entities;
 
@@ -14,3 +14,4 @@ public class PatientCondition : BaseEntity
     public DateTime? ResolvedDate { get; set; }
     public Patient Patient { get; set; } = null!;
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Billing.Domain.Events;
 using EHRPlatform.Services.Billing.Domain.Enums;
@@ -134,3 +134,4 @@ public class Invoice : AuditableEntity
     public IReadOnlyList<IntegrationEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
     public void ClearDomainEvents() => _domainEvents.Clear();
 }
+

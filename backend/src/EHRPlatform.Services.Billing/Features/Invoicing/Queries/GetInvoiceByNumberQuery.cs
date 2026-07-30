@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Behaviors;
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.Behaviors;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Billing.Application.Invoicing.Responses;
 
 namespace EHRPlatform.Services.Billing.Features.Invoicing.Queries;
@@ -19,3 +19,4 @@ public record GetInvoiceByNumberQuery : IQuery<InvoiceResponseDto>, ICachedQuery
     public string CacheKey => $"invoice_number_{InvoiceNumber.ToLower().Replace(" ", "_")}";
     public TimeSpan? Duration => TimeSpan.FromSeconds(600);
 }
+

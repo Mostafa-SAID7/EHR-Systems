@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Caching;
+using EHRPlatform.Common.Infrastructure.Caching;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -202,3 +202,4 @@ public class PrescriptionCacheService
         _logger.LogDebug($"Invalidated refills cache for prescription {prescriptionId}");
     }
 }
+

@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Extensions;
-using EHRPlatform.Common.Health;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Shared.Extensions;
+using EHRPlatform.Common.Infrastructure.Health;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Audit.Data;
 using EHRPlatform.Services.Audit.Data.Repositories;

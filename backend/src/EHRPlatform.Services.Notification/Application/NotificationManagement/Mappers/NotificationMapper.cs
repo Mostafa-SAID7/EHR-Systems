@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.Application.Mapping;
 using EHRPlatform.Services.Notification.Domain.Entities;
 using EHRPlatform.Services.Notification.Features.Notifications.Dtos.Responses;
 using Microsoft.Extensions.Logging;
@@ -62,3 +62,4 @@ public class NotificationMapper : MappingServiceBase<NotificationEntity, Notific
         return templates.Adapt<List<NotificationTemplateDto>>();
     }
 }
+

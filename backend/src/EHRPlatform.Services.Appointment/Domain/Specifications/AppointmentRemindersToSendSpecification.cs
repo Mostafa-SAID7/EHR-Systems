@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Specifications;
+using EHRPlatform.Common.Domain.Specifications;
 using EHRPlatform.Services.Appointment.Domain.Enums;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -24,3 +24,4 @@ public class AppointmentRemindersToSendSpecification : Specification<Appointment
         AddOrderBy(r => r.ReminderTime);
     }
 }
+

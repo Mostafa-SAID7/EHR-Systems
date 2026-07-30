@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Telemetry;
+using EHRPlatform.Common.Infrastructure.Telemetry;
 using EHRPlatform.Services.Patient.Domain.Events;
 using EHRPlatform.Services.Patient.Messaging.Messages;
 using EHRPlatform.Services.Patient.Sagas.Events;
@@ -142,3 +142,4 @@ public sealed class PatientRegistrationSaga :
         ctx.Saga.UpdatedAt = DateTime.UtcNow;
     }
 }
+

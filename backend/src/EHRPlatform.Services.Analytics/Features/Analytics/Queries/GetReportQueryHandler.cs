@@ -1,4 +1,4 @@
-﻿using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Features.Analytics.Dtos.Responses;
@@ -20,3 +20,4 @@ public class GetReportQueryHandler : IQueryHandler<GetReportQuery, ReportRespons
         return report.Adapt<ReportResponseDto>();
     }
 }
+

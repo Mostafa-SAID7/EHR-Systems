@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -161,3 +161,4 @@ public static class IdentityRuntimeSeeder
             AdminEmail);
     }
 }
+

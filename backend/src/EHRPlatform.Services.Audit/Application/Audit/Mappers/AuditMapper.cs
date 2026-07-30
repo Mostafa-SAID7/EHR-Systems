@@ -1,6 +1,6 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Application.Mapping;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Audit.Domain.Entities;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 using Microsoft.Extensions.Logging;
@@ -61,3 +61,4 @@ public class AuditMapper : MappingServiceBase<AuditEntry, AuditEntryResponse>
             pageSize);
     }
 }
+

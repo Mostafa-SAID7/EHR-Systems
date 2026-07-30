@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Extensions;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Shared.Extensions;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Prescription.Application.Services;
 using EHRPlatform.Services.Prescription.Data;
@@ -105,5 +105,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 

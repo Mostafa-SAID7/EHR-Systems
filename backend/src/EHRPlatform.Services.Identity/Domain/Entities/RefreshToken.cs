@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Entities;
 
@@ -17,3 +17,4 @@ public class RefreshToken : BaseEntity
     public bool IsRevoked => RevokedAt.HasValue;
     public bool IsValid => !IsExpired && !IsRevoked;
 }
+

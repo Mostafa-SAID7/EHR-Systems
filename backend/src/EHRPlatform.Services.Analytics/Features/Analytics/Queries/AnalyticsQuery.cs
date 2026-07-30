@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Analytics.Features.Analytics.Dtos.Responses;
 
 namespace EHRPlatform.Services.Analytics.Features.Analytics.Queries;
@@ -60,3 +60,4 @@ public record GetUserReportsQuery : ICachedQuery<List<ReportResponseDto>>
     public string CacheKey => $"reports_user_{UserId}";
     public int CacheDurationSeconds => 1800;
 }
+

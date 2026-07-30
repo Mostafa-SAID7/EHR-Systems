@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Queries;
@@ -52,3 +52,4 @@ public record GetPatientDetailQuery : ICachedQuery<PatientDetailDto>
     public string CacheKey => $"patient_detail_{PatientId}";
     public int CacheDurationSeconds => 900;
 }
+

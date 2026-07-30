@@ -1,9 +1,9 @@
 #nullable enable
 
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Exceptions;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Domain.Exceptions;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Auth.Commands;
@@ -117,3 +117,4 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
     private static string GenerateRefreshToken() =>
         Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
 }
+

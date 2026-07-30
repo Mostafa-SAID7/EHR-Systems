@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Prescription.Domain.Entities;
 
@@ -16,3 +16,4 @@ public class PrescriptionRefill : BaseEntity
     public string? DenialReason { get; set; }
     public Prescription Prescription { get; set; } = null!;
 }
+

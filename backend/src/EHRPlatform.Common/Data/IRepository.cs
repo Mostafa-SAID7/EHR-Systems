@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Common.Data;
 
@@ -135,3 +135,4 @@ public interface IRepository<TEntity> where TEntity : BaseEntity
         Func<IQueryable<TEntity>, IQueryable<TEntity>> query,
         CancellationToken cancellationToken = default);
 }
+

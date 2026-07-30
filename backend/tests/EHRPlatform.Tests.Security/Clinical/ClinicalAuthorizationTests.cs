@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Moq;
 using EHRPlatform.Services.Clinical.Domain.Entities;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 using Xunit;
 
 namespace EHRPlatform.Tests.Security.Clinical;
@@ -285,3 +285,4 @@ public class ClinicalAuthorizationTests
         accessExpired.Should().BeTrue("Temporary access should expire after duration");
     }
 }
+

@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Search;
-using EHRPlatform.Common.Telemetry;
+using EHRPlatform.Common.Infrastructure.Telemetry;
 using EHRPlatform.Services.Patient.Messaging.Messages;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -69,3 +69,4 @@ public sealed class PatientIndexConsumer : IConsumer<PatientIndexMessage>
         }
     }
 }
+

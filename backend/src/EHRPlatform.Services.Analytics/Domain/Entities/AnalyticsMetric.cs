@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Analytics.Domain.Entities;
 
@@ -17,3 +17,4 @@ public class AnalyticsMetric : BaseEntity
     public string? Unit { get; set; }
     public string? Frequency { get; set; }
 }
+

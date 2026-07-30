@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 
@@ -10,3 +10,4 @@ public record SuspendPrescriptionCommand : ICommand
     public Guid PrescriptionId { get; init; }
     public string Reason { get; init; } = string.Empty;
 }
+

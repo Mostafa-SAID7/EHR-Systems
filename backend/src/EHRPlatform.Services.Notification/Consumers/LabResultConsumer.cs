@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Telemetry;
+using EHRPlatform.Common.Infrastructure.Telemetry;
 using EHRPlatform.Services.Notification.Hubs;
 using MassTransit;
 using Microsoft.AspNetCore.SignalR;
@@ -83,3 +83,4 @@ public record LabResultReadyEvent
     public DateTime ReceivedAt { get; init; } = DateTime.UtcNow;
     public string? CorrelationId { get; init; }
 }
+

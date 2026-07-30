@@ -1,5 +1,5 @@
-using EHRPlatform.Common.CQRS;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 using EHRPlatform.Services.Analytics.Application.Analytics.Mappers;
@@ -35,3 +35,4 @@ public class GetDashboardsQueryHandler : IQueryHandler<GetDashboardsQuery, Paged
         return _mapper.MapToDashboardPagedResult(dashboards, total, query.PageNumber, query.PageSize);
     }
 }
+

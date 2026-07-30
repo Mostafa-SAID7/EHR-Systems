@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Entities;
 
@@ -19,3 +19,4 @@ public class MfaSetup : BaseEntity
     // ── Navigation ───────────────────────────────────────────────────────────
     public User? User { get; set; }
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Clinical.Domain.Entities;
 
@@ -19,3 +19,4 @@ public class VitalSigns : BaseEntity
 
     public string GetBloodPressure() => $"{SystolicBP}/{DiastolicBP}";
 }
+

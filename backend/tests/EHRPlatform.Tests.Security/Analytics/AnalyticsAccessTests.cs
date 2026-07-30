@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Moq;
 using EHRPlatform.Services.Analytics.Domain.Entities;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 using Xunit;
 
 namespace EHRPlatform.Tests.Security.Analytics;
@@ -205,3 +205,4 @@ public class AnalyticsAccessTests
         requiresAuditTrail.Should().BeTrue("Report exports should require audit trail");
     }
 }
+

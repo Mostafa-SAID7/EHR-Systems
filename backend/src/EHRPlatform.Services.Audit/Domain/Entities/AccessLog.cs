@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Audit.Domain.Entities;
 
@@ -17,3 +17,4 @@ public class AccessLog : BaseEntity
     public bool IsExport { get; set; }
     public bool IsPrint { get; set; }
 }
+

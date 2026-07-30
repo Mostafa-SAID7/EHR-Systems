@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Common.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -315,3 +315,4 @@ public class UnitOfWork : IUnitOfWork
         await _context.DisposeAsync();
     }
 }
+

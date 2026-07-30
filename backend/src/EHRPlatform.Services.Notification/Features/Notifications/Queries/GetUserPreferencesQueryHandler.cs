@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Queries;
@@ -37,3 +37,4 @@ public class GetUserPreferencesQueryHandler : IQueryHandler<GetUserPreferencesQu
         }).ToList();
     }
 }
+

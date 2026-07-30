@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Moq;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 using EHRPlatform.Services.Analytics.Features.Analytics.Handlers;
@@ -191,3 +191,4 @@ public class AnalyticsQueryTests
         result.Items.First().IsDefault.Should().BeTrue();
     }
 }
+

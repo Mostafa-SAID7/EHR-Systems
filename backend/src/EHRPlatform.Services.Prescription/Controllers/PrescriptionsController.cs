@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Queries;
 
@@ -215,3 +215,4 @@ public class PrescriptionsController : ControllerBase
         return Ok(new { status = "healthy", service = "prescription-service" });
     }
 }
+

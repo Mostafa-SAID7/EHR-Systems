@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Extensions;
+using EHRPlatform.Common.Shared.Extensions;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Notification.Consumers;
 using EHRPlatform.Services.Notification.Hubs;
@@ -139,4 +139,5 @@ app.MapHealthChecks("/health");
 // app.MapPrometheusMetricsEndpoint();
 
 await app.RunAsync();
+
 

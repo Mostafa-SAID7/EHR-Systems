@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Billing.Features.Invoicing.Queries;
 using Microsoft.Extensions.Logging;
@@ -43,3 +43,4 @@ public class GetInvoiceQueryHandler : IQueryHandler<GetInvoiceQuery, InvoiceResp
         return _mapper.MapToResponseDto(invoice);
     }
 }
+

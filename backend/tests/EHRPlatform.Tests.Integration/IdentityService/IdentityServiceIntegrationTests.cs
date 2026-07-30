@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using FluentAssertions;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Services.Identity.Data;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Domain.Enums;
@@ -603,3 +603,4 @@ public class IdentityServiceIntegrationTests : IntegrationTestBase
 
     #endregion
 }
+

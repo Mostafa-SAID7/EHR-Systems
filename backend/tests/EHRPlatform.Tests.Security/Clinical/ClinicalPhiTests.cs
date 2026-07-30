@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Moq;
 using EHRPlatform.Services.Clinical.Domain.Entities;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Tests.Common.Helpers;
 using Xunit;
 
@@ -345,3 +345,4 @@ public class ClinicalPhiTests
         // Name should be handled separately with proper access controls
     }
 }
+

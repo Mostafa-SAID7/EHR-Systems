@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Behaviors;
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.Behaviors;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Billing.Application.Invoicing.Responses;
 using EHRPlatform.Services.Billing.Application.Reports.Responses;
 
@@ -17,4 +17,5 @@ public record GetPatientInvoicesQuery : IQuery<InvoiceListDto>, ICachedQuery
     public string CacheKey => $"invoices_patient_{PatientId}_{PageNumber}_{PageSize}";
     public TimeSpan? Duration => TimeSpan.FromSeconds(600);
 }
+
 

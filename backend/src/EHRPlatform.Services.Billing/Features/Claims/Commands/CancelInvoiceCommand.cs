@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Billing.Features.Claims.Commands;
 
@@ -50,3 +50,4 @@ public class CancelInvoiceCommandHandler : ICommandHandler<CancelInvoiceCommand>
         _logger.LogInformation("Invoice {InvoiceId} cancelled", command.InvoiceId);
     }
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 
@@ -14,3 +14,4 @@ public record RescheduleAppointmentCommand : ICommand
     public string InitiatedBy { get; init; } = "Provider";
     public string? Reason { get; init; }
 }
+

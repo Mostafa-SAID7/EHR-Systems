@@ -1,4 +1,4 @@
-﻿using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
@@ -48,4 +48,5 @@ public class GetPrescriptionQueryHandler : IQueryHandler<GetPrescriptionQuery, P
         return dto;
     }
 }
+
 

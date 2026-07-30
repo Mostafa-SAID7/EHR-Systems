@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using Mapster;
 
@@ -36,3 +36,4 @@ public class GetNotificationQueryHandler : IQueryHandler<GetNotificationQuery, N
         return notification.Adapt<NotificationResponseDto>();
     }
 }
+

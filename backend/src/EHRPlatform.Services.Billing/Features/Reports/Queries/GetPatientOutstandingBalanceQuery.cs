@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Billing.Application.Reports.Responses;
 
 namespace EHRPlatform.Services.Billing.Features.Reports.Queries;
@@ -11,3 +11,4 @@ public record GetPatientOutstandingBalanceQuery : IQuery<OutstandingBalanceDto>
 {
     public Guid PatientId { get; init; }
 }
+

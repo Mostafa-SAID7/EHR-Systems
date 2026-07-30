@@ -1,8 +1,8 @@
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Extensions;
-using EHRPlatform.Common.Health;
+using EHRPlatform.Common.Shared.Extensions;
+using EHRPlatform.Common.Infrastructure.Health;
 using EHRPlatform.Common.Search;
-using EHRPlatform.Common.Security;
+using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Identity.Application.Identity.Extensions;
 using EHRPlatform.Services.Identity.Data;
@@ -207,5 +207,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 

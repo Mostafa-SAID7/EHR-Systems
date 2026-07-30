@@ -1,4 +1,4 @@
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Shared.DTOs;
 
 namespace EHRPlatform.Services.Appointment.Application.ProviderAvailability.Responses;
 
@@ -35,3 +35,4 @@ public class ProviderAvailabilityDto : StatusDto
     /// <summary>Gets or sets a value indicating whether the slot is active.</summary>
     public bool IsActive { get; set; }
 }
+

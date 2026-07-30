@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -81,3 +81,4 @@ public abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguratio
         // Override in derived classes
     }
 }
+

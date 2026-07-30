@@ -11,9 +11,9 @@ global using Microsoft.Extensions.Logging;
 global using MediatR;
 
 global using EHRPlatform.Common.Data;
-global using EHRPlatform.Common.DTOs;
-global using EHRPlatform.Common.Events;
-global using EHRPlatform.Common.Messaging;
+global using EHRPlatform.Common.Shared.DTOs;
+global using EHRPlatform.Common.Infrastructure.EventDriven;
 global using EHRPlatform.Services.Clinical.Domain.Entities;
 global using EHRPlatform.Services.Clinical.Domain.Events;
 global using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
+

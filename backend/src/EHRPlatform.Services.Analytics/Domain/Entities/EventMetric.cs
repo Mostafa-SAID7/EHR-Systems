@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Analytics.Domain.Entities;
 
@@ -11,3 +11,4 @@ public class EventMetric : BaseEntity
     public Guid AggregateId { get; set; }
     public Dictionary<string, string>? Properties { get; set; }
 }
+

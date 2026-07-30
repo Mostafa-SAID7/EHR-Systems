@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Caching;
+using EHRPlatform.Common.Infrastructure.Caching;
 
 namespace EHRPlatform.Services.Notification.Application.Services;
 
@@ -38,3 +38,4 @@ public class NotificationCacheService : INotificationCacheService
         catch (Exception ex) { _logger.LogWarning(ex, "Cache invalidate failed for key {key}", key); }
     }
 }
+

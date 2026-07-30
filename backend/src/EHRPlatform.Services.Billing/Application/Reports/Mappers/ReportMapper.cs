@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.Application.Mapping;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Billing.Application.Reports.Mappers;
@@ -83,3 +83,4 @@ public class ReportMapper : MappingServiceBase<Invoice, OutstandingBalanceDto>
         };
     }
 }
+

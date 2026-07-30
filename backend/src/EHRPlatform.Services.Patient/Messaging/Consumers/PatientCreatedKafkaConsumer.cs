@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Caching;
+using EHRPlatform.Common.Infrastructure.Caching;
 using EHRPlatform.Common.Messaging;
-using EHRPlatform.Common.Telemetry;
+using EHRPlatform.Common.Infrastructure.Telemetry;
 using EHRPlatform.Services.Patient.Domain.Events;
 using EHRPlatform.Services.Patient.Messaging.Messages;
 using MassTransit;
@@ -96,3 +96,4 @@ public sealed class PatientCreatedKafkaConsumer : IConsumer<PatientCreatedEvent>
         }
     }
 }
+

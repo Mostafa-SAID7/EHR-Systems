@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Queries;
@@ -49,3 +49,4 @@ public class GetComplianceReportsQueryHandler : IQueryHandler<GetComplianceRepor
         }).ToList();
     }
 }
+

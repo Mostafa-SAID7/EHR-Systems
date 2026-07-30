@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Analytics.Domain.Entities;
 
@@ -18,3 +18,4 @@ public class Report : BaseEntity
     public ICollection<ReportExecution> Executions { get; set; } = new List<ReportExecution>();
     public ICollection<AnalyticsMetric> Metrics { get; set; } = new List<AnalyticsMetric>();
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 
@@ -13,3 +13,4 @@ public record AddNoteCommand : ICommand
     public string? PrivacyLevel { get; init; } = "InternalOnly";
     public string? Category { get; init; }
 }
+

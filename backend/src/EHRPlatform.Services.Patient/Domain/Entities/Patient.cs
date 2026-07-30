@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Services.Patient.Domain.Events;
 
@@ -63,3 +63,4 @@ public class Patient : AuditableEntity
     public IReadOnlyList<IntegrationEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
     public void ClearDomainEvents() => _domainEvents.Clear();
 }
+

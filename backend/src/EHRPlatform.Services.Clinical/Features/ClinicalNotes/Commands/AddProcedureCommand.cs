@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 
@@ -12,3 +12,4 @@ public record AddProcedureCommand : ICommand
     public string ProcedureCode { get; init; } = string.Empty; // CPT or SNOMED
     public string Result { get; init; } = string.Empty;
 }
+

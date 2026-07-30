@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -67,3 +67,4 @@ public class ProviderAvailability : BaseEntity
     /// </summary>
     public void ReleaseSlot() => CurrentBookings = Math.Max(0, CurrentBookings - 1);
 }
+

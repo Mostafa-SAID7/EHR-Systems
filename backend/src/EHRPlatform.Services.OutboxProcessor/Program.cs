@@ -2,7 +2,7 @@ using System.Reflection;
 using Confluent.Kafka;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Extensions;
+using EHRPlatform.Common.Shared.Extensions;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.OutboxProcessor.Workers;
 using Microsoft.EntityFrameworkCore;
@@ -111,3 +111,4 @@ finally
 {
     Log.CloseAndFlush();
 }
+

@@ -1,7 +1,6 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.Common.Infrastructure.EventDriven;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -57,3 +56,4 @@ public class CheckInAppointmentCommandHandler : ICommandHandler<CheckInAppointme
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+

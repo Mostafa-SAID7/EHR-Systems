@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Services.Billing.Application.Services;
 using EHRPlatform.Services.Billing.Data;
 using Microsoft.EntityFrameworkCore;
@@ -93,3 +93,4 @@ public record LineItemDto(
     decimal Quantity,
     decimal UnitPrice,
     decimal Amount);
+

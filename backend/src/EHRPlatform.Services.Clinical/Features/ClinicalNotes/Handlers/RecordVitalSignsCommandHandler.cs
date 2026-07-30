@@ -1,7 +1,6 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.Common.Infrastructure.EventDriven;
 using EHRPlatform.Services.Clinical.Domain.Events;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
@@ -74,3 +73,4 @@ public class RecordVitalSignsCommandHandler : ICommandHandler<RecordVitalsComman
         return _mapper.MapToResponse(note);
     }
 }
+

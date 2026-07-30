@@ -5,7 +5,7 @@ using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 using EHRPlatform.Services.Appointment.Services;
 using EHRPlatform.Services.Appointment.Domain.Enums;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Appointment.Services.Notifications;
 
 namespace EHRPlatform.Services.Appointment.Controllers;
@@ -359,3 +359,4 @@ public class ScheduleReminderRequest
     /// <summary>Gets or sets the reminder type (Email, SMS, InApp, Push).</summary>
     public ReminderType ReminderType { get; set; } = ReminderType.Email;
 }
+

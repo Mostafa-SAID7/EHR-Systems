@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Events;
 
@@ -12,3 +12,4 @@ public class PasswordChangedDomainEvent : DomainEvent
     public Guid     UserId    { get; set; }
     public DateTime ChangedAt { get; set; }
 }
+

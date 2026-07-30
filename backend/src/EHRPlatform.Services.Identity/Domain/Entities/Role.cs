@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Entities;
 
@@ -12,3 +12,4 @@ public class Role : BaseEntity
     public ICollection<UserRole> Users { get; } = new List<UserRole>();
     public ICollection<RolePermission> Permissions { get; } = new List<RolePermission>();
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Caching;
+using EHRPlatform.Common.Infrastructure.Caching;
 
 namespace EHRPlatform.Services.Audit.Application.Services;
 
@@ -57,3 +57,4 @@ public class AuditCacheService : IAuditCacheService
         }
     }
 }
+

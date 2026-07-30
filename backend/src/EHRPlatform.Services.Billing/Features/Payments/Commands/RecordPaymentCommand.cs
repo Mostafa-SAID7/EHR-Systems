@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Billing.Features.Payments.Commands;
 
@@ -12,3 +12,4 @@ public record RecordPaymentCommand : ICommand
     public string Method { get; init; } = string.Empty; // Credit Card, Check, ACH, Insurance
     public string? Reference { get; init; }
 }
+

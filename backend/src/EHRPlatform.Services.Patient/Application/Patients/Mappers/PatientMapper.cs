@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.Application.Mapping;
 using EHRPlatform.Services.Patient.Domain.Entities;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
 using Microsoft.Extensions.Logging;
@@ -74,3 +74,4 @@ public class PatientMapper : MappingServiceBase<PatientEntity, PatientResponse>
         };
     }
 }
+

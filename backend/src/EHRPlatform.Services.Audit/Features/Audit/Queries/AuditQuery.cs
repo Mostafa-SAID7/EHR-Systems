@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Queries;
 
@@ -42,3 +42,4 @@ public record GetComplianceReportsQuery : ICachedQuery<List<ComplianceReportDto>
     public string CacheKey => $"compliance_reports_{FromDate:yyyyMMdd}_{ToDate:yyyyMMdd}";
     public int CacheDurationSeconds => 3600;
 }
+

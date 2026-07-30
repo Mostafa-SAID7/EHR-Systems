@@ -1,6 +1,6 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
-using EHRPlatform.Common.DTOs;
+using EHRPlatform.Common.Application.Mapping;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using PrescriptionRefillEntity = EHRPlatform.Services.Prescription.Domain.Entities.PrescriptionRefill;
 
@@ -86,3 +86,4 @@ public class PrescriptionMapper : MappingServiceBase<PrescriptionEntity, Prescri
         return prescriptions.Adapt<List<PrescriptionResponseDto>>();
     }
 }
+

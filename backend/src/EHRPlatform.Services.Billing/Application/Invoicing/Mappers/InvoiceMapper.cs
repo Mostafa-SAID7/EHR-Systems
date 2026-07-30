@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Common.Mapping;
+using EHRPlatform.Common.Application.Mapping;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Billing.Application.Invoicing.Mappers;
@@ -96,3 +96,4 @@ public class InvoiceMapper : MappingServiceBase<Invoice, InvoiceResponseDto>
         };
     }
 }
+

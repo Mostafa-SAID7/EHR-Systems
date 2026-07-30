@@ -1,4 +1,4 @@
-using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Services.Notification.Features.Notifications.Commands;
 
@@ -57,3 +57,4 @@ public class SetNotificationPreferenceCommandHandler : ICommandHandler<SetNotifi
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+

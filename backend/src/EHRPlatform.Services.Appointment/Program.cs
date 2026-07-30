@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Extensions;
+using EHRPlatform.Common.Shared.Extensions;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Appointment.Data;
 using EHRPlatform.Services.Appointment.Data.Repositories;
@@ -154,5 +154,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 

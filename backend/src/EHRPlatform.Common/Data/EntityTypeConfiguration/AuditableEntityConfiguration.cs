@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Entities;
+using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -78,3 +78,4 @@ public abstract class AuditableEntityConfiguration<TEntity> : BaseEntityConfigur
             .HasDatabaseName($"IX_{typeof(TEntity).Name}_ArchivedAt");
     }
 }
+

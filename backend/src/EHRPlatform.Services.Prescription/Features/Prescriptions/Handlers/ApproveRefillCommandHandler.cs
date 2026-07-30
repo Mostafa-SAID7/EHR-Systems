@@ -1,4 +1,4 @@
-﻿using EHRPlatform.Common.CQRS;
+using EHRPlatform.Common.Application.CQRS;
 using EHRPlatform.Common.Data;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
@@ -55,4 +55,5 @@ public class ApproveRefillCommandHandler : ICommandHandler<ApproveRefillCommand>
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
 
