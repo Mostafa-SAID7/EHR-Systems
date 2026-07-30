@@ -74,8 +74,8 @@
   <!-- ── Schedule table (subcomponent) ───────── -->
   <div *ngIf="!(loading$ | async)">
     <app-appointment-schedule-table 
-      [appointments]="(appointments$ | async) || []"
-      *ngIf="(appointments$ | async)?.length; else emptyState">
+      [appointments]="(rows$ | async) || []"
+      *ngIf="(rows$ | async)?.length; else emptyState">
     </app-appointment-schedule-table>
     
     <ng-template #emptyState>

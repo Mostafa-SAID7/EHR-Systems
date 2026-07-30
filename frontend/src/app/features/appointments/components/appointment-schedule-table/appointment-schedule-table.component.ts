@@ -10,7 +10,7 @@ export interface AppointmentRow {
   doctor: string;
   date: Date;
   duration: number;
-  status: 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled' | 'No Show';
+  status: 'Scheduled' | 'Confirmed' | 'In Progress' | 'Completed' | 'Cancelled' | 'No Show' | 'Rescheduled';
   room?: string;
   color: string;
 }
@@ -30,10 +30,12 @@ export class AppointmentScheduleTableComponent {
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
       'Scheduled':   'badge-info',
-      'In Progress': 'badge-primary',
+      'Confirmed':   'badge-primary',
+      'In Progress': 'badge-warning',
       'Completed':   'badge-success',
       'Cancelled':   'badge-danger',
       'No Show':     'badge-neutral',
+      'Rescheduled': 'badge-info',
     };
     return map[status] || 'badge-neutral';
   }

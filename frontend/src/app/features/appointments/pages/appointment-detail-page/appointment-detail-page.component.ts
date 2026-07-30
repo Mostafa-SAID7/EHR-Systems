@@ -43,11 +43,13 @@ export class AppointmentDetailPageComponent implements OnInit {
 
   statusClass(status: AppointmentStatus): string {
     const classes: Record<AppointmentStatus, string> = {
-      [AppointmentStatus.Scheduled]: 'badge-info',
-      [AppointmentStatus.Confirmed]: 'badge-primary',
-      [AppointmentStatus.InProgress]: 'badge-warning',
-      [AppointmentStatus.Completed]: 'badge-success',
-      [AppointmentStatus.Cancelled]: 'badge-danger'
+      [AppointmentStatus.Scheduled]:   'badge-info',
+      [AppointmentStatus.Confirmed]:   'badge-primary',
+      [AppointmentStatus.InProgress]:  'badge-warning',
+      [AppointmentStatus.Completed]:   'badge-success',
+      [AppointmentStatus.Cancelled]:   'badge-danger',
+      [AppointmentStatus.NoShow]:      'badge-neutral',
+      [AppointmentStatus.Rescheduled]: 'badge-info',
     };
     return classes[status] || 'badge-neutral';
   }

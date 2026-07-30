@@ -5,7 +5,7 @@ using EHRPlatform.Services.Billing.Data;
 using EHRPlatform.Services.Billing.Data.Repositories;
 using EHRPlatform.Services.Billing.Data.Queries;
 using EHRPlatform.Services.Billing.Application.Services;
-using EHRPlatform.Services.Billing.Infrastructure.HealthChecks;
+using EHRPlatform.Common.HealthChecks;
 using Elastic.Clients.Elasticsearch;
 using Serilog;
 
