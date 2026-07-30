@@ -4,7 +4,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Contexts;
 using EHRPlatform.Tests.Common.Fixtures;
 using EHRPlatform.Tests.Common.Helpers;
 

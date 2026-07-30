@@ -3,7 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EHRPlatform.Common.Data.EntityTypeConfiguration;
+namespace EHRPlatform.Common.Data.Contexts.EntityTypeConfiguration;
 
 /// <summary>
 /// Helper methods for common EF Core property configurations.

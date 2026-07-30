@@ -1,7 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Categories;
-using EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Shared.Contracts;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Services.Appointment.Categories;
 

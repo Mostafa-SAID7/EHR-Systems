@@ -1,10 +1,11 @@
 #nullable enable
 
 using Dapper;
+using EHRPlatform.Common.Data.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Implementations;
 
 /// <summary>
 /// Dapper-based implementation of <see cref="IDapperContext"/>.
@@ -111,3 +112,4 @@ public sealed class DapperContext : IDapperContext
         return await read(grid);
     }
 }
+

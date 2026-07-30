@@ -4,10 +4,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Contexts;
 using MediatR;
 using Moq;
-using EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Data.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EHRPlatform.Tests.Integration;

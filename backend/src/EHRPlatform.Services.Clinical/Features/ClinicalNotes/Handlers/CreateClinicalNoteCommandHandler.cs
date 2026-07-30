@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;

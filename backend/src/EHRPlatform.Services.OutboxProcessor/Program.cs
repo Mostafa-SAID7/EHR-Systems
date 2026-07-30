@@ -1,6 +1,6 @@
 using System.Reflection;
 using Confluent.Kafka;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Shared.Extensions;
 using EHRPlatform.Common.Data.Migrations;

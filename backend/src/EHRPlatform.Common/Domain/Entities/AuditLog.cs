@@ -1,6 +1,8 @@
 #nullable enable
 
-namespace EHRPlatform.Common.Audit;
+using EHRPlatform.Common.Domain.Enums;
+
+namespace EHRPlatform.Common.Domain.Entities;
 
 /// <summary>
 /// Immutable audit log record for HIPAA compliance.
@@ -151,101 +153,4 @@ public class AuditLog
         var bytes = System.Text.Encoding.UTF8.GetBytes(payload);
         return Convert.ToBase64String(sha.ComputeHash(bytes));
     }
-}
-
-/// <summary>
-/// Types of actions that can be audited.
-/// </summary>
-public enum AuditAction
-{
-    /// <summary>
-    /// Create new resource.
-    /// </summary>
-    Create = 1,
-
-    /// <summary>
-    /// Read/view existing resource.
-    /// </summary>
-    Read = 2,
-
-    /// <summary>
-    /// Update existing resource.
-    /// </summary>
-    Update = 3,
-
-    /// <summary>
-    /// Delete resource (soft or hard).
-    /// </summary>
-    Delete = 4,
-
-    /// <summary>
-    /// Export data outside the system.
-    /// </summary>
-    Export = 5,
-
-    /// <summary>
-    /// Download file or report.
-    /// </summary>
-    Download = 6,
-
-    /// <summary>
-    /// Print document or report.
-    /// </summary>
-    Print = 7,
-
-    /// <summary>
-    /// Send or share data.
-    /// </summary>
-    Share = 8,
-
-    /// <summary>
-    /// Access control action (login, logout, permission change).
-    /// </summary>
-    AccessControl = 9,
-
-    /// <summary>
-    /// Configuration change.
-    /// </summary>
-    Configure = 10,
-
-    /// <summary>
-    /// Administrative action.
-    /// </summary>
-    Admin = 11,
-
-    /// <summary>
-    /// Consent-related action.
-    /// </summary>
-    Consent = 12
-}
-
-/// <summary>
-/// Result of an audited action.
-/// </summary>
-public enum AuditResult
-{
-    /// <summary>
-    /// Action completed successfully.
-    /// </summary>
-    Success = 1,
-
-    /// <summary>
-    /// Action was denied due to insufficient permissions.
-    /// </summary>
-    Denied = 2,
-
-    /// <summary>
-    /// Action failed with an error.
-    /// </summary>
-    Failure = 3,
-
-    /// <summary>
-    /// Action was partially successful.
-    /// </summary>
-    PartialSuccess = 4,
-
-    /// <summary>
-    /// Action generated a warning but succeeded.
-    /// </summary>
-    Warning = 5
 }

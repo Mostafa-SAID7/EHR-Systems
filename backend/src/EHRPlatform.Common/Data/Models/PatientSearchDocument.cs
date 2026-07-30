@@ -1,4 +1,4 @@
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Models;
 
 /// <summary>
 /// Elasticsearch search document for the Patient index.
@@ -17,3 +17,4 @@ public sealed class PatientSearchDocument
     public string Status     { get; set; } = string.Empty;
     public DateTime IndexedAt { get; set; } = DateTime.UtcNow;
 }
+

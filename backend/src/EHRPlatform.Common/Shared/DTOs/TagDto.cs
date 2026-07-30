@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace EHRPlatform.Common.Tags;
+namespace EHRPlatform.Common.Shared.DTOs;
 
 /// <summary>
 /// Tag response DTO for API responses.

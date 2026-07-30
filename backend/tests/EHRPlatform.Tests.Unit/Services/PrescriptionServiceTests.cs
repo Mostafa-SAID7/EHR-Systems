@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 using EHRPlatform.Services.Prescription.Features.Prescriptions.Handlers;

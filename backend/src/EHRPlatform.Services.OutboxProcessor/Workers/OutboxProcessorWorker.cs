@@ -1,5 +1,5 @@
 using Confluent.Kafka;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Events;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;

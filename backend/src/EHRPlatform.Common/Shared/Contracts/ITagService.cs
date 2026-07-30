@@ -1,6 +1,8 @@
 #nullable enable
 
-namespace EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Domain.Entities;
+
+namespace EHRPlatform.Common.Shared.Contracts;
 
 /// <summary>
 /// Service for managing tags across all services.

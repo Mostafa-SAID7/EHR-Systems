@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
 namespace EHRPlatform.Services.Appointment.Domain.Repositories;
@@ -37,3 +37,4 @@ public interface IAppointmentReminderRepository : IRepository<AppointmentReminde
         Guid appointmentId,
         CancellationToken cancellationToken = default);
 }
+

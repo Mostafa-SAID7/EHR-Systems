@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 using Mapster;

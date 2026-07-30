@@ -1,11 +1,12 @@
 #nullable enable
 
 using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Implementations;
 
 /// <summary>
 /// Unit of Work implementation for managing repositories and transactions.

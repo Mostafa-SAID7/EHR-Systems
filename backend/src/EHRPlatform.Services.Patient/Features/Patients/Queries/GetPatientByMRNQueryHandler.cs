@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Slugs;
 // Domain entities via GlobalUsings (Domain.Entities)
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;

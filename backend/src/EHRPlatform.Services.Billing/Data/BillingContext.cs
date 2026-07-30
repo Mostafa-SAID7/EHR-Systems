@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Contexts;
 using EHRPlatform.Common.Events;
 
 namespace EHRPlatform.Services.Billing.Data;

@@ -11,7 +11,8 @@ using EHRPlatform.Common.Application.Behaviors;
 using EHRPlatform.Common.Shared.Middleware;
 using EHRPlatform.Common.Infrastructure.EventDriven;
 using EHRPlatform.Common.Shared.Utilities;
-using EHRPlatform.Common.Categories;
+using EHRPlatform.Common.Shared.Contracts;
+using EHRPlatform.Common.Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 

@@ -2,7 +2,7 @@
 
 using System;
 using Moq;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 
 namespace EHRPlatform.Tests.Common.Base;
 

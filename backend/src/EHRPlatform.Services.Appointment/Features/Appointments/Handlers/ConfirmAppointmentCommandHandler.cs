@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Events;
 using EHRPlatform.Common.Messaging;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
@@ -57,4 +57,5 @@ public class ConfirmAppointmentCommandHandler : ICommandHandler<ConfirmAppointme
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
 

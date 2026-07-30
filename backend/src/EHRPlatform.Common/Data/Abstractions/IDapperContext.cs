@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Abstractions;
 
 /// <summary>
 /// Thin Dapper façade over the service's existing database connection.
@@ -79,3 +79,4 @@ public interface IDapperContext
         object? parameters          = null,
         CancellationToken ct        = default);
 }
+

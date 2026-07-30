@@ -1,6 +1,9 @@
 #nullable enable
 
-namespace EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Shared.DTOs;
+
+namespace EHRPlatform.Common.Shared.Contracts;
 
 /// <summary>
 /// Service for querying tags with advanced filtering and search capabilities.

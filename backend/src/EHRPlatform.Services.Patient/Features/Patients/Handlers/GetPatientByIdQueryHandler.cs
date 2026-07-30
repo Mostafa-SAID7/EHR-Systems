@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Services.Patient.Features.Patients.Queries;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
 using EHRPlatform.Services.Patient.Application.Patients.Mappers;

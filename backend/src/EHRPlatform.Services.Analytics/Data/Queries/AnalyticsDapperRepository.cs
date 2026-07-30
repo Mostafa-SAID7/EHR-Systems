@@ -1,6 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Implementations;
 
 namespace EHRPlatform.Services.Analytics.Data.Queries;
 
@@ -176,3 +177,4 @@ public class AnalyticsDapperRepository : IAnalyticsDapperRepository
             ct);
     }
 }
+

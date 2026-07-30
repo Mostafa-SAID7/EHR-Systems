@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace EHRPlatform.Common.Tags;
+namespace EHRPlatform.Common.Shared.DTOs;
 
 /// <summary>
 /// Request to apply tags to a resource.

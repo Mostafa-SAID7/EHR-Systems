@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
@@ -54,4 +54,5 @@ public class GetPendingRemindersQueryHandler : IQueryHandler<GetPendingReminders
         return result;
     }
 }
+
 

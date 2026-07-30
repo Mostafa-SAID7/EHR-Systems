@@ -4,7 +4,7 @@ using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Abstractions;
 
 /// <summary>
 /// Unit of Work pattern interface for managing database transactions and repositories.

@@ -5,7 +5,7 @@ namespace EHRPlatform.Common.Application.Behaviors;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 
 /// <summary>
 /// MediatR pipeline behavior for managing database transactions.

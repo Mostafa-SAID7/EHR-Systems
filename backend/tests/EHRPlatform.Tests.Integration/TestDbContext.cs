@@ -1,8 +1,8 @@
 #nullable enable
 
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Data.Contexts;
+using EHRPlatform.Common.Domain.Entities;
 
 namespace EHRPlatform.Tests.Integration;
 

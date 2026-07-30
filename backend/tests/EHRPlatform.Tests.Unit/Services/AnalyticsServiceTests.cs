@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Moq;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Features.Analytics.Commands;
 using EHRPlatform.Services.Analytics.Features.Analytics.Handlers;

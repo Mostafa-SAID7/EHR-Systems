@@ -4,7 +4,7 @@ using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Handlers;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 

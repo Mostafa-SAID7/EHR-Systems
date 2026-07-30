@@ -3,7 +3,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Models;
 
 /// <summary>
 /// Base class for all MongoDB documents in the EHR platform.
@@ -67,3 +67,4 @@ public abstract class MongoBaseDocument
     [BsonElement("schemaVersion")]
     public int SchemaVersion { get; set; } = 1;
 }
+

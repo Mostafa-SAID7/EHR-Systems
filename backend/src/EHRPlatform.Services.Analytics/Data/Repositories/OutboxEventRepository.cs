@@ -1,4 +1,5 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Implementations;
 using EHRPlatform.Common.Events;
 using Microsoft.EntityFrameworkCore;
 
@@ -72,3 +73,4 @@ public class OutboxEventRepository : IOutboxEventRepository
         }
     }
 }
+

@@ -4,7 +4,7 @@ using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Contexts;
 
 /// <summary>
 /// Base DbContext for all EHR microservices.

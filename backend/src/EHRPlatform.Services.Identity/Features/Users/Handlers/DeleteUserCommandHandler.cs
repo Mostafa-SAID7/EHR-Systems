@@ -1,7 +1,7 @@
 #nullable enable
 
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Domain.Exceptions;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Users.Commands;

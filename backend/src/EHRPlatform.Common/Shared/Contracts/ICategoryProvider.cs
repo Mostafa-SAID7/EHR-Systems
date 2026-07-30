@@ -1,8 +1,9 @@
 #nullable enable
 
-using EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Shared.DTOs;
 
-namespace EHRPlatform.Common.Categories;
+namespace EHRPlatform.Common.Shared.Contracts;
 
 /// <summary>
 /// Provider for centralized categorization across services.

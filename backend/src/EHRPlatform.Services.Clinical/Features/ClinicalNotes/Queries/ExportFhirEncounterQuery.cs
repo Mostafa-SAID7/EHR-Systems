@@ -1,7 +1,7 @@
 using MediatR;
 using EHRPlatform.Services.Clinical.Application.Mappers;
 using EHRPlatform.Services.Clinical.Domain.Entities;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
 

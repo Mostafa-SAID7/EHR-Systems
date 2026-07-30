@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Contexts;
 
 namespace EHRPlatform.Tests.Common.Fixtures;
 

@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using Mapster;
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Queries;

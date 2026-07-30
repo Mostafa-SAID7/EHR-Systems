@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using EHRPlatform.Common.Tags;
+using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Data.Models;
+using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Patient.Domain.Entities;
 
 namespace EHRPlatform.Services.Patient.Controllers;

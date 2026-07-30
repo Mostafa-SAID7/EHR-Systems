@@ -2,7 +2,7 @@
 
 using System.Linq.Expressions;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Abstractions;
 
 /// <summary>
 /// Generic repository interface for MongoDB documents.
@@ -69,3 +69,4 @@ public interface IMongoRepository<TDocument> where TDocument : MongoBaseDocument
     /// <summary>Restore a soft-deleted document (clears DeletedAt).</summary>
     Task RestoreAsync(string id, CancellationToken cancellationToken = default);
 }
+

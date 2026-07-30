@@ -2,8 +2,10 @@
 
 using EHRPlatform.Common.Slugs;
 using Microsoft.Extensions.Logging;
+using EHRPlatform.Common.Shared.Contracts;
+using EHRPlatform.Common.Domain.Entities;
 
-namespace EHRPlatform.Common.Tags;
+namespace EHRPlatform.Common.Infrastructure.Services;
 
 /// <summary>
 /// In-memory tag service implementation.

@@ -1,9 +1,10 @@
 #nullable enable
 
 using System.Linq.Expressions;
+using EHRPlatform.Common.Data.Abstractions;
 using MongoDB.Driver;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Implementations;
 
 /// <summary>
 /// Generic MongoDB repository.
@@ -195,3 +196,4 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         return kebab + "s";
     }
 }
+

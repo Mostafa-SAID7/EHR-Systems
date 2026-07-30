@@ -1,5 +1,6 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Implementations;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Features.Analytics.Commands;
 
@@ -32,4 +33,5 @@ public class RecordEventMetricCommandHandler : ICommandHandler<RecordEventMetric
         _logger.LogDebug("Event metric recorded: {EventType}", command.EventType);
     }
 }
+
 

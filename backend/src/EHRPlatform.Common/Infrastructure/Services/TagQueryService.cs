@@ -1,8 +1,11 @@
 #nullable enable
 
 using Microsoft.Extensions.Logging;
+using EHRPlatform.Common.Shared.Contracts;
+using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Shared.DTOs;
 
-namespace EHRPlatform.Common.Tags;
+namespace EHRPlatform.Common.Infrastructure.Services;
 
 /// <summary>
 /// In-memory implementation of ITagQueryService.

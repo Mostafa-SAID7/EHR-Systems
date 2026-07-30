@@ -2,8 +2,10 @@
 
 using Microsoft.Extensions.Logging;
 using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Shared.Contracts;
+using EHRPlatform.Common.Shared.DTOs;
 
-namespace EHRPlatform.Common.Tags;
+namespace EHRPlatform.Common.Data.Models;
 
 /// <summary>
 /// Command to apply tags to a resource.
@@ -344,4 +346,3 @@ public class SetResourceTagsCommandHandler : ICommandHandler<SetResourceTagsComm
         }
     }
 }
-

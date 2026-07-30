@@ -2,7 +2,7 @@
 
 using EHRPlatform.Common.Domain.Entities;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Abstractions;
 
 /// <summary>
 /// Generic repository interface for data access operations.

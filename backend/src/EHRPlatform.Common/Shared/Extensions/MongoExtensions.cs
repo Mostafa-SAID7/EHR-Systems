@@ -1,4 +1,5 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Implementations;
 using EHRPlatform.Common.Infrastructure.Health;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;

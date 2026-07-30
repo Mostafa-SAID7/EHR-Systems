@@ -1,8 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Domain.Entities;
-
-namespace EHRPlatform.Common.Tags;
+namespace EHRPlatform.Common.Domain.Entities;
 
 /// <summary>
 /// Tag entity for categorizing and labeling resources across all services.
@@ -140,4 +138,3 @@ public class TagAssociation : BaseEntity
     /// </summary>
     public string GetCompositeKey() => $"{TagId}_{ResourceId}_{ResourceType}";
 }
-

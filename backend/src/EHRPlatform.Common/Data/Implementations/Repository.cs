@@ -1,9 +1,10 @@
 #nullable enable
 
 using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Data.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
-namespace EHRPlatform.Common.Data;
+namespace EHRPlatform.Common.Data.Implementations;
 
 /// <summary>
 /// Generic repository implementation using Entity Framework Core.

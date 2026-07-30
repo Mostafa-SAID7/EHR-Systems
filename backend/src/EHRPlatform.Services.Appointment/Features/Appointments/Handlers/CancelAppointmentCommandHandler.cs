@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Infrastructure.EventDriven;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
@@ -72,4 +72,5 @@ public class CancelAppointmentCommandHandler : ICommandHandler<CancelAppointment
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
 

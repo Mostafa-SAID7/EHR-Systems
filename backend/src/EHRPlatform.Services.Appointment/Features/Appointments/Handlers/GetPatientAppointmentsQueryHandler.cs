@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Appointment.Application.Appointments.Mappers;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
@@ -52,4 +52,5 @@ public class GetPatientAppointmentsQueryHandler : IQueryHandler<GetPatientAppoin
         return _mapper.MapToPagedResult(appointments, total, request.PageNumber, request.PageSize);
     }
 }
+
 

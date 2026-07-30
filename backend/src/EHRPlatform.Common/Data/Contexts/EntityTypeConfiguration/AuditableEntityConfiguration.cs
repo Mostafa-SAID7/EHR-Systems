@@ -4,7 +4,7 @@ using EHRPlatform.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EHRPlatform.Common.Data.EntityTypeConfiguration;
+namespace EHRPlatform.Common.Data.Contexts.EntityTypeConfiguration;
 
 /// <summary>
 /// Base EF Core configuration for entities inheriting from AuditableEntity.
