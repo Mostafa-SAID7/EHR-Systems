@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Application.Common.CQRS;
 using EHRPlatform.Services.Analytics.Application.Services;
 using EHRPlatform.Services.Analytics.Data;
 using MediatR;

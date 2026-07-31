@@ -1,7 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.Behaviors;
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Application.Common.Behaviors;
+using EHRPlatform.Common.Application.Common.CQRS;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 
 namespace EHRPlatform.Services.Identity.Features.Users.Queries;

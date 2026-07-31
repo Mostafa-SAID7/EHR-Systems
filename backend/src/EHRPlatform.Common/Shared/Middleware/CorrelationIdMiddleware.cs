@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
 using Serilog.Context;
 
 namespace EHRPlatform.Common.Shared.Middleware;
@@ -71,7 +72,7 @@ public sealed class CorrelationIdMiddleware
             && !string.IsNullOrWhiteSpace(fromRequestId))
             return fromRequestId.ToString();
 
-        return Guid.NewGuid().ToString("D");
+        return GuidHelper.NewGuidString();
     }
 }
 

@@ -1,5 +1,7 @@
 #nullable enable
 
+using EHRPlatform.Common.Shared.Utilities.Helpers;
+
 namespace EHRPlatform.Common.Domain.Entities;
 
 /// <summary>
@@ -126,7 +128,7 @@ public class TagAssociation : BaseEntity
     /// <summary>
     /// When this tag was applied to the resource.
     /// </summary>
-    public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
+    public DateTime AppliedAt { get; set; } = DateTimeHelper.UtcNow;
 
     /// <summary>
     /// Who applied the tag (user ID or system identifier).

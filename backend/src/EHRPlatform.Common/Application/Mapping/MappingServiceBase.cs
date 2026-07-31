@@ -1,6 +1,6 @@
 #nullable enable
 
-namespace EHRPlatform.Common.Application.Mapping;
+namespace EHRPlatform.Common.Application.Common.Mapping;
 
 using Mapster;
 using Microsoft.Extensions.Logging;

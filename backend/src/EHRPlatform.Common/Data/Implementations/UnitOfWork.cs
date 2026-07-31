@@ -2,7 +2,9 @@
 
 using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Events;
+using EHRPlatform.Common.Domain.Events;
+using EHRPlatform.Common.Application.Features.EventDriven.Outbox;
+using EHRPlatform.Common.Shared.Utilities.Guards;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -24,7 +26,7 @@ public class UnitOfWork : IUnitOfWork
 
     public UnitOfWork(DbContext context)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _context = ArgumentGuard.NotNull(context, nameof(context));
     }
 
     /// <summary>
@@ -184,35 +186,14 @@ public class UnitOfWork : IUnitOfWork
     {
         try
         {
-            // Collect domain events BEFORE SaveChanges mutates entity state.
-            var domainEvents = _context.ChangeTracker
-                .Entries<BaseEntity>()
-                .SelectMany(e => e.Entity.GetDomainEvents())
-                .ToList();
+            var builder = new OutboxEventBuilder();
 
-            foreach (var entry in _context.ChangeTracker.Entries<BaseEntity>())
-                entry.Entity.ClearDomainEvents();
+            // Collect domain events BEFORE SaveChanges mutates entity state.
+            var domainEvents = builder.CollectAndClearDomainEvents(_context);
 
             // Build outbox rows — stage them in the change tracker so they are
             // saved in the same round-trip and (more importantly) the same txn.
-            var outboxEvents = domainEvents
-                .Select(de => new OutboxEvent
-                {
-                    Id               = Guid.NewGuid(),
-                    EventType        = de.GetType().FullName ?? de.GetType().Name,
-                    EventData        = System.Text.Json.JsonSerializer.Serialize(de,
-                                           de.GetType(),
-                                           new System.Text.Json.JsonSerializerOptions
-                                           {
-                                               WriteIndented = false
-                                           }),
-                    CreatedAt        = DateTime.UtcNow,
-                    IsPublished      = false,
-                    PublishedAt      = null,
-                    PublishAttempts  = 0,
-                    ErrorMessage     = null
-                })
-                .ToList();
+            var outboxEvents = builder.BuildFromDomainEvents(domainEvents);
 
             if (outboxEvents.Count > 0)
                 await _context.Set<OutboxEvent>().AddRangeAsync(outboxEvents, cancellationToken);

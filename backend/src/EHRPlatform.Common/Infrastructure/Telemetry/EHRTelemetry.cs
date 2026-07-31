@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using EHRPlatform.Common.Domain.Constants;
 
 namespace EHRPlatform.Common.Infrastructure.Telemetry;
 
@@ -17,19 +18,12 @@ namespace EHRPlatform.Common.Infrastructure.Telemetry;
 /// </summary>
 public static class EHRTelemetry
 {
-    public const string ServiceName = "ehr-platform";
-    public const string ServiceVersion = "1.0.0";
-
     /// <summary>Shared ActivitySource. Register once at startup via AddEHRTelemetry().</summary>
     public static readonly ActivitySource ActivitySource =
-        new(ServiceName, ServiceVersion);
+        new(TelemetryConstants.ServiceName, TelemetryConstants.ServiceVersion);
 
     // ── Well-known tag names ─────────────────────────────────────────────────
-    public const string TagPatientId     = "ehr.patient.id";
-    public const string TagTenantId      = "ehr.tenant.id";
-    public const string TagCorrelationId = "ehr.correlation.id";
-    public const string TagEventType     = "ehr.event.type";
-    public const string TagSagaId        = "ehr.saga.id";
+    // (Constants from TelemetryConstants)
     public const string TagUserId        = "ehr.user.id";
 
     /// <summary>

@@ -5,9 +5,10 @@ namespace EHRPlatform.Common.Domain.Specifications;
 /// <summary>
 /// Base specification pattern implementation.
 /// Encapsulates query criteria, ordering, includes, and pagination for domain queries.
+/// Single responsibility: Provide specification base implementation only.
 /// </summary>
 /// <typeparam name="T">The entity type this specification applies to.</typeparam>
-public abstract class Specification<T>
+public abstract class Specification<T> : ISpecification<T>
 {
     private readonly List<Expression<Func<T, bool>>> _criteria = new();
     private readonly List<Expression<Func<T, object>>> _includes = new();

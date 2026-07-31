@@ -58,6 +58,7 @@ public static class ErrorCode
     public const string InsuranceClaimFailed = "INSURANCE_CLAIM_FAILED";
     public const string PrescriptionInvalid = "PRESCRIPTION_INVALID";
     public const string DrugInteraction = "DRUG_INTERACTION";
+    public const string SearchError = "SEARCH_ERROR";
 }
 
 /// <summary>

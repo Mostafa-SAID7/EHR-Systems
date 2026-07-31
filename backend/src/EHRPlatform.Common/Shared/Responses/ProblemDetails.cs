@@ -1,5 +1,7 @@
 #nullable enable
 
+using EHRPlatform.Common.Domain.Constants;
+
 namespace EHRPlatform.Common.Shared.Responses;
 
 /// <summary>
@@ -70,9 +72,9 @@ public sealed class ProblemDetails
     {
         return new ProblemDetails
         {
-            Status = 422,
+            Status = HttpStatusMap.UnprocessableEntity,
             Title = "Validation Error",
-            ErrorCode = "VALIDATION_ERROR",
+            ErrorCode = ErrorCode.ValidationError,
             CorrelationId = correlationId,
             Errors = errors,
             Type = "https://example.com/errors/validation"
@@ -86,9 +88,9 @@ public sealed class ProblemDetails
     {
         return new ProblemDetails
         {
-            Status = 404,
+            Status = HttpStatusMap.NotFound,
             Title = "Resource Not Found",
-            ErrorCode = "NOT_FOUND",
+            ErrorCode = ErrorCode.NotFound,
             CorrelationId = correlationId,
             Detail = $"The requested {resourceType} was not found."
         };
@@ -101,9 +103,9 @@ public sealed class ProblemDetails
     {
         return new ProblemDetails
         {
-            Status = 401,
+            Status = HttpStatusMap.Unauthorized,
             Title = "Unauthorized",
-            ErrorCode = "UNAUTHORIZED",
+            ErrorCode = ErrorCode.Unauthorized,
             CorrelationId = correlationId,
             Detail = "Authentication required."
         };
@@ -116,9 +118,9 @@ public sealed class ProblemDetails
     {
         return new ProblemDetails
         {
-            Status = 403,
+            Status = HttpStatusMap.Forbidden,
             Title = "Forbidden",
-            ErrorCode = "FORBIDDEN",
+            ErrorCode = ErrorCode.Forbidden,
             CorrelationId = correlationId,
             Detail = "You do not have permission to access this resource."
         };
@@ -131,9 +133,9 @@ public sealed class ProblemDetails
     {
         return new ProblemDetails
         {
-            Status = 409,
+            Status = HttpStatusMap.Conflict,
             Title = "Conflict",
-            ErrorCode = "CONFLICT",
+            ErrorCode = ErrorCode.Conflict,
             CorrelationId = correlationId,
             Detail = detail
         };
@@ -146,9 +148,9 @@ public sealed class ProblemDetails
     {
         return new ProblemDetails
         {
-            Status = 500,
+            Status = HttpStatusMap.InternalServerError,
             Title = "Internal Server Error",
-            ErrorCode = "INTERNAL_ERROR",
+            ErrorCode = ErrorCode.InternalError,
             CorrelationId = correlationId,
             Detail = detail
         };

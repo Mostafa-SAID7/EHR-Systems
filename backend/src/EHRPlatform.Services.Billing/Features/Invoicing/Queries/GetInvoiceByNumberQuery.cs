@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.Behaviors;
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Application.Common.Behaviors;
+using EHRPlatform.Common.Application.Common.CQRS;
 using EHRPlatform.Services.Billing.Application.Invoicing.Responses;
 
 namespace EHRPlatform.Services.Billing.Features.Invoicing.Queries;

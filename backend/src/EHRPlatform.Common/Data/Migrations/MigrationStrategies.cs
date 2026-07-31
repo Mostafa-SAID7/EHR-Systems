@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using EHRPlatform.Common.Data.Migrations.Configuration;
 
 namespace EHRPlatform.Common.Data.Migrations;
 
@@ -140,85 +141,5 @@ public static class MigrationInitializer
                     $"Failed to migrate {serviceName}: {result.ErrorMessage}");
             }
         }
-    }
-}
-
-/// <summary>
-/// Migration configuration builder for fluent API.
-/// </summary>
-public class MigrationConfiguration
-{
-    private readonly IServiceCollection _services;
-    private string _environment = "development";
-
-    public MigrationConfiguration(IServiceCollection services)
-    {
-        _services = services;
-    }
-
-    /// <summary>
-    /// Set the environment (development/staging/production).
-    /// </summary>
-    public MigrationConfiguration WithEnvironment(string environment)
-    {
-        _environment = environment;
-        return this;
-    }
-
-    /// <summary>
-    /// Register a DbContext for migrations.
-    /// </summary>
-    public MigrationConfiguration AddContext<TContext>() where TContext : DbContext
-    {
-        _services.AddMigrationStrategyByEnvironment<TContext>(_environment);
-        return this;
-    }
-
-    /// <summary>
-    /// Register multiple DbContexts for migrations.
-    /// </summary>
-    public MigrationConfiguration AddContexts(params Type[] contextTypes)
-    {
-        foreach (var contextType in contextTypes)
-        {
-            if (!typeof(DbContext).IsAssignableFrom(contextType))
-            {
-                throw new ArgumentException($"{contextType.Name} is not a DbContext");
-            }
-
-            var method = typeof(MigrationStrategies)
-                .GetMethod("AddMigrationStrategyByEnvironment")!
-                .MakeGenericMethod(contextType);
-
-            method.Invoke(null, new object[] { _services, _environment });
-        }
-
-        return this;
-    }
-
-    /// <summary>
-    /// Build the configuration.
-    /// </summary>
-    public IServiceCollection Build()
-    {
-        return _services;
-    }
-}
-
-/// <summary>
-/// Extension to configure migrations fluently in Program.cs.
-/// Example:
-/// new MigrationConfiguration(services)
-///     .WithEnvironment(app.Environment.EnvironmentName)
-///     .AddContexts(typeof(PatientContext), typeof(BillingContext))
-///     .Build();
-/// </summary>
-public static class MigrationConfigurationExtensions
-{
-    public static MigrationConfiguration ConfigureMigrations(
-        this IServiceCollection services,
-        string environment)
-    {
-        return new MigrationConfiguration(services).WithEnvironment(environment);
     }
 }

@@ -161,15 +161,3 @@ public static class MigrationExtensions
         }
     }
 }
-
-/// <summary>
-/// Migration information snapshot.
-/// </summary>
-public class MigrationInfo
-{
-    public int AppliedCount { get; set; }
-    public int PendingCount { get; set; }
-    public List<string> AppliedMigrations { get; set; } = new();
-    public List<string> PendingMigrations { get; set; } = new();
-    public bool IsUpToDate { get; set; }
-}

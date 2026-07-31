@@ -2,6 +2,9 @@
 
 using EHRPlatform.Common.Domain.Entities;
 using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.Common.Data.Filters;
+using EHRPlatform.Common.Shared.Utilities.Guards;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace EHRPlatform.Common.Data.Implementations;
@@ -152,7 +155,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
         ArgumentGuard.NotNull(entity, nameof(entity));
         
         // Set DeletedAt via property setter
-        entity.DeletedAt = DateTime.UtcNow;
+        entity.DeletedAt = DateTimeHelper.UtcNow;
         
         // Interceptor will set UpdatedAt
         _dbSet.Update(entity);
@@ -185,7 +188,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
         if (entityList.Count == 0)
             return;
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeHelper.UtcNow;
         foreach (var entity in entityList)
         {
             entity.DeletedAt = now;
@@ -256,7 +259,7 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
     {
         return await _dbSet
             .IgnoreQueryFilters() // Include soft-deleted
-            .Where(e => e.DeletedAt != null)
+            .Where(SoftDeleteFilter.GetDeletedPredicate())
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
@@ -271,31 +274,6 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
     {
         ArgumentGuard.NotNull(query, nameof(query));
         return await query(_dbSet.AsQueryable()).AsNoTracking().ToListAsync(cancellationToken);
-    }
-}
-
-/// <summary>
-/// Helper class for argument validation.
-/// Used throughout repository to provide consistent validation.
-/// </summary>
-internal static class ArgumentGuard
-{
-    public static void NotNull<T>(T? argument, string parameterName) where T : class
-    {
-        if (argument == null)
-            throw new ArgumentNullException(parameterName);
-    }
-
-    public static void NotEmpty(Guid argument, string parameterName)
-    {
-        if (argument == Guid.Empty)
-            throw new ArgumentException("Value cannot be empty GUID", parameterName);
-    }
-
-    public static void NotNullOrEmpty(string? argument, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(argument))
-            throw new ArgumentException("Value cannot be null or empty", parameterName);
     }
 }
 

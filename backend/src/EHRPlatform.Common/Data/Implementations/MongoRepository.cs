@@ -3,6 +3,9 @@
 using System.Linq.Expressions;
 using EHRPlatform.Common.Data.Abstractions;
 using EHRPlatform.Common.Data.Models;
+using EHRPlatform.Common.Data.Filters;
+using EHRPlatform.Common.Shared.Utilities.Guards;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
 using MongoDB.Driver;
 
 namespace EHRPlatform.Common.Data.Implementations;
@@ -23,10 +26,6 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
 {
     protected readonly IMongoCollection<TDocument> _collection;
 
-    // Reusable soft-delete filter
-    private static readonly FilterDefinition<TDocument> NotDeleted =
-        Builders<TDocument>.Filter.Eq(d => d.DeletedAt, null);
-
     public MongoRepository(IMongoDatabase database)
     {
         ArgumentNullException.ThrowIfNull(database);
@@ -41,9 +40,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         CancellationToken cancellationToken = default)
     {
         ArgumentGuard.NotNullOrEmpty(id, nameof(id));
-        var filter = Builders<TDocument>.Filter.And(
-            NotDeleted,
-            Builders<TDocument>.Filter.Eq(d => d.Id, id));
+        var filter = NotDeletedFilter.GetById<TDocument>(id);
         return await _collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -51,16 +48,14 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         Guid entityId,
         CancellationToken cancellationToken = default)
     {
-        var filter = Builders<TDocument>.Filter.And(
-            NotDeleted,
-            Builders<TDocument>.Filter.Eq(d => d.EntityId, entityId));
+        var filter = NotDeletedFilter.GetByEntityId<TDocument>(entityId);
         return await _collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<TDocument>> GetAllAsync(
         CancellationToken cancellationToken = default)
     {
-        return await _collection.Find(NotDeleted).ToListAsync(cancellationToken);
+        return await _collection.Find(NotDeletedFilter.Get<TDocument>()).ToListAsync(cancellationToken);
     }
 
     public async Task<(IEnumerable<TDocument> items, long totalCount)> GetPagedAsync(
@@ -72,9 +67,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         if (pageNumber < 1) throw new ArgumentException("Page number must be >= 1", nameof(pageNumber));
         if (pageSize < 1 || pageSize > 100) throw new ArgumentException("Page size must be 1–100", nameof(pageSize));
 
-        var combinedFilter = filter is not null
-            ? Builders<TDocument>.Filter.And(NotDeleted, Builders<TDocument>.Filter.Where(filter))
-            : NotDeleted;
+        var combinedFilter = NotDeletedFilter.CombineWithExpression(filter);
 
         var totalCount = await _collection.CountDocumentsAsync(combinedFilter, null, cancellationToken);
         var items = await _collection.Find(combinedFilter)
@@ -90,9 +83,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        var combinedFilter = Builders<TDocument>.Filter.And(
-            NotDeleted,
-            Builders<TDocument>.Filter.Where(filter));
+        var combinedFilter = NotDeletedFilter.CombineWithExpression(filter);
         return await _collection.Find(combinedFilter).ToListAsync(cancellationToken);
     }
 
@@ -101,9 +92,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        var combinedFilter = Builders<TDocument>.Filter.And(
-            NotDeleted,
-            Builders<TDocument>.Filter.Where(filter));
+        var combinedFilter = NotDeletedFilter.CombineWithExpression(filter);
         return await _collection.Find(combinedFilter).FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -112,8 +101,8 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
     public async Task InsertAsync(TDocument document, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
-        document.CreatedAt = DateTime.UtcNow;
-        document.UpdatedAt = DateTime.UtcNow;
+        document.CreatedAt = DateTimeHelper.UtcNow;
+        document.UpdatedAt = DateTimeHelper.UtcNow;
         await _collection.InsertOneAsync(document, null, cancellationToken);
     }
 
@@ -124,7 +113,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         ArgumentNullException.ThrowIfNull(documents);
         var list = documents.ToList();
         if (list.Count == 0) return;
-        var now = DateTime.UtcNow;
+        var now = DateTimeHelper.UtcNow;
         foreach (var doc in list) { doc.CreatedAt = now; doc.UpdatedAt = now; }
         await _collection.InsertManyAsync(list, null, cancellationToken);
     }
@@ -132,7 +121,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
     public async Task ReplaceAsync(TDocument document, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
-        document.UpdatedAt = DateTime.UtcNow;
+        document.UpdatedAt = DateTimeHelper.UtcNow;
         var filter = Builders<TDocument>.Filter.Eq(d => d.Id, document.Id);
         await _collection.ReplaceOneAsync(filter, document, new ReplaceOptions { IsUpsert = false }, cancellationToken);
     }
@@ -142,8 +131,8 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         ArgumentGuard.NotNullOrEmpty(id, nameof(id));
         var filter = Builders<TDocument>.Filter.Eq(d => d.Id, id);
         var update = Builders<TDocument>.Update
-            .Set(d => d.DeletedAt, DateTime.UtcNow)
-            .Set(d => d.UpdatedAt, DateTime.UtcNow);
+            .Set(d => d.DeletedAt, DateTimeHelper.UtcNow)
+            .Set(d => d.UpdatedAt, DateTimeHelper.UtcNow);
         await _collection.UpdateOneAsync(filter, update, null, cancellationToken);
     }
 
@@ -158,9 +147,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         Expression<Func<TDocument, bool>>? filter = null,
         CancellationToken cancellationToken = default)
     {
-        var combinedFilter = filter is not null
-            ? Builders<TDocument>.Filter.And(NotDeleted, Builders<TDocument>.Filter.Where(filter))
-            : NotDeleted;
+        var combinedFilter = NotDeletedFilter.CombineWithExpression(filter);
         return await _collection.CountDocumentsAsync(combinedFilter, null, cancellationToken);
     }
 
@@ -178,7 +165,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         var filter = Builders<TDocument>.Filter.Eq(d => d.Id, id);
         var update = Builders<TDocument>.Update
             .Set(d => d.DeletedAt, (DateTime?)null)
-            .Set(d => d.UpdatedAt, DateTime.UtcNow);
+            .Set(d => d.UpdatedAt, DateTimeHelper.UtcNow);
         await _collection.UpdateOneAsync(filter, update, null, cancellationToken);
     }
 

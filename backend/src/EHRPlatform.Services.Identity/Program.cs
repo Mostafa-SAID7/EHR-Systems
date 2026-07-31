@@ -1,5 +1,5 @@
 using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Shared.Extensions;
+using EHRPlatform.Common.Application.Common.Extensions;
 using EHRPlatform.Common.Infrastructure.Health;
 using EHRPlatform.Common.Search;
 using EHRPlatform.Common.Infrastructure.Security;

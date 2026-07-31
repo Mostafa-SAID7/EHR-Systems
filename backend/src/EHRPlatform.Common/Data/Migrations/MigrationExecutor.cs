@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using EHRPlatform.Common.Domain.Enums;
 
 namespace EHRPlatform.Common.Data.Migrations;
 
@@ -171,46 +172,4 @@ public class MigrationExecutor
             throw;
         }
     }
-}
-
-/// <summary>
-/// Migration policy - determines when/how migrations are executed.
-/// </summary>
-public enum MigrationPolicy
-{
-    /// <summary>
-    /// Automatically apply all pending migrations on service startup.
-    /// Suitable for Development.
-    /// </summary>
-    AutomaticOnStartup,
-
-    /// <summary>
-    /// Check for pending migrations but don't apply them.
-    /// Migrations must be applied manually via scripts.
-    /// Suitable for Staging/Production.
-    /// </summary>
-    ManualOnly,
-
-    /// <summary>
-    /// Skip all migration checks and execution.
-    /// Database must be pre-migrated before deployment.
-    /// Suitable for highly controlled production environments.
-    /// </summary>
-    Disabled
-}
-
-/// <summary>
-/// Result of migration execution.
-/// </summary>
-public class MigrationResult
-{
-    public string ServiceName { get; set; } = string.Empty;
-    public bool Success { get; set; }
-    public MigrationPolicy Strategy { get; set; }
-    public int MigrationsApplied { get; set; }
-    public int MigrationsPending { get; set; }
-    public string? ErrorMessage { get; set; }
-
-    public override string ToString() =>
-        $"{ServiceName}: {(Success ? "✅ Success" : "❌ Failed")} | Applied: {MigrationsApplied} | Pending: {MigrationsPending}";
 }

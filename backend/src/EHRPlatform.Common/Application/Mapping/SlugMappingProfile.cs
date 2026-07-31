@@ -3,7 +3,7 @@
 using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Common.Slugs;
 
-namespace EHRPlatform.Common.Application.Mapping;
+namespace EHRPlatform.Common.Application.Common.Mapping;
 
 /// <summary>
 /// Helper class for manually applying slug values during DTO mapping.

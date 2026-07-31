@@ -1,5 +1,7 @@
 namespace EHRPlatform.Common.Data.Models;
 
+using EHRPlatform.Common.Shared.Utilities.Helpers;
+
 /// <summary>
 /// Elasticsearch search document for the Patient index.
 /// Kept in Common so multiple services (Patient, Clinical, Gateway) can reference it.
@@ -15,6 +17,6 @@ public sealed class PatientSearchDocument
     public string Gender     { get; set; } = string.Empty;
     public DateTime DateOfBirth { get; set; }
     public string Status     { get; set; } = string.Empty;
-    public DateTime IndexedAt { get; set; } = DateTime.UtcNow;
+    public DateTime IndexedAt { get; set; } = DateTimeHelper.UtcNow;
 }
 

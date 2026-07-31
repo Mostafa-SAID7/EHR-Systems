@@ -1,6 +1,7 @@
 #nullable enable
 
 using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Data.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -62,7 +63,7 @@ public abstract class BaseEntityConfiguration<TEntity> : IEntityTypeConfiguratio
             .HasDatabaseName($"IX_{typeof(TEntity).Name}_UpdatedAt");
 
         // Global query filter for soft deletes
-        builder.HasQueryFilter(x => x.DeletedAt == null);
+        builder.HasQueryFilter(SoftDeleteFilter.GetExpression());
     }
 
     /// <summary>

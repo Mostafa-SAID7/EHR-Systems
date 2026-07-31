@@ -2,6 +2,7 @@
 
 using System.Net;
 using System.Text.Json;
+using EHRPlatform.Common.Domain.Constants;
 using EHRPlatform.Common.Domain.Exceptions;
 using EHRPlatform.Common.Shared.Responses;
 using Microsoft.AspNetCore.Builder;
@@ -103,16 +104,16 @@ public sealed class GlobalExceptionMiddleware
     private static (int StatusCode, string Title, string ErrorCode) MapException(Exception ex) =>
         ex switch
         {
-            ValidationException     => (422, "Validation Error",          "VALIDATION_ERROR"),
-            NotFoundException       => (404, "Resource Not Found",        "NOT_FOUND"),
-            UnauthorizedException   => (401, "Unauthorized",              "UNAUTHORIZED"),
-            ForbiddenException      => (403, "Forbidden",                 "FORBIDDEN"),
-            HIPAAException          => (403, "Access Denied",             "ACCESS_DENIED"),   // Never expose HIPAA detail
-            ConflictException       => (409, "Conflict",                  "CONFLICT"),
-            BusinessRuleException   => (422, "Business Rule Violation",   "BUSINESS_RULE_VIOLATION"),
-            ExternalServiceException=> (502, "Upstream Service Error",    "EXTERNAL_SERVICE_ERROR"),
-            Domain.Exceptions.TimeoutException => (504, "Request Timeout",       "TIMEOUT"),
-            _                       => (500, "An unexpected error occurred.", "INTERNAL_ERROR")
+            ValidationException     => (HttpStatusMap.UnprocessableEntity, "Validation Error",          ErrorCode.ValidationError),
+            NotFoundException       => (HttpStatusMap.NotFound, "Resource Not Found",        ErrorCode.NotFound),
+            UnauthorizedException   => (HttpStatusMap.Unauthorized, "Unauthorized",              ErrorCode.Unauthorized),
+            ForbiddenException      => (HttpStatusMap.Forbidden, "Forbidden",                 ErrorCode.Forbidden),
+            HIPAAException          => (HttpStatusMap.Forbidden, "Access Denied",             ErrorCode.AccessDenied),   // Never expose HIPAA detail
+            ConflictException       => (HttpStatusMap.Conflict, "Conflict",                  ErrorCode.Conflict),
+            BusinessRuleException   => (HttpStatusMap.UnprocessableEntity, "Business Rule Violation",   ErrorCode.BusinessRuleViolation),
+            ExternalServiceException=> (HttpStatusMap.BadGateway, "Upstream Service Error",    ErrorCode.ExternalServiceError),
+            Domain.Exceptions.TimeoutException => (HttpStatusMap.GatewayTimeout, "Request Timeout",       ErrorCode.TimeoutError),
+            _                       => (HttpStatusMap.InternalServerError, "An unexpected error occurred.", ErrorCode.InternalError)
         };
 }
 

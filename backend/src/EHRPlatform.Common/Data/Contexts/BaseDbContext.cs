@@ -1,6 +1,9 @@
 #nullable enable
 
 using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
+using EHRPlatform.Common.Data.Contexts.Interceptors;
+using EHRPlatform.Common.Data.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -129,6 +132,8 @@ public abstract class BaseDbContext : DbContext
     /// Apply soft delete global query filter.
     /// Automatically excludes soft-deleted entities from all queries.
     /// Use .IgnoreQueryFilters() to include deleted entities (admin only).
+    /// 
+    /// Implementation: Uses SoftDeleteFilter for filter expressions.
     /// </summary>
     protected virtual void ApplySoftDeleteFilter(ModelBuilder modelBuilder)
     {
@@ -153,6 +158,10 @@ public abstract class BaseDbContext : DbContext
     /// 1. Set CreatedAt and UpdatedAt timestamps
     /// 2. Record who made changes (via ICurrentUserService)
     /// 3. Encrypt PII fields before saving to database
+    /// 
+    /// Implementations:
+    /// - AuditingInterceptor.cs: Manages CreatedAt/UpdatedAt timestamps
+    /// - SoftDeleteInterceptor.cs: Converts hard deletes to soft deletes
     /// </summary>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -164,109 +173,6 @@ public abstract class BaseDbContext : DbContext
                 new AuditingInterceptor(),
                 new SoftDeleteInterceptor()
             );
-    }
-
-    /// <summary>
-    /// Interceptor for managing timestamps and audit fields.
-    /// Sets CreatedAt on insert, UpdatedAt on update.
-    /// </summary>
-    private sealed class AuditingInterceptor : SaveChangesInterceptor
-    {
-        public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
-            DbContextEventData eventData,
-            InterceptionResult<int> result,
-            CancellationToken cancellationToken = default)
-        {
-            if (eventData.Context is not DbContext context)
-                return await base.SavingChangesAsync(eventData, result, cancellationToken);
-
-            var entries = context.ChangeTracker.Entries<BaseEntity>().ToList();
-
-            var now = DateTime.UtcNow;
-
-            foreach (var entry in entries)
-            {
-                switch (entry.State)
-                {
-                    case EntityState.Added:
-                        entry.Entity.CreatedAt = now;
-                        entry.Entity.UpdatedAt = now;
-                        break;
-
-                    case EntityState.Modified:
-                        entry.Entity.UpdatedAt = now;
-                        break;
-                }
-
-                // Handle AuditableEntity
-                if (entry.Entity is AuditableEntity auditableEntity)
-                {
-                    // CreatedBy and ModifiedBy should be set by application
-                    // (via ICurrentUserService in handler context)
-                    // Only auto-set if not already set
-                    if (auditableEntity.CreatedBy == Guid.Empty && entry.State == EntityState.Added)
-                    {
-                        auditableEntity.CreatedBy = Guid.Empty; // Will be set by app
-                    }
-                }
-            }
-
-            return await base.SavingChangesAsync(eventData, result, cancellationToken);
-        }
-    }
-
-    /// <summary>
-    /// Interceptor for soft delete support.
-    /// Prevents hard deletion — converts DELETE to UPDATE (setting DeletedAt + UpdatedAt).
-    ///
-    /// BUG FIX: Previously, AuditingInterceptor ran first and saw the entity in
-    /// EntityState.Deleted, so it skipped the UpdatedAt assignment. Then this
-    /// interceptor flipped the state to Modified but UpdatedAt was never touched.
-    /// Fix: always stamp UpdatedAt here so soft-delete timestamps are consistent.
-    /// </summary>
-    private sealed class SoftDeleteInterceptor : SaveChangesInterceptor
-    {
-        public override InterceptionResult<int> SavingChanges(
-            DbContextEventData eventData,
-            InterceptionResult<int> result)
-        {
-            if (eventData.Context is not DbContext context)
-                return base.SavingChanges(eventData, result);
-
-            ApplySoftDelete(context);
-            return base.SavingChanges(eventData, result);
-        }
-
-        public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
-            DbContextEventData eventData,
-            InterceptionResult<int> result,
-            CancellationToken cancellationToken = default)
-        {
-            if (eventData.Context is not DbContext context)
-                return await base.SavingChangesAsync(eventData, result, cancellationToken);
-
-            ApplySoftDelete(context);
-            return await base.SavingChangesAsync(eventData, result, cancellationToken);
-        }
-
-        private static void ApplySoftDelete(DbContext context)
-        {
-            var now = DateTime.UtcNow;
-            var deletedEntries = context.ChangeTracker
-                .Entries<BaseEntity>()
-                .Where(e => e.State == EntityState.Deleted)
-                .ToList();
-
-            foreach (var entry in deletedEntries)
-            {
-                // Convert hard delete to soft delete and stamp both timestamps.
-                entry.State = EntityState.Modified;
-                entry.Entity.DeletedAt = now;
-                // Ensure UpdatedAt is always current — AuditingInterceptor runs
-                // first and skips Deleted entries, so we must set it here.
-                entry.Entity.UpdatedAt = now;
-            }
-        }
     }
 }
 

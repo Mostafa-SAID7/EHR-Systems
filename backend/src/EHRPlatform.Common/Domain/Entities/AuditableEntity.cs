@@ -1,10 +1,13 @@
 #nullable enable
 
+using EHRPlatform.Common.Domain.Enums;
+
 namespace EHRPlatform.Common.Domain.Entities;
 
 /// <summary>
 /// Entity with comprehensive audit tracking.
 /// Critical for HIPAA compliance - tracks all changes with who, what, when, why.
+/// Single responsibility: Define auditable entity contract only.
 /// </summary>
 public abstract class AuditableEntity : BaseEntity
 {
@@ -48,41 +51,5 @@ public abstract class AuditableEntity : BaseEntity
     /// Archive date for records moved to cold storage.
     /// </summary>
     public DateTime? ArchivedAt { get; set; }
-}
-
-/// <summary>
-/// Access levels for audit trail visibility.
-/// </summary>
-public enum AuditAccessLevel
-{
-    /// <summary>
-    /// Only the user who made the change can access the audit trail.
-    /// </summary>
-    Personal = 0,
-
-    /// <summary>
-    /// Department/team level access.
-    /// </summary>
-    Department = 1,
-
-    /// <summary>
-    /// Standard organizational access.
-    /// </summary>
-    Standard = 2,
-
-    /// <summary>
-    /// Senior management access.
-    /// </summary>
-    Management = 3,
-
-    /// <summary>
-    /// Compliance officer / Auditor access.
-    /// </summary>
-    Auditor = 4,
-
-    /// <summary>
-    /// System administrator access.
-    /// </summary>
-    Administrator = 5
 }
 

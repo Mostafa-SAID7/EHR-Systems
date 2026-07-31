@@ -1,5 +1,8 @@
 #nullable enable
 
+using EHRPlatform.Common.Domain.Events;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
+
 namespace EHRPlatform.Common.Domain.Entities;
 
 /// <summary>
@@ -11,12 +14,12 @@ public abstract class BaseEntity
     /// <summary>
     /// Unique identifier for the entity.
     /// </summary>
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = GuidHelper.NewGuid();
 
     /// <summary>
     /// When the entity was created.
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTimeHelper.UtcNow;
 
     /// <summary>
     /// User ID who created the entity.
@@ -26,7 +29,7 @@ public abstract class BaseEntity
     /// <summary>
     /// When the entity was last updated.
     /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTimeHelper.UtcNow;
 
     /// <summary>
     /// User ID who last updated the entity.
@@ -78,26 +81,5 @@ public abstract class BaseEntity
     {
         _domainEvents.Clear();
     }
-}
-
-/// <summary>
-/// Marker interface for domain events.
-/// </summary>
-public abstract class DomainEvent
-{
-    /// <summary>
-    /// When the event occurred.
-    /// </summary>
-    public DateTime OccurredAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Unique event ID for tracking.
-    /// </summary>
-    public Guid EventId { get; set; } = Guid.NewGuid();
-
-    /// <summary>
-    /// Correlation ID linking related events.
-    /// </summary>
-    public string? CorrelationId { get; set; }
 }
 

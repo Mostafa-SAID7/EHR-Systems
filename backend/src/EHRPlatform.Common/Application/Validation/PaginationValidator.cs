@@ -3,7 +3,7 @@
 using FluentValidation;
 using EHRPlatform.Common.Shared.DTOs;
 
-namespace EHRPlatform.Common.Application.Validation;
+namespace EHRPlatform.Common.Application.Common.Validators;
 
 /// <summary>
 /// Validator for PaginationRequest to ensure valid page number and size.

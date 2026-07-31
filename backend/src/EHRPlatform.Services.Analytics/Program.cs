@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Shared.Extensions;
+using EHRPlatform.Common.Application.Common.Extensions;
 using EHRPlatform.Common.Infrastructure.Security;
 using EHRPlatform.Common.Data.Migrations;
 using EHRPlatform.Services.Analytics.Data;

@@ -1,6 +1,7 @@
 #nullable enable
 
 using EHRPlatform.Common.Domain.Enums;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
 
 namespace EHRPlatform.Common.Domain.Entities;
 
@@ -13,7 +14,7 @@ public class AuditLog
     /// <summary>
     /// Unique ID for this audit record.
     /// </summary>
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = GuidHelper.NewGuid();
 
     /// <summary>
     /// Tenant ID for multi-tenant systems.
@@ -38,7 +39,7 @@ public class AuditLog
     /// <summary>
     /// When the action occurred.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime Timestamp { get; set; } = DateTimeHelper.UtcNow;
 
     /// <summary>
     /// The action that was performed (Create, Read, Update, Delete, Export).
@@ -151,6 +152,6 @@ public class AuditLog
 
         using var sha = System.Security.Cryptography.SHA256.Create();
         var bytes = System.Text.Encoding.UTF8.GetBytes(payload);
-        return Convert.ToBase64String(sha.ComputeHash(bytes));
+        return ConversionHelper.ToBase64(sha.ComputeHash(bytes));
     }
 }

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.Common.Application.Common.CQRS;
 using EHRPlatform.Common.Shared.DTOs;
 using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;

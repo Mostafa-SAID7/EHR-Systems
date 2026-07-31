@@ -1,8 +1,9 @@
 #nullable enable
 
 using FluentValidation;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
 
-namespace EHRPlatform.Common.Application.Validation;
+namespace EHRPlatform.Common.Application.Common.Validators;
 
 /// <summary>
 /// Common validation rules used across all services.
@@ -152,9 +153,9 @@ public static class CommonValidators
     public static IRuleBuilderOptions<T, DateTime> ValidDateOfBirth<T>(this IRuleBuilder<T, DateTime> rule)
     {
         return rule
-            .LessThan(DateTime.UtcNow)
+            .LessThan(DateTimeHelper.UtcNow)
             .WithMessage("Date of birth must be in the past")
-            .GreaterThan(DateTime.UtcNow.AddYears(-150))
+            .GreaterThan(DateTimeHelper.UtcNow.AddYears(-150))
             .WithMessage("Date of birth is unrealistic (more than 150 years ago)");
     }
 
@@ -164,7 +165,7 @@ public static class CommonValidators
     public static IRuleBuilderOptions<T, DateTime> ValidFutureDate<T>(this IRuleBuilder<T, DateTime> rule)
     {
         return rule
-            .GreaterThan(DateTime.UtcNow)
+            .GreaterThan(DateTimeHelper.UtcNow)
             .WithMessage("Date must be in the future");
     }
 

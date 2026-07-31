@@ -2,6 +2,7 @@
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
 
 namespace EHRPlatform.Common.Data.Models;
 
@@ -18,7 +19,7 @@ public abstract class MongoBaseDocument
     /// </summary>
     [BsonId]
     [BsonRepresentation(BsonType.String)]
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = GuidHelper.NewGuidString();
 
     /// <summary>
     /// Logical entity ID (links back to the relational service domain ID).
@@ -37,14 +38,14 @@ public abstract class MongoBaseDocument
     /// </summary>
     [BsonElement("createdAt")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTimeHelper.UtcNow;
 
     /// <summary>
     /// UTC last-modified timestamp.
     /// </summary>
     [BsonElement("updatedAt")]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTimeHelper.UtcNow;
 
     /// <summary>
     /// Soft-delete timestamp. Null means the document is active.

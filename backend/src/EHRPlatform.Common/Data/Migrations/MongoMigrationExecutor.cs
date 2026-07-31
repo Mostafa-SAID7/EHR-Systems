@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using EHRPlatform.Common.Shared.Utilities.Helpers;
 
 namespace EHRPlatform.Common.Data.Migrations;
 
@@ -53,7 +54,7 @@ public class MongoMigrationExecutor
                 return new MongoMigrationResult(
                     Success: true,
                     MigrationId: migrationId,
-                    ExecutedAt: DateTime.UtcNow,
+                    ExecutedAt: DateTimeHelper.UtcNow,
                     ErrorMessage: "Already applied"
                 );
             }
@@ -65,7 +66,7 @@ public class MongoMigrationExecutor
             var record = new MigrationHistoryDocument
             {
                 MigrationId = migrationId,
-                AppliedAt = DateTime.UtcNow,
+                AppliedAt = DateTimeHelper.UtcNow,
                 ProductVersion = "1.0.0"
             };
 
@@ -76,7 +77,7 @@ public class MongoMigrationExecutor
             return new MongoMigrationResult(
                 Success: true,
                 MigrationId: migrationId,
-                ExecutedAt: DateTime.UtcNow
+                ExecutedAt: DateTimeHelper.UtcNow
             );
         }
         catch (Exception ex)
@@ -85,7 +86,7 @@ public class MongoMigrationExecutor
             return new MongoMigrationResult(
                 Success: false,
                 MigrationId: migrationId,
-                ExecutedAt: DateTime.UtcNow,
+                ExecutedAt: DateTimeHelper.UtcNow,
                 ErrorMessage: ex.Message
             );
         }
@@ -144,16 +145,6 @@ public class MongoMigrationExecutor
 
         return result;
     }
-}
-
-/// <summary>
-/// Migration history document for MongoDB tracking.
-/// </summary>
-public class MigrationHistoryDocument
-{
-    public string MigrationId { get; set; } = string.Empty;
-    public DateTime AppliedAt { get; set; }
-    public string ProductVersion { get; set; } = "1.0.0";
 }
 
 /// <summary>
