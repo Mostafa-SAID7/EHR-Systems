@@ -7,18 +7,22 @@ using EHRPlatform.Services.Notification.Application.Features.Notifications.Comma
 using EHRPlatform.Services.Notification.Application.Features.Notifications.Queries;
 
 /// <summary>
-/// Notification API endpoints
+/// Notifications API - Send and manage notifications
+/// Single Responsibility: Notification operations only
+/// For template management, see NotificationTemplatesController
 /// </summary>
 [ApiController]
 [Route("api/v1/notifications")]
 [Authorize]
-public class NotificationController : ControllerBase
+public class NotificationsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<NotificationsController> _logger;
 
-    public NotificationController(IMediator mediator)
+    public NotificationsController(IMediator mediator, ILogger<NotificationsController> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     /// <summary>
@@ -27,9 +31,12 @@ public class NotificationController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SendNotification([FromBody] SendNotificationCommand command)
+    public async Task<IActionResult> SendNotification(
+        [FromBody] SendNotificationCommand command,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(command);
+        _logger.LogInformation("Sending notification to user {UserId} via {Channel}", command.UserId, command.Channel);
+        var result = await _mediator.Send(command, cancellationToken);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
@@ -38,14 +45,19 @@ public class NotificationController : ControllerBase
     /// </summary>
     [HttpGet("user/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetUserNotifications(Guid userId, [FromQuery] int page = 1, [FromQuery] int size = 20)
+    public async Task<IActionResult> GetUserNotifications(
+        Guid userId,
+        [FromQuery] int page = 1,
+        [FromQuery] int size = 20,
+        CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Getting notifications for user {UserId}, page {Page}", userId, page);
         var result = await _mediator.Send(new GetUserNotificationsQuery
         {
             UserId = userId,
             PageNumber = page,
             PageSize = size
-        });
+        }, cancellationToken);
         return Ok(result);
     }
 
@@ -55,9 +67,12 @@ public class NotificationController : ControllerBase
     [HttpPost("preferences")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SetPreferences([FromBody] SetNotificationPreferenceCommand command)
+    public async Task<IActionResult> SetPreferences(
+        [FromBody] SetNotificationPreferenceCommand command,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(command);
+        _logger.LogInformation("Setting notification preferences for user {UserId}", command.UserId);
+        var result = await _mediator.Send(command, cancellationToken);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
@@ -71,6 +86,7 @@ public class NotificationController : ControllerBase
         Guid notificationId,
         CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Marking notification {NotificationId} as read", notificationId);
         var result = await _mediator.Send(new MarkAsReadCommand(notificationId), cancellationToken);
         return result.Success ? Ok(result) : BadRequest(result);
     }
@@ -85,6 +101,7 @@ public class NotificationController : ControllerBase
         Guid notificationId,
         CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Deleting notification {NotificationId}", notificationId);
         var result = await _mediator.Send(new DeleteNotificationCommand(notificationId), cancellationToken);
         return result.Success ? Ok(result) : BadRequest(result);
     }
@@ -103,42 +120,13 @@ public class NotificationController : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation(
+            "Getting notification history for user {UserId}, type={Type}, from={FromDate} to={ToDate}",
+            userId, type, fromDate, toDate);
         var result = await _mediator.Send(
             new GetNotificationHistoryQuery(userId, type, fromDate, toDate, pageNumber, pageSize),
             cancellationToken);
         return Ok(result);
-    }
-
-    /// <summary>
-    /// Get all notification templates
-    /// </summary>
-    [HttpGet("templates")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetTemplates(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _mediator.Send(
-            new GetNotificationTemplatesQuery(pageNumber, pageSize),
-            cancellationToken);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Create notification template
-    /// </summary>
-    [HttpPost("templates")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateTemplate(
-        [FromBody] CreateNotificationTemplateRequestDto request,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _mediator.Send(
-            new CreateNotificationTemplateCommand(request.TemplateName, request.Subject, request.Body, request.ContentType),
-            cancellationToken);
-        return result.Success ? CreatedAtAction(nameof(GetTemplates), new { id = result.TemplateId }, result) : BadRequest(result);
     }
 
     /// <summary>
@@ -148,6 +136,10 @@ public class NotificationController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult Health()
+    {
+        return Ok(new { status = "healthy", service = "NotificationService", timestamp = DateTime.UtcNow });
+    }
+}
     {
         return Ok(new { status = "healthy", service = "NotificationService", timestamp = DateTime.UtcNow });
     }
