@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>EHRPlatform.Services.Clinical.API</RootNamespace>
+    <AssemblyName>EHRPlatform.Services.Clinical.API</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="EHRPlatform.BuildingBlocks.Common" Version="1.0.0" />
+    <PackageReference Include="EHRPlatform.BuildingBlocks.Security" Version="1.0.0" />
+    <PackageReference Include="EHRPlatform.BuildingBlocks.Observability" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clinical.Application\Clinical.Application.csproj" />
+    <ProjectReference Include="..\Clinical.Domain\Clinical.Domain.csproj" />
+    <ProjectReference Include="..\Clinical.Contracts\Clinical.Contracts.csproj" />
+    <ProjectReference Include="..\Clinical.Persistence\Clinical.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

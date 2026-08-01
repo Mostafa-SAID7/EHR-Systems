@@ -1,278 +1,242 @@
-using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
-using EHRPlatform.Services.Appointment.Domain.Enums;
-using EHRPlatform.BuildingBlocks.Common.Events;
-
-namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
+namespace EHRPlatform.Services.Appointment.Domain.Entities;
 
 /// <summary>
-/// Appointment aggregate root.
-/// Manages scheduling, availability, reminders, and cancellations.
+/// Appointment aggregate root - Scheduling with conflict detection.
+/// Status: Scheduled → Confirmed → InProgress → Completed / Cancelled
+/// Types: Office, Telehealth, Phone
 /// </summary>
-public class Appointment : AuditableEntity
+public class Appointment
 {
-    /// <summary>
-    /// Gets or sets the patient identifier.
-    /// </summary>
+    public Guid Id { get; set; }
     public Guid PatientId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the provider identifier.
-    /// </summary>
     public Guid ProviderId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the scheduled start time.
-    /// </summary>
+    public string AppointmentType { get; set; } = "Office"; // Office, Telehealth, Phone
     public DateTime ScheduledStart { get; set; }
-
-    /// <summary>
-    /// Gets or sets the scheduled end time.
-    /// </summary>
     public DateTime ScheduledEnd { get; set; }
-
-    /// <summary>
-    /// Gets or sets the appointment type (Office, Telehealth, Phone).
-    /// </summary>
-    public AppointmentType AppointmentType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the current appointment status.
-    /// </summary>
-    public AppointmentStatus Status { get; set; } = AppointmentStatus.Scheduled;
-
-    /// <summary>
-    /// Gets or sets the reason for visit.
-    /// </summary>
-    public string? ReasonForVisit { get; set; }
-
-    /// <summary>
-    /// Gets or sets additional notes about the appointment.
-    /// </summary>
+    public string Status { get; set; } = "Scheduled"; // Scheduled, Confirmed, InProgress, Completed, Cancelled, NoShow
+    public string ReasonForVisit { get; set; } = string.Empty;
     public string? Notes { get; set; }
-
-    /// <summary>
-    /// Gets or sets the duration of the appointment in minutes.
-    /// </summary>
-    public int DurationMinutes { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether a reminder has been sent.
-    /// </summary>
-    public bool ReminderSent { get; set; }
-
-    /// <summary>
-    /// Gets or sets the date and time the appointment was confirmed.
-    /// </summary>
-    public DateTime? ConfirmedAt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the date and time the appointment was cancelled.
-    /// </summary>
+    
+    // Check-in tracking
+    public DateTime? CheckedInAt { get; set; }
+    public DateTime? StartedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public DateTime? CancelledAt { get; set; }
+    public string? CancellationReason { get; set; }
+    
+    // Metadata
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
-    /// <summary>
-    /// Gets or sets the cancellation reason.
-    /// </summary>
-    public CancellationReason? CancellationReason { get; set; }
-
-    /// <summary>
-    /// Gets the collection of reminders for this appointment.
-    /// </summary>
+    // Relations
     public ICollection<AppointmentReminder> Reminders { get; } = new List<AppointmentReminder>();
-
-    /// <summary>
-    /// Gets the collection of notes for this appointment.
-    /// </summary>
-    public ICollection<AppointmentNote> AppointmentNotes { get; } = new List<AppointmentNote>();
-
-    /// <summary>
-    /// Gets the collection of reschedule history for this appointment.
-    /// </summary>
+    public ICollection<AppointmentNote> Notes_Collection { get; } = new List<AppointmentNote>();
     public ICollection<RescheduleHistory> RescheduleHistory { get; } = new List<RescheduleHistory>();
 
-    private readonly List<IntegrationEvent> _domainEvents = new();
+    private readonly List<object> _domainEvents = new();
 
-    /// <summary>
-    /// Gets a value indicating whether the appointment is available (scheduled and in the future).
-    /// </summary>
-    public bool IsAvailable => Status == AppointmentStatus.Scheduled && ScheduledStart > DateTime.UtcNow;
+    public int GetDurationMinutes() => (int)(ScheduledEnd - ScheduledStart).TotalMinutes;
 
-    /// <summary>
-    /// Confirms the appointment.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if appointment is not scheduled.</exception>
     public void Confirm()
     {
-        if (Status != AppointmentStatus.Scheduled)
-            throw new InvalidOperationException("Only scheduled appointments can be confirmed");
-
-        Status = AppointmentStatus.Confirmed;
-        ConfirmedAt = DateTime.UtcNow;
+        Status = "Confirmed";
+        UpdatedAt = DateTime.UtcNow;
         RaiseEvent(new AppointmentConfirmedEvent(Id, PatientId, ProviderId, ScheduledStart));
     }
 
-    /// <summary>
-    /// Cancels the appointment.
-    /// </summary>
-    /// <param name="reason">Reason for cancellation.</param>
-    /// <exception cref="InvalidOperationException">Thrown if appointment is completed or already cancelled.</exception>
-    public void Cancel(CancellationReason reason)
-    {
-        if (Status == AppointmentStatus.Completed || Status == AppointmentStatus.Cancelled)
-            throw new InvalidOperationException($"Cannot cancel {Status} appointment");
-
-        Status = AppointmentStatus.Cancelled;
-        CancelledAt = DateTime.UtcNow;
-        CancellationReason = reason;
-        RaiseEvent(new AppointmentCancelledEvent(Id, PatientId, ProviderId, reason.ToString()));
-    }
-
-    /// <summary>
-    /// Marks the appointment as checked in.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if appointment is not confirmed.</exception>
     public void CheckIn()
     {
-        if (Status != AppointmentStatus.Confirmed)
-            throw new InvalidOperationException("Only confirmed appointments can be checked in");
-
-        Status = AppointmentStatus.InProgress;
-        RaiseEvent(new AppointmentCheckedInEvent(Id, PatientId, ProviderId, DateTime.UtcNow));
+        Status = "InProgress";
+        CheckedInAt = DateTime.UtcNow;
+        StartedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new AppointmentCheckedInEvent(Id, PatientId));
     }
 
-    /// <summary>
-    /// Marks the appointment as completed.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if appointment is not checked in.</exception>
     public void Complete()
     {
-        if (Status != AppointmentStatus.InProgress)
-            throw new InvalidOperationException("Only checked-in appointments can be completed");
-
-        Status = AppointmentStatus.Completed;
-        RaiseEvent(new AppointmentCompletedEvent(Id, PatientId, ProviderId, DateTime.UtcNow));
+        Status = "Completed";
+        CompletedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new AppointmentCompletedEvent(Id, PatientId, ProviderId, GetDurationMinutes()));
     }
 
-    /// <summary>
-    /// Adds a reminder for this appointment.
-    /// </summary>
-    /// <param name="reminderTime">The time for the reminder.</param>
-    /// <param name="method">The reminder method.</param>
-    public void AddReminder(DateTime reminderTime, ReminderType method = ReminderType.Email)
+    public void Cancel(string reason)
     {
-        var reminder = new AppointmentReminder
-        {
-            Id = Guid.NewGuid(),
-            AppointmentId = Id,
-            ReminderTime = reminderTime,
-            Method = method,
-            Status = ReminderStatus.Scheduled,
-            IsSent = false
-        };
-        Reminders.Add(reminder);
+        Status = "Cancelled";
+        CancelledAt = DateTime.UtcNow;
+        CancellationReason = reason;
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new AppointmentCancelledEvent(Id, PatientId, reason));
     }
 
-    /// <summary>
-    /// Marks a reminder as sent.
-    /// </summary>
-    /// <param name="reminderId">The reminder identifier.</param>
-    public void MarkReminderSent(Guid reminderId)
+    public void MarkNoShow()
     {
-        var reminder = Reminders.FirstOrDefault(r => r.Id == reminderId);
-        if (reminder != null)
-        {
-            reminder.Status = ReminderStatus.Sent;
-            reminder.IsSent = true;
-        }
+        Status = "NoShow";
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new AppointmentNoShowEvent(Id, PatientId));
     }
 
-    /// <summary>
-    /// Adds a note to this appointment.
-    /// </summary>
-    /// <param name="content">Note content.</param>
-    /// <param name="createdById">User ID of note creator.</param>
-    /// <param name="privacyLevel">Privacy level for the note.</param>
-    /// <param name="category">Note category (optional).</param>
-    public void AddNote(string content, Guid createdById, NotePrivacyLevel privacyLevel = NotePrivacyLevel.InternalOnly, string? category = null)
+    public void Reschedule(DateTime newStart, DateTime newEnd, string reason)
     {
-        if (string.IsNullOrWhiteSpace(content))
-            throw new ArgumentException("Note content cannot be empty");
-
-        var note = new AppointmentNote
-        {
-            Id = Guid.NewGuid(),
-            AppointmentId = Id,
-            CreatedById = createdById,
-            Content = content,
-            PrivacyLevel = privacyLevel,
-            Category = category,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        Notes.Add(note);
-        RaiseEvent(new AppointmentNoteAddedEvent(Id, createdById, content));
-    }
-
-    /// <summary>
-    /// Reschedules this appointment to a new time.
-    /// </summary>
-    /// <param name="newScheduledStart">New start time.</param>
-    /// <param name="durationMinutes">Duration in minutes.</param>
-    /// <param name="initiatedById">User ID who initiated reschedule.</param>
-    /// <param name="initiatedBy">Who initiated (Patient/Provider/Admin).</param>
-    /// <param name="reason">Reason for reschedule (optional).</param>
-    public void Reschedule(DateTime newScheduledStart, int durationMinutes, Guid initiatedById, string initiatedBy = "Provider", string? reason = null)
-    {
-        if (newScheduledStart <= DateTime.UtcNow)
-            throw new InvalidOperationException("New appointment time must be in the future");
-
-        if (Status == AppointmentStatus.Completed || Status == AppointmentStatus.Cancelled)
-            throw new InvalidOperationException($"Cannot reschedule {Status} appointment");
-
-        var oldStart = ScheduledStart;
-        
-        // Record history
         var history = new RescheduleHistory
         {
             Id = Guid.NewGuid(),
             AppointmentId = Id,
-            OriginalScheduledStart = oldStart,
-            NewScheduledStart = newScheduledStart,
-            InitiatedBy = initiatedBy,
-            InitiatedByUserId = initiatedById,
+            OriginalStart = ScheduledStart,
+            OriginalEnd = ScheduledEnd,
+            NewStart = newStart,
+            NewEnd = newEnd,
             Reason = reason,
-            RescheduleDateTime = DateTime.UtcNow
+            RescheduledAt = DateTime.UtcNow
         };
-
         RescheduleHistory.Add(history);
 
-        // Update appointment
-        ScheduledStart = newScheduledStart;
-        ScheduledEnd = newScheduledStart.AddMinutes(durationMinutes);
-        Status = AppointmentStatus.Rescheduled;
-
-        // Raise event
-        RaiseEvent(new AppointmentRescheduledEvent(
-            Id, PatientId, ProviderId, oldStart, newScheduledStart, reason));
+        ScheduledStart = newStart;
+        ScheduledEnd = newEnd;
+        Status = "Scheduled";
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new AppointmentRescheduleEvent(Id, PatientId, newStart, reason));
     }
 
-    /// <summary>
-    /// Raises a domain event.
-    /// </summary>
-    /// <param name="event">The domain event to raise.</param>
-    public void RaiseEvent(IntegrationEvent @event) => _domainEvents.Add(@event);
+    public void AddNote(Guid noteId, Guid createdById, string content, string privacyLevel)
+    {
+        var note = new AppointmentNote
+        {
+            Id = noteId,
+            AppointmentId = Id,
+            CreatedById = createdById,
+            Content = content,
+            PrivacyLevel = privacyLevel,
+            CreatedAt = DateTime.UtcNow
+        };
+        Notes_Collection.Add(note);
+    }
 
-    /// <summary>
-    /// Gets all raised domain events.
-    /// </summary>
-    /// <returns>Read-only list of domain events.</returns>
-    public IReadOnlyList<IntegrationEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
+    public void ScheduleReminder(string method, int minutesBefore)
+    {
+        var reminderTime = ScheduledStart.AddMinutes(-minutesBefore);
+        var reminder = new AppointmentReminder
+        {
+            Id = Guid.NewGuid(),
+            AppointmentId = Id,
+            ReminderMethod = method, // Email, SMS, Push, InApp
+            MinutesBefore = minutesBefore,
+            ScheduledReminderTime = reminderTime,
+            Status = "Scheduled",
+            CreatedAt = DateTime.UtcNow
+        };
+        Reminders.Add(reminder);
+    }
 
-    /// <summary>
-    /// Clears all raised domain events.
-    /// </summary>
+    public void RaiseEvent(object @event) => _domainEvents.Add(@event);
+    public IReadOnlyList<object> GetDomainEvents() => _domainEvents.AsReadOnly();
     public void ClearDomainEvents() => _domainEvents.Clear();
 }
 
+/// <summary>
+/// AppointmentReminder - Multi-channel reminder tracking
+/// </summary>
+public class AppointmentReminder
+{
+    public Guid Id { get; set; }
+    public Guid AppointmentId { get; set; }
+    public string ReminderMethod { get; set; } = string.Empty; // Email, SMS, Push, InApp
+    public int MinutesBefore { get; set; }
+    public DateTime ScheduledReminderTime { get; set; }
+    public string Status { get; set; } = "Scheduled"; // Scheduled, Sent, Failed, Skipped
+    public int RetryCount { get; set; }
+    public DateTime? SentAt { get; set; }
+    public string? FailureReason { get; set; }
+    public DateTime CreatedAt { get; set; }
 
+    public Appointment Appointment { get; set; } = null!;
+}
+
+/// <summary>
+/// AppointmentNote - Notes attached to appointment
+/// </summary>
+public class AppointmentNote
+{
+    public Guid Id { get; set; }
+    public Guid AppointmentId { get; set; }
+    public Guid CreatedById { get; set; }
+    public string Content { get; set; } = string.Empty;
+    public string PrivacyLevel { get; set; } = "Internal"; // Private, Shared, Internal
+    public DateTime CreatedAt { get; set; }
+
+    public Appointment Appointment { get; set; } = null!;
+}
+
+/// <summary>
+/// RescheduleHistory - Track reschedule events
+/// </summary>
+public class RescheduleHistory
+{
+    public Guid Id { get; set; }
+    public Guid AppointmentId { get; set; }
+    public DateTime OriginalStart { get; set; }
+    public DateTime OriginalEnd { get; set; }
+    public DateTime NewStart { get; set; }
+    public DateTime NewEnd { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public DateTime RescheduledAt { get; set; }
+
+    public Appointment Appointment { get; set; } = null!;
+}
+
+/// <summary>
+/// ProviderAvailability - Working hours and breaks
+/// </summary>
+public class ProviderAvailability
+{
+    public Guid Id { get; set; }
+    public Guid ProviderId { get; set; }
+    public DayOfWeek DayOfWeek { get; set; }
+    public TimeSpan StartTime { get; set; }
+    public TimeSpan EndTime { get; set; }
+    public int SlotDurationMinutes { get; set; } = 30;
+    public bool IsAvailable { get; set; } = true;
+    public DateTime CreatedAt { get; set; }
+}
+
+// Domain Events
+public record AppointmentScheduledEvent(Guid AppointmentId, Guid PatientId, Guid ProviderId, DateTime ScheduledStart)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record AppointmentConfirmedEvent(Guid AppointmentId, Guid PatientId, Guid ProviderId, DateTime ScheduledStart)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record AppointmentCheckedInEvent(Guid AppointmentId, Guid PatientId)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record AppointmentCompletedEvent(Guid AppointmentId, Guid PatientId, Guid ProviderId, int DurationMinutes)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record AppointmentCancelledEvent(Guid AppointmentId, Guid PatientId, string Reason)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record AppointmentNoShowEvent(Guid AppointmentId, Guid PatientId)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record AppointmentRescheduleEvent(Guid AppointmentId, Guid PatientId, DateTime NewStart, string Reason)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record ReminderScheduledEvent(Guid ReminderId, Guid AppointmentId, string Method, DateTime ReminderTime)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}

@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointment.API", "src\Appointment.API\Appointment.API.csproj", "{K1L2M3N4-O5P6-5A8B-CDE0-E1F2G3H4I5J6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointment.Application", "src\Appointment.Application\Appointment.Application.csproj", "{L2M3N4O5-P6Q7-5B9C-DEF1-F2G3H4I5J6K7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointment.Domain", "src\Appointment.Domain\Appointment.Domain.csproj", "{M3N4O5P6-Q7R8-5C0D-EG02-G3H4I5J6K7L8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Appointment.Persistence", "src\Appointment.Persistence\Appointment.Persistence.csproj", "{N4O5P6Q7-R8S9-5D1E-FH03-H4I5J6K7L8M9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{K1L2M3N4-O5P6-5A8B-CDE0-E1F2G3H4I5J6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{K1L2M3N4-O5P6-5A8B-CDE0-E1F2G3H4I5J6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{K1L2M3N4-O5P6-5A8B-CDE0-E1F2G3H4I5J6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{K1L2M3N4-O5P6-5A8B-CDE0-E1F2G3H4I5J6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{L2M3N4O5-P6Q7-5B9C-DEF1-F2G3H4I5J6K7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{L2M3N4O5-P6Q7-5B9C-DEF1-F2G3H4I5J6K7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{L2M3N4O5-P6Q7-5B9C-DEF1-F2G3H4I5J6K7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{L2M3N4O5-P6Q7-5B9C-DEF1-F2G3H4I5J6K7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{M3N4O5P6-Q7R8-5C0D-EG02-G3H4I5J6K7L8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{M3N4O5P6-Q7R8-5C0D-EG02-G3H4I5J6K7L8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{M3N4O5P6-Q7R8-5C0D-EG02-G3H4I5J6K7L8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{M3N4O5P6-Q7R8-5C0D-EG02-G3H4I5J6K7L8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{N4O5P6Q7-R8S9-5D1E-FH03-H4I5J6K7L8M9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{N4O5P6Q7-R8S9-5D1E-FH03-H4I5J6K7L8M9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{N4O5P6Q7-R8S9-5D1E-FH03-H4I5J6K7L8M9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{N4O5P6Q7-R8S9-5D1E-FH03-H4I5J6K7L8M9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

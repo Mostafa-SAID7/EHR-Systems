@@ -1,0 +1,405 @@
+---
+# OAuth2 / OpenID Connect Configuration for EHR Platform
+# Optional future authentication provider integration
+
+oauth2:
+  enabled: false  # Set to true to enable OAuth2
+  
+  # Provider selection: okta, auth0, google, microsoft, custom
+  provider: okta
+  
+  # Okta Configuration Example
+  okta:
+    domain: ${OKTA_DOMAIN}  # e.g., dev-12345678.okta.com
+    client_id: ${OKTA_CLIENT_ID}
+    client_secret: ${OKTA_CLIENT_SECRET}
+    authorization_server_id: "default"
+    
+    # Endpoints
+    endpoints:
+      authorization: "https://${OKTA_DOMAIN}/oauth2/v1/authorize"
+      token: "https://${OKTA_DOMAIN}/oauth2/v1/token"
+      userinfo: "https://${OKTA_DOMAIN}/oauth2/v1/userinfo"
+      revocation: "https://${OKTA_DOMAIN}/oauth2/v1/revoke"
+      keys: "https://${OKTA_DOMAIN}/oauth2/v1/keys"
+    
+    # Scopes
+    scopes:
+      - openid
+      - profile
+      - email
+      - phone
+      - address
+      - groups
+    
+    # Response types
+    response_type: "code"
+    response_mode: "form_post"
+    
+    # Additional parameters
+    state_parameter: true
+    nonce_parameter: true
+    
+    # Multi-factor authentication
+    mfa:
+      enabled: true
+      required: true
+      methods:
+        - okta_verify
+        - google_authenticator
+        - duo
+        - sms
+      enrollment_required: true
+  
+  # Auth0 Configuration Example
+  auth0:
+    domain: ${AUTH0_DOMAIN}  # e.g., ehr-platform.auth0.com
+    client_id: ${AUTH0_CLIENT_ID}
+    client_secret: ${AUTH0_CLIENT_SECRET}
+    
+    endpoints:
+      authorization: "https://${AUTH0_DOMAIN}/authorize"
+      token: "https://${AUTH0_DOMAIN}/oauth/token"
+      userinfo: "https://${AUTH0_DOMAIN}/userinfo"
+      revocation: "https://${AUTH0_DOMAIN}/oauth/revoke"
+      keys: "https://${AUTH0_DOMAIN}/.well-known/jwks.json"
+    
+    scopes:
+      - openid
+      - profile
+      - email
+      - offline_access
+      - https://ehr-platform/patient:read
+      - https://ehr-platform/clinical:read
+  
+  # Microsoft Azure AD B2C Configuration
+  azure_ad:
+    tenant_id: ${AZURE_AD_TENANT_ID}
+    client_id: ${AZURE_AD_CLIENT_ID}
+    client_secret: ${AZURE_AD_CLIENT_SECRET}
+    
+    endpoints:
+      authorization: "https://${AZURE_AD_TENANT_ID}.b2clogin.com/${AZURE_AD_TENANT_ID}.onmicrosoft.com/oauth2/v2.0/authorize"
+      token: "https://${AZURE_AD_TENANT_ID}.b2clogin.com/${AZURE_AD_TENANT_ID}.onmicrosoft.com/oauth2/v2.0/token"
+      userinfo: "https://graph.microsoft.com/v1.0/me"
+    
+    policies:
+      signin_signup: "B2C_1_susi"
+      password_reset: "B2C_1_password_reset"
+    
+    scopes:
+      - openid
+      - profile
+      - email
+  
+  # Google OAuth2 Configuration
+  google:
+    client_id: ${GOOGLE_CLIENT_ID}
+    client_secret: ${GOOGLE_CLIENT_SECRET}
+    
+    endpoints:
+      authorization: "https://accounts.google.com/o/oauth2/v2/auth"
+      token: "https://oauth2.googleapis.com/token"
+      userinfo: "https://openidconnect.googleapis.com/v1/userinfo"
+      keys: "https://www.googleapis.com/oauth2/v3/certs"
+    
+    scopes:
+      - openid
+      - profile
+      - email
+    
+    # Additional parameters
+    access_type: "offline"
+    prompt: "consent"
+
+# OAuth2 Client Configuration
+clients:
+  # Web Application Client
+  web_app:
+    client_id: ${WEB_APP_CLIENT_ID}
+    client_secret: ${WEB_APP_CLIENT_SECRET}
+    grant_types:
+      - authorization_code
+      - refresh_token
+    redirect_uris:
+      - "https://ehr-platform.com/callback"
+      - "https://ehr-platform.com/auth/callback"
+    scopes:
+      - patient:read
+      - patient:write
+      - appointment:read
+      - clinical:read
+    token_endpoint_auth_method: "client_secret_basic"
+    access_token_lifetime: 3600
+    refresh_token_lifetime: 604800
+  
+  # Mobile App Client
+  mobile_app:
+    client_id: ${MOBILE_APP_CLIENT_ID}
+    client_secret: ${MOBILE_APP_CLIENT_SECRET}
+    grant_types:
+      - authorization_code
+      - refresh_token
+    redirect_uris:
+      - "com.ehr-platform://callback"
+      - "mobile://callback"
+    scopes:
+      - patient:read
+      - appointment:read
+    token_endpoint_auth_method: "client_secret_post"
+    access_token_lifetime: 1800
+    refresh_token_lifetime: 2592000
+  
+  # Backend Service Client
+  backend_service:
+    client_id: ${BACKEND_SERVICE_CLIENT_ID}
+    client_secret: ${BACKEND_SERVICE_CLIENT_SECRET}
+    grant_types:
+      - client_credentials
+    scopes:
+      - "*"  # All scopes
+    token_endpoint_auth_method: "client_secret_basic"
+    access_token_lifetime: 7200
+
+# OpenID Connect Configuration
+openid_connect:
+  enabled: true
+  
+  # ID Token configuration
+  id_token:
+    algorithm: "RS256"
+    lifetime: 3600
+    include_claims:
+      - sub
+      - iss
+      - aud
+      - exp
+      - iat
+      - auth_time
+      - acr
+      - email
+      - email_verified
+      - name
+      - given_name
+      - family_name
+      - phone_number
+      - picture
+  
+  # Access Token configuration
+  access_token:
+    type: "Bearer"
+    algorithm: "RS256"
+    lifetime: 3600
+    include_claims:
+      - sub
+      - iss
+      - aud
+      - exp
+      - iat
+      - scope
+      - client_id
+  
+  # UserInfo endpoint
+  userinfo:
+    enabled: true
+    scopes:
+      - profile
+      - email
+      - phone
+      - address
+    return_claims:
+      - sub
+      - name
+      - given_name
+      - family_name
+      - email
+      - email_verified
+      - phone_number
+      - picture
+
+# Consent & Permissions Management
+consent:
+  enabled: true
+  
+  # Scope approval
+  scope_approval:
+    required: true
+    remember_approval: true
+    approval_lifetime_days: 365
+  
+  # Predefined scopes
+  scopes:
+    patient:read:
+      description: "Read patient information"
+      required: false
+    
+    patient:write:
+      description: "Modify patient information"
+      required: false
+    
+    appointment:read:
+      description: "View appointments"
+      required: false
+    
+    appointment:write:
+      description: "Schedule/cancel appointments"
+      required: false
+    
+    clinical:read:
+      description: "View clinical records"
+      required: false
+    
+    clinical:write:
+      description: "Create/modify clinical notes"
+      required: false
+    
+    admin:
+      description: "System administration"
+      required: false
+
+# PKCE (Proof Key for Code Exchange) - for public clients
+pkce:
+  enabled: true
+  required: true
+  
+  # Code challenge method
+  code_challenge_method: "S256"  # or "plain"
+  
+  # Supported clients (public clients)
+  public_clients:
+    - mobile_app
+    - web_app
+
+# Token Management
+tokens:
+  # Token endpoint
+  endpoint: "/oauth2/token"
+  
+  # Token format
+  format: "JWT"
+  
+  # Token signing
+  signing:
+    algorithm: "RS256"
+    key_id: ${TOKEN_SIGNING_KID}
+    public_key: ${TOKEN_SIGNING_PUBLIC_KEY}
+    private_key: ${TOKEN_SIGNING_PRIVATE_KEY}
+  
+  # Token validation
+  validation:
+    validate_issuer: true
+    validate_audience: true
+    validate_lifetime: true
+    validate_signature: true
+  
+  # Token revocation
+  revocation:
+    enabled: true
+    endpoint: "/oauth2/revoke"
+    supported_token_types:
+      - access_token
+      - refresh_token
+
+# Security & Risk Management
+security:
+  # SSL/TLS
+  ssl_required: true
+  
+  # Introspection endpoint
+  introspection:
+    enabled: true
+    endpoint: "/oauth2/introspect"
+    auth_method: "client_secret_basic"
+  
+  # Device flow (for limited-input devices)
+  device_flow:
+    enabled: false
+    endpoint: "/oauth2/device_authorization"
+    verification_uri: "https://ehr-platform.com/device"
+    expires_in: 1800
+  
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    token_endpoint_requests_per_minute: 100
+    authorization_endpoint_requests_per_minute: 1000
+  
+  # Security headers
+  security_headers:
+    X-Content-Type-Options: "nosniff"
+    X-Frame-Options: "DENY"
+    X-XSS-Protection: "1; mode=block"
+    Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+    Content-Security-Policy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+
+# Session Management
+sessions:
+  # Session timeout
+  session_timeout: 1800  # 30 minutes
+  
+  # Remember me
+  remember_me:
+    enabled: true
+    max_lifetime_days: 30
+  
+  # Concurrent sessions
+  max_concurrent_sessions: 3
+  
+  # Session storage
+  storage: redis  # or cookie, database
+
+# Audit & Compliance
+audit:
+  enabled: true
+  
+  # Events to log
+  log_events:
+    - authorization_request_received
+    - authorization_request_denied
+    - token_issued
+    - token_refreshed
+    - token_revoked
+    - introspection_request
+    - consent_given
+    - consent_revoked
+  
+  # Log retention
+  log_retention_days: 2555  # 7 years
+  
+  # HIPAA compliance
+  hipaa_compliance: true
+  log_sensitive_data: false
+
+# Error Handling
+error_handling:
+  # Error codes
+  error_codes:
+    invalid_request: "The request is missing a required parameter"
+    unauthorized_client: "The client is not authorized"
+    access_denied: "The resource owner denied the request"
+    unsupported_response_type: "The response type is not supported"
+    invalid_scope: "The requested scope is invalid"
+    server_error: "The server encountered an error"
+    temporarily_unavailable: "The server is temporarily unavailable"
+  
+  # Error handling strategy
+  display_error_details: false  # Hide details in production
+  error_response_format: "json"
+
+# Logging & Monitoring
+logging:
+  enabled: true
+  log_level: "INFO"  # DEBUG, INFO, WARN, ERROR
+  log_format: "json"
+  
+  # Fields to log
+  log_fields:
+    - timestamp
+    - event_type
+    - client_id
+    - user_id
+    - request_uri
+    - response_status
+    - duration_ms
+    - error_code
+    - error_message

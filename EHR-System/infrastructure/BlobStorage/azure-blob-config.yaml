@@ -1,0 +1,362 @@
+---
+# Azure Blob Storage Configuration for FileStorage Service
+# Alternative to S3 - for organizations using Azure cloud
+
+azure_blob:
+  # Connection settings
+  storage_account_name: ${AZURE_STORAGE_ACCOUNT}
+  storage_account_key: ${AZURE_STORAGE_KEY}
+  connection_string: ${AZURE_STORAGE_CONNECTION_STRING}
+  
+  # Container configuration
+  container_names:
+    clinical_documents: "clinical-documents"
+    patient_records: "patient-records"
+    lab_results: "lab-results"
+    imaging: "imaging"
+    prescriptions: "prescriptions"
+    temp_uploads: "temp-uploads"
+    audit_logs: "audit-logs"
+  
+  # Access level
+  access_level: private  # blob, container, or private
+  
+  # Network & Security
+  network:
+    endpoint: "https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net"
+    connection_timeout: 30
+    read_timeout: 30
+    max_connections: 100
+
+# Container policies
+containers:
+  # Clinical Documents Container
+  clinical_documents:
+    public_access: None
+    lease_status: Unlocked
+    lease_state: Available
+    
+    metadata:
+      purpose: "Clinical document storage"
+      classification: "Confidential"
+      retention_policy: "HIPAA"
+    
+    # Access policy
+    signed_identifiers:
+      - name: clinical_read_only
+        permissions: rad
+        start_time: 2025-01-01T00:00:00Z
+        expiry_time: 2026-01-01T00:00:00Z
+    
+    # Lifecycle management
+    lifecycle:
+      enabled: true
+      rules:
+        - name: archive_after_90_days
+          type: Blob
+          prefix_match:
+            - ""
+          blob_types:
+            - blockBlob
+            - appendBlob
+          tier_to_cool: 90
+          tier_to_archive: 365
+          delete: 2555  # 7 years
+  
+  # Patient Records Container
+  patient_records:
+    public_access: None
+    
+    metadata:
+      purpose: "Patient master data records"
+      classification: "Confidential"
+    
+    lifecycle:
+      enabled: true
+      rules:
+        - name: archive_old_records
+          type: Blob
+          tier_to_cool: 180
+          tier_to_archive: 730
+          delete: 2555
+  
+  # Lab Results Container
+  lab_results:
+    public_access: None
+    
+    metadata:
+      purpose: "Laboratory test results"
+      classification: "Confidential"
+    
+    lifecycle:
+      enabled: true
+      rules:
+        - name: archive_lab_data
+          type: Blob
+          tier_to_cool: 90
+          tier_to_archive: 365
+          delete: 2555
+  
+  # Medical Imaging Container
+  imaging:
+    public_access: None
+    
+    metadata:
+      purpose: "Medical imaging files (DICOM, X-ray, CT, MRI)"
+      classification: "Confidential"
+      max_size_gb: 500
+    
+    lifecycle:
+      enabled: true
+      rules:
+        - name: compress_old_imaging
+          type: Blob
+          tier_to_cool: 60
+          tier_to_archive: 180
+          delete: 2555
+  
+  # Prescriptions Container
+  prescriptions:
+    public_access: None
+    
+    metadata:
+      purpose: "Prescription documents"
+      classification: "Confidential"
+    
+    lifecycle:
+      enabled: true
+      rules:
+        - name: archive_prescriptions
+          type: Blob
+          tier_to_cool: 120
+          tier_to_archive: 365
+          delete: 2555
+  
+  # Temporary Uploads
+  temp_uploads:
+    public_access: None
+    
+    metadata:
+      purpose: "Temporary file upload staging"
+      retention: "Short-term"
+    
+    lifecycle:
+      enabled: true
+      rules:
+        - name: cleanup_temp_files
+          type: Blob
+          delete: 1  # Delete after 1 day
+  
+  # Audit Logs
+  audit_logs:
+    public_access: None
+    
+    metadata:
+      purpose: "Audit trail and compliance logs"
+      classification: "Audit"
+      retention_policy: "7 years"
+    
+    lifecycle:
+      enabled: true
+      rules:
+        - name: archive_audit_logs
+          type: Blob
+          tier_to_cool: 90
+          tier_to_archive: 365
+          # Never delete audit logs
+
+# CORS Configuration
+cors:
+  enabled: true
+  allowed_origins:
+    - "https://ehr-platform.com"
+    - "https://www.ehr-platform.com"
+    - "https://admin.ehr-platform.com"
+  allowed_methods:
+    - GET
+    - PUT
+    - POST
+    - DELETE
+    - OPTIONS
+  allowed_headers:
+    - "*"
+  exposed_headers:
+    - "x-ms-version"
+    - "x-ms-blob-type"
+    - "x-ms-request-id"
+  max_age_seconds: 3600
+
+# Shared Access Signature (SAS) Policy
+sas_policy:
+  enabled: true
+  default_expiry_hours: 24
+  
+  # Service SAS credentials
+  container_sas:
+    permissions: "racwd"  # Read, Add, Create, Write, Delete
+    expiry: "PT24H"  # 24 hours
+    
+  # Account SAS
+  account_sas:
+    permissions: "racwd"
+    services: "b"  # Blob service only
+    resource_types: "co"  # Container, Object
+    expiry: "PT24H"
+
+# Blob properties & versioning
+blob_configuration:
+  # Versioning
+  versioning:
+    enabled: true
+    retention_days: 90
+  
+  # Soft delete
+  soft_delete:
+    enabled: true
+    retention_days: 7
+    containers_included: true
+  
+  # Immutable storage (WORM - Write Once, Read Many)
+  immutable_storage:
+    enabled: true
+    policy_mode: "Unlocked"  # or Locked for compliance
+    retention_days: 2555  # 7 years for HIPAA
+  
+  # Change feed
+  change_feed:
+    enabled: true
+    retention_days: 90
+
+# Encryption & Security
+encryption:
+  # Service-side encryption
+  sse:
+    enabled: true
+    algorithm: "AES-256"
+  
+  # Customer-managed keys (CMK)
+  cmk:
+    enabled: true
+    key_vault_uri: ${AZURE_KEY_VAULT_URI}
+    key_name: ${AZURE_CMK_KEY_NAME}
+    key_version: ${AZURE_CMK_KEY_VERSION}
+  
+  # SSL/TLS
+  https_only: true
+  tls_version: "TLS1.2"
+
+# Monitoring & Diagnostics
+monitoring:
+  enabled: true
+  
+  # Azure Monitor Integration
+  diagnostics:
+    enabled: true
+    log_retention_days: 90
+    
+    logs:
+      - StorageRead
+      - StorageWrite
+      - StorageDelete
+    
+    metrics:
+      - Availability
+      - Egress
+      - Ingress
+      - SuccessServerLatency
+      - SuccessE2ELatency
+      - ClientOtherError
+      - ClientAuthorizationError
+      - ClientTimeoutError
+      - ServerOtherError
+  
+  # Alerts
+  alerts:
+    - name: high_blob_count
+      metric: BlobCount
+      threshold: 1000000
+      condition: ">"
+    
+    - name: high_storage_used
+      metric: UsedCapacity
+      threshold: 1099511627776  # 1 TB in bytes
+      condition: ">"
+    
+    - name: access_failures
+      metric: Authorization
+      threshold: 100
+      condition: ">"
+      time_window: "PT5M"
+
+# Backup & Recovery
+backup:
+  enabled: true
+  
+  # Geo-redundant storage
+  replication:
+    enabled: true
+    replication_type: "RA-GRS"  # Read-access geo-redundant storage
+    failover_priority:
+      - primary_region: "${AZURE_PRIMARY_REGION}"
+      - secondary_region: "${AZURE_SECONDARY_REGION}"
+  
+  # Snapshot policy
+  snapshots:
+    enabled: true
+    snapshot_schedule: "0 2 * * *"  # 2 AM daily
+    retention_days: 30
+
+# Access Control (Azure RBAC)
+access_control:
+  roles:
+    storage_blob_data_owner:
+      members:
+        - clinicians_group
+        - administrators_group
+    
+    storage_blob_data_contributor:
+      members:
+        - patient_service
+        - filestorage_service
+    
+    storage_blob_data_reader:
+      members:
+        - audit_service
+        - analytics_service
+
+# Networking & Private Link
+networking:
+  # Virtual Network Service Endpoint
+  service_endpoint_enabled: true
+  allowed_subnets:
+    - /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/ehr-services
+    - /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/ehr-gateways
+  
+  # Private Link Endpoint
+  private_endpoint:
+    enabled: true
+    subnet_id: /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/ehr-private
+    private_dns_zone: "privatelink.blob.core.windows.net"
+  
+  # Firewall rules
+  firewall:
+    enabled: true
+    default_action: "Deny"
+    allow_trusted_microsoft_services: true
+    ip_rules:
+      - "203.0.113.0/24"  # Example IP range
+    virtual_network_rules:
+      - /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/ehr-services
+
+# Cost Management
+cost_optimization:
+  # Tiering strategy
+  hot_tier_threshold_days: 90  # Move to cool after 90 days
+  cool_tier_threshold_days: 365  # Move to archive after 365 days
+  
+  # Size optimization
+  compression: enabled
+  deduplication: enabled
+  
+  # Reserved capacity
+  reserved_capacity_gb: 1000

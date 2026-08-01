@@ -1,0 +1,116 @@
+---
+# Redis Configuration for EHR Platform
+# Used for distributed caching and session storage
+
+redis:
+  # Connection settings
+  host: redis
+  port: 6379
+  database: 0
+  password: ${REDIS_PASSWORD}
+  ssl: false
+  
+  # Connection pooling
+  connection_pool:
+    max_connections: 100
+    min_idle_connections: 10
+    timeout_ms: 5000
+
+# Cache policies per service
+caching:
+  # Patient data cache
+  patient:
+    key_prefix: "patient:"
+    ttl_minutes: 30
+    max_size: 10000
+    invalidation: on_update
+  
+  # Appointment cache
+  appointment:
+    key_prefix: "appointment:"
+    ttl_minutes: 15
+    max_size: 5000
+    invalidation: on_update
+  
+  # Identity/Session cache
+  session:
+    key_prefix: "session:"
+    ttl_minutes: 60
+    max_size: 50000
+    invalidation: on_logout
+  
+  # Medical codes/Terminology cache
+  terminology:
+    key_prefix: "terminology:"
+    ttl_minutes: 1440  # 24 hours
+    max_size: 100000
+    invalidation: manual
+  
+  # Clinical records cache
+  clinical:
+    key_prefix: "clinical:"
+    ttl_minutes: 60
+    max_size: 50000
+    invalidation: on_update
+  
+  # User permissions cache
+  permissions:
+    key_prefix: "permissions:"
+    ttl_minutes: 30
+    max_size: 10000
+    invalidation: on_change
+
+# Eviction policies
+eviction:
+  policy: "allkeys-lru"  # Least Recently Used
+  samples: 5
+  
+# Persistence
+persistence:
+  enabled: true
+  # RDB (Point-in-time snapshots)
+  rdb:
+    save_rules:
+      - "900 1"    # Save after 900 sec if 1 key changed
+      - "300 10"   # Save after 300 sec if 10 keys changed
+      - "60 10000" # Save after 60 sec if 10000 keys changed
+  
+  # AOF (Append-Only File)
+  aof:
+    enabled: true
+    fsync_policy: "everysec"  # Fsync every second
+
+# Replication (for HA)
+replication:
+  enabled: true
+  role: master  # or slave
+  master_host: redis-master
+  master_port: 6379
+  sync_timeout_seconds: 5
+
+# Clustering (for scalability)
+cluster:
+  enabled: false  # Set to true for production
+  nodes:
+    - redis-node-1:6379
+    - redis-node-2:6379
+    - redis-node-3:6379
+  cluster_timeout: 5000
+
+# Monitoring
+monitoring:
+  enabled: true
+  prometheus_exporter_enabled: true
+  metrics_port: 9121
+  
+  # Alerts
+  alerts:
+    - memory_usage > 80%
+    - evictions_per_second > 100
+    - rejected_connections > 0
+    - slow_queries > 10
+
+# Keyspace notifications (for pub/sub)
+keyspace_notifications:
+  enabled: true
+  events: "AKE"  # All events (A), Keyspace (K), Expiration (E)

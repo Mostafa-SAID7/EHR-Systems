@@ -1,24 +1,26 @@
-using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
-using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
-
 namespace EHRPlatform.Services.Patient.Application.Features.Patients.Commands;
 
+using MediatR;
+
 /// <summary>
-/// Update patient command.
-/// Updates an existing patient's profile information.
+/// Command to update patient information.
 /// </summary>
-public record UpdatePatientCommand : ICommand<PatientResponseDto>
+public class UpdatePatientCommand : IRequest<UpdatePatientResponse>
 {
-    public Guid PatientId { get; init; }
-    public string FirstName { get; init; } = string.Empty;
-    public string LastName { get; init; } = string.Empty;
-    public string Email { get; init; } = string.Empty;
-    public string PhoneNumber { get; init; } = string.Empty;
-    public string? Gender { get; init; }
-    public string BloodType { get; init; } = string.Empty;
-    public string? EmergencyContact { get; init; }
-    public string? EmergencyPhone { get; init; }
+    public Guid PatientId { get; set; }
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+    public string? Street { get; set; }
+    public string? City { get; set; }
+    public string? State { get; set; }
+    public string? ZipCode { get; set; }
+    public string? Country { get; set; }
+    public string? PreferredContactMethod { get; set; }
+    public string? BloodType { get; set; }
 }
 
-
-
+public class UpdatePatientResponse
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+}

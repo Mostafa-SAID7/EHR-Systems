@@ -4,12 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
+    <RootNamespace>EHRPlatform.Services.Patient.Domain</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\EHR-System\building-blocks\SharedKernel\src\SharedKernel.csproj" />
-    <ProjectReference Include="..\..\..\..\EHR-System\building-blocks\EventBus\src\EventBus.csproj" />
-  </ItemGroup>
 
 </Project>

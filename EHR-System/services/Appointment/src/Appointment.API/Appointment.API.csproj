@@ -1,20 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>EHRPlatform.Services.Appointment.API</RootNamespace>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="MediatR" Version="12.0.0" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Appointment.Application\Appointment.Application.csproj" />
     <ProjectReference Include="..\Appointment.Persistence\Appointment.Persistence.csproj" />
-    <ProjectReference Include="..\Appointment.Infrastructure\Appointment.Infrastructure.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\EHR-System\building-blocks\EventBus\src\EventBus.csproj" />
-    <ProjectReference Include="..\..\..\..\EHR-System\building-blocks\Observability\src\Observability.csproj" />
-    <ProjectReference Include="..\..\..\..\EHR-System\building-blocks\Common\src\Common.csproj" />
-  </ItemGroup>
+
 </Project>

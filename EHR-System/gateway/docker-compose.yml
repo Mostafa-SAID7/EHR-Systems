@@ -1,0 +1,469 @@
+version: '3.8'
+
+services:
+  # ==================== INFRASTRUCTURE ====================
+  
+  postgres:
+    image: postgres:16-alpine
+    container_name: ehr-postgres
+    environment:
+      POSTGRES_USER: ehr_user
+      POSTGRES_PASSWORD: ehr_password_dev
+      POSTGRES_DB: ehr_system
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ehr_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: ehr-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_dev
+      MYSQL_DATABASE: ehr_system
+      MYSQL_USER: ehr_user
+      MYSQL_PASSWORD: ehr_password_dev
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: ehr-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ehr_user
+      MONGO_INITDB_ROOT_PASSWORD: ehr_password_dev
+      MONGO_INITDB_DATABASE: ehr_system
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ehr-kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    networks:
+      - ehr-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ehr-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_INIT_LIMIT: 5
+    ports:
+      - "2181:2181"
+    networks:
+      - ehr-network
+
+  # ==================== API GATEWAY ====================
+  
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ehr-api-gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5000
+      JWT_SECRET_KEY: your-development-secret-key-change-in-production-min-32-chars!
+      JWT_ISSUER: https://identity-service:5003
+      JWT_AUDIENCE: ehr-system-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - identity-service
+      - patient-service
+      - audit-service
+      - appointment-service
+      - notification-service
+      - analytics-service
+      - clinical-service
+      - billing-service
+      - file-storage-service
+      - terminology-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ehr-network
+
+  # ==================== MICROSERVICES ====================
+
+  # Identity Service - Port 5003
+  identity-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-identity-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5003
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=identity_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5003:5003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Patient Service - Port 5004
+  patient-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-patient-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5004
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=patient_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Elasticsearch__Url: http://elasticsearch:9200
+      Redis__ConnectionString: redis:6379
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5004:5004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Audit Service - Port 5005
+  audit-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-audit-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5005
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=audit_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5005:5005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Appointment Service - Port 5006
+  appointment-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-appointment-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5006
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=appointment_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5006:5006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5006/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Notification Service - Port 5007
+  notification-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-notification-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5007
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=notification_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5007:5007"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5007/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Analytics Service - Port 5008
+  analytics-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-analytics-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5008
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=analytics_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5008:5008"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5008/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Clinical Service - Port 5001
+  clinical-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-clinical-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5001
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=clinical_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Billing Service - Port 5002
+  billing-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-billing-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5002
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=billing_db;Uid=ehr_user;Pwd=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5002:5002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # File Storage Service - Port 5009
+  file-storage-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-file-storage-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5009
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=file_storage_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Storage__Path: /app/storage
+    ports:
+      - "5009:5009"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - file_storage:/app/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5009/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Terminology Service - Port 5010
+  terminology-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-terminology-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5010
+      ConnectionStrings__DefaultConnection: "Server=mongodb:27017;Database=terminology_db;User Id=ehr_user;Password=ehr_password_dev;"
+    ports:
+      - "5010:5010"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5010/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # Integration Service - Port 5011
+  integration-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-integration-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5011
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=integration_db;User Id=ehr_user;Password=ehr_password_dev;"
+      Kafka__BootstrapServers: kafka:29092
+    ports:
+      - "5011:5011"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5011/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # AI Service - Port 5012
+  ai-service:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+    container_name: ehr-ai-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5012
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ai_db;User Id=ehr_user;Password=ehr_password_dev;"
+    ports:
+      - "5012:5012"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5012/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ehr-network
+
+  # ==================== OBSERVABILITY ====================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ehr-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - ehr-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ehr-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - ehr-network
+
+networks:
+  ehr-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mysql_data:
+  mongo_data:
+  prometheus_data:
+  grafana_data:
+  file_storage:

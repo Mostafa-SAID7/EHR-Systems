@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  clinical-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ehr-clinical-service
+    ports:
+      - "5003:5003"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ehr_clinical_db
+      - POSTGRES_USER=ehr_user
+      - POSTGRES_PASSWORD=ehr_password
+      - MONGODB_URI=mongodb://ehr_user:ehr_password@mongo:27017
+      - MONGODB_DB=ehr_clinical_documents
+      - REDIS_CONNECTION_STRING=redis:6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=ehr_user
+      - RABBITMQ_PASSWORD=ehr_password
+      - JWT_SECRET=change-me-in-production-minimum-32-characters
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+      - rabbitmq
+    networks:
+      - ehr-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ehr-clinical-postgres
+    environment:
+      POSTGRES_DB: ehr_clinical_db
+      POSTGRES_USER: ehr_user
+      POSTGRES_PASSWORD: ehr_password
+    volumes:
+      - clinical_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ehr-network
+
+  mongo:
+    image: mongo:6.0
+    container_name: ehr-clinical-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ehr_user
+      MONGO_INITDB_ROOT_PASSWORD: ehr_password
+    volumes:
+      - clinical_mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - ehr-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-clinical-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ehr-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: ehr-clinical-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ehr_user
+      RABBITMQ_DEFAULT_PASS: ehr_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ehr-network
+
+volumes:
+  clinical_postgres_data:
+  clinical_mongo_data:
+
+networks:
+  ehr-network:
+    driver: bridge

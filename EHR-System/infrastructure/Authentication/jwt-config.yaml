@@ -1,0 +1,110 @@
+---
+# JWT Configuration for EHR Platform
+# Used by Identity Service and API Gateway
+
+jwt:
+  # Token settings
+  secret: ${JWT_SECRET}  # Set via environment variable
+  issuer: ehr-platform
+  audience: ehr-api
+  
+  # Token lifetime
+  expiration_minutes: 60
+  refresh_expiration_days: 7
+  
+  # Claims
+  claims:
+    - sub (subject - user ID)
+    - iat (issued at)
+    - exp (expiration)
+    - iss (issuer)
+    - aud (audience)
+    - roles (user roles)
+    - permissions (user permissions)
+    - scope (scopes)
+
+# OAuth2/OpenID Connect (optional future)
+oauth2:
+  enabled: false
+  client_id: ${OAUTH_CLIENT_ID}
+  client_secret: ${OAUTH_CLIENT_SECRET}
+  authorization_endpoint: https://auth.ehr-platform.com/oauth/authorize
+  token_endpoint: https://auth.ehr-platform.com/oauth/token
+  userinfo_endpoint: https://auth.ehr-platform.com/oauth/userinfo
+
+# Security policies
+security:
+  # Password requirements
+  password_min_length: 12
+  require_uppercase: true
+  require_lowercase: true
+  require_numbers: true
+  require_special_chars: true
+  special_chars: "!@#$%^&*"
+  
+  # Account lockout
+  max_login_attempts: 5
+  lockout_duration_minutes: 15
+  
+  # Session
+  session_timeout_minutes: 30
+  concurrent_sessions_per_user: 3
+  
+  # MFA
+  mfa_enabled: true
+  mfa_grace_period_days: 7
+
+# Roles
+roles:
+  - admin
+  - clinician
+  - nurse
+  - patient
+  - pharmacist
+  - billing_officer
+  - auditor
+  - system
+
+# Permissions (per role)
+permissions:
+  admin:
+    - '*'  # All permissions
+  
+  clinician:
+    - patient:read
+    - patient:write
+    - appointment:read
+    - appointment:write
+    - clinical:read
+    - clinical:write
+    - prescription:read
+    - prescription:write
+  
+  nurse:
+    - patient:read
+    - appointment:read
+    - clinical:read
+  
+  patient:
+    - patient:read_own
+    - appointment:read_own
+    - clinical:read_own
+    - prescription:read_own
+  
+  pharmacist:
+    - prescription:read
+    - prescription:write
+    - patient:read
+  
+  billing_officer:
+    - billing:read
+    - billing:write
+    - patient:read
+  
+  auditor:
+    - audit:read
+    - '*:read'  # All read permissions
+  
+  system:
+    - system:write
+    - '*'  # All permissions

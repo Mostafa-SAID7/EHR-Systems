@@ -1,18 +1,22 @@
-using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
-
 namespace EHRPlatform.Services.Patient.Application.Features.Patients.Commands;
 
+using MediatR;
+
 /// <summary>
-/// Add allergy command.
-/// Adds a new allergy to patient's medical history.
+/// Command to add allergy to patient record.
 /// </summary>
-public record AddAllergyCommand : ICommand
+public class AddAllergyCommand : IRequest<AddAllergyResponse>
 {
-    public Guid PatientId { get; init; }
-    public string Allergen { get; init; } = string.Empty;
-    public string Severity { get; init; } = string.Empty; // Mild, Moderate, Severe
-    public string Notes { get; init; } = string.Empty;
+    public Guid PatientId { get; set; }
+    public string AllergyCode { get; set; } = string.Empty; // SNOMED CT
+    public string AllergyName { get; set; } = string.Empty;
+    public string Severity { get; set; } = string.Empty; // Mild, Moderate, Severe
+    public string? ReactionDescription { get; set; }
 }
 
-
-
+public class AddAllergyResponse
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+    public Guid? AllergyId { get; set; }
+}

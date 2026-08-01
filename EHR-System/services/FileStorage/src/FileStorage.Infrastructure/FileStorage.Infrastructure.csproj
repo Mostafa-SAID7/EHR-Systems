@@ -1,10 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.7.308.2" />
+    <PackageReference Include="Serilog" Version="3.0.1" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\FileStorage.Domain\FileStorage.Domain.csproj" />
   </ItemGroup>
+
 </Project>

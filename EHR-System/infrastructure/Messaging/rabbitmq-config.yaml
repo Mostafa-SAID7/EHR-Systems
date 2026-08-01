@@ -1,0 +1,469 @@
+---
+# RabbitMQ Configuration for EHR Platform
+# Message broker for async communication between microservices
+
+rabbitmq:
+  # Server configuration
+  host: rabbitmq
+  port: 5672
+  management_port: 15672
+  
+  # Credentials
+  default_user: guest
+  default_password: guest  # Change in production
+  
+  # Virtual hosts
+  virtual_hosts:
+    - name: /ehr-platform
+      permissions:
+        - configure_priv: ".*"
+          write_priv: ".*"
+          read_priv: ".*"
+
+# Exchanges (Event types)
+exchanges:
+  # Patient Events
+  patient_events:
+    name: patient.events
+    type: topic
+    durable: true
+    auto_delete: false
+    routing_key: "patient.#"
+    
+  # Appointment Events
+  appointment_events:
+    name: appointment.events
+    type: topic
+    durable: true
+    auto_delete: false
+    routing_key: "appointment.#"
+    
+  # Clinical Events
+  clinical_events:
+    name: clinical.events
+    type: topic
+    durable: true
+    auto_delete: false
+    routing_key: "clinical.#"
+    
+  # Integration Events
+  integration_events:
+    name: integration.events
+    type: topic
+    durable: true
+    auto_delete: false
+    routing_key: "integration.#"
+    
+  # Billing Events
+  billing_events:
+    name: billing.events
+    type: topic
+    durable: true
+    auto_delete: false
+    routing_key: "billing.#"
+    
+  # Notification Events
+  notification_events:
+    name: notification.events
+    type: topic
+    durable: true
+    auto_delete: false
+    routing_key: "notification.#"
+    
+  # System Events
+  system_events:
+    name: system.events
+    type: topic
+    durable: true
+    auto_delete: false
+    routing_key: "system.#"
+    
+  # DLX (Dead Letter Exchange) for poison messages
+  dlx_events:
+    name: dlx.events
+    type: topic
+    durable: true
+    auto_delete: false
+
+# Queues (Message storage)
+queues:
+  # Patient Service
+  patient_created:
+    name: patient.created
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000  # 24 hours
+      x-max-length: 1000000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: patient.events
+        routing_key: "patient.created"
+  
+  patient_updated:
+    name: patient.updated
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 1000000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: patient.events
+        routing_key: "patient.updated"
+  
+  patient_deleted:
+    name: patient.deleted
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 1000000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: patient.events
+        routing_key: "patient.deleted"
+  
+  # Appointment Service
+  appointment_scheduled:
+    name: appointment.scheduled
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 500000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: appointment.events
+        routing_key: "appointment.scheduled"
+  
+  appointment_confirmed:
+    name: appointment.confirmed
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 500000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: appointment.events
+        routing_key: "appointment.confirmed"
+  
+  appointment_cancelled:
+    name: appointment.cancelled
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 500000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: appointment.events
+        routing_key: "appointment.cancelled"
+  
+  # Clinical Service
+  clinical_note_created:
+    name: clinical.note.created
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 500000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: clinical.events
+        routing_key: "clinical.note.created"
+  
+  diagnosis_recorded:
+    name: clinical.diagnosis.recorded
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 500000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: clinical.events
+        routing_key: "clinical.diagnosis.recorded"
+  
+  # Billing Service
+  invoice_generated:
+    name: billing.invoice.generated
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 100000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: billing.events
+        routing_key: "billing.invoice.generated"
+  
+  payment_processed:
+    name: billing.payment.processed
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 100000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: billing.events
+        routing_key: "billing.payment.processed"
+  
+  # Notification Service
+  notification_sent:
+    name: notification.sent
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 500000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: notification.events
+        routing_key: "notification.sent"
+  
+  # Integration Service
+  hl7_message_received:
+    name: integration.hl7.received
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 100000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: integration.events
+        routing_key: "integration.hl7.received"
+  
+  fhir_resource_synced:
+    name: integration.fhir.synced
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 86400000
+      x-max-length: 100000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: integration.events
+        routing_key: "integration.fhir.synced"
+  
+  # System Events
+  system_health_check:
+    name: system.health.check
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 300000  # 5 minutes
+      x-max-length: 1000
+      x-dead-letter-exchange: dlx.events
+    bindings:
+      - exchange: system.events
+        routing_key: "system.health.*"
+
+# Dead Letter Queue (DLQ)
+dead_letter_queues:
+  dlq_main:
+    name: dlx.dlq.main
+    durable: true
+    auto_delete: false
+    arguments:
+      x-message-ttl: 604800000  # 7 days retention
+      x-max-length: 100000
+    bindings:
+      - exchange: dlx.events
+        routing_key: "#"
+
+# Message Publishers (Services)
+publishers:
+  patient_service:
+    queues:
+      - patient.created
+      - patient.updated
+      - patient.deleted
+  
+  appointment_service:
+    queues:
+      - appointment.scheduled
+      - appointment.confirmed
+      - appointment.cancelled
+  
+  clinical_service:
+    queues:
+      - clinical.note.created
+      - diagnosis_recorded
+  
+  billing_service:
+    queues:
+      - invoice_generated
+      - payment_processed
+  
+  notification_service:
+    queues:
+      - notification_sent
+  
+  integration_service:
+    queues:
+      - hl7_message_received
+      - fhir_resource_synced
+
+# Message Consumers
+consumers:
+  notification_service:
+    consume_from:
+      - patient.created
+      - patient.updated
+      - appointment.scheduled
+      - appointment.confirmed
+      - invoice_generated
+      - payment_processed
+    prefetch_count: 10
+    auto_ack: false
+  
+  audit_service:
+    consume_from:
+      - "*.#"  # All events
+    prefetch_count: 50
+    auto_ack: true
+  
+  analytics_service:
+    consume_from:
+      - patient.created
+      - appointment.scheduled
+      - appointment.confirmed
+      - invoice_generated
+      - payment_processed
+    prefetch_count: 100
+    auto_ack: true
+  
+  integration_service:
+    consume_from:
+      - patient.created
+      - clinical.note.created
+      - diagnosis_recorded
+    prefetch_count: 10
+    auto_ack: false
+  
+  filestorage_service:
+    consume_from:
+      - clinical.note.created
+      - appointment.scheduled
+    prefetch_count: 5
+    auto_ack: false
+
+# Performance & Reliability
+performance:
+  # Channel settings
+  channel_max_frame: 131072  # 128 KB
+  heartbeat_timeout: 30  # seconds
+  connection_max: 0  # Unlimited
+  
+  # Message delivery
+  message_ttl: 86400000  # Default 24 hours
+  max_length_per_queue: 1000000  # 1 million messages
+  
+  # Consumer settings
+  consumer_prefetch: 10  # Messages per consumer
+  auto_acknowledge: false
+  requeue_on_nack: true
+
+# Clustering & HA
+clustering:
+  enabled: true
+  nodes:
+    - rabbitmq-node-1:5672
+    - rabbitmq-node-2:5672
+    - rabbitmq-node-3:5672
+  cluster_partition_handling: autoheal
+  
+  # Mirrored queues (high availability)
+  mirrored_queues:
+    - patient.*
+    - appointment.*
+    - clinical.*
+    - billing.*
+    - notification.*
+    - integration.*
+  
+  mirror_nodes: all  # Replicate to all nodes
+
+# Monitoring & Metrics
+monitoring:
+  enabled: true
+  
+  # Prometheus metrics
+  prometheus_enabled: true
+  metrics_port: 15692
+  
+  # Key metrics
+  metrics:
+    - queue_depth_per_queue
+    - message_throughput
+    - consumer_count
+    - publisher_count
+    - connection_count
+    - memory_usage
+    - disk_usage
+    - network_io
+  
+  # Alarms
+  alarms:
+    - queue_depth > 100000
+    - memory_usage > 80%
+    - disk_usage > 85%
+    - consumer_disconnect
+    - publisher_disconnect
+    - queue_stuck_delivery
+
+# Security
+security:
+  ssl_enabled: true
+  ssl_port: 5671
+  
+  # User credentials
+  users:
+    - username: patient_service
+      password: ${PATIENT_SERVICE_PASS}
+      permissions: configure:patient.* write:patient.* read:patient.*
+    
+    - username: appointment_service
+      password: ${APPOINTMENT_SERVICE_PASS}
+      permissions: configure:appointment.* write:appointment.* read:appointment.*
+    
+    - username: clinical_service
+      password: ${CLINICAL_SERVICE_PASS}
+      permissions: configure:clinical.* write:clinical.* read:clinical.*
+    
+    - username: billing_service
+      password: ${BILLING_SERVICE_PASS}
+      permissions: configure:billing.* write:billing.* read:billing.*
+    
+    - username: notification_service
+      password: ${NOTIFICATION_SERVICE_PASS}
+      permissions: read:*.* write:notification.*
+    
+    - username: integration_service
+      password: ${INTEGRATION_SERVICE_PASS}
+      permissions: configure:integration.* write:integration.* read:integration.*
+    
+    - username: analytics_service
+      password: ${ANALYTICS_SERVICE_PASS}
+      permissions: read:*.*
+    
+    - username: audit_service
+      password: ${AUDIT_SERVICE_PASS}
+      permissions: read:*.*
+
+# Disaster Recovery
+disaster_recovery:
+  backup_enabled: true
+  backup_schedule: "0 2 * * *"  # 2 AM daily
+  backup_retention_days: 30
+  
+  # Message persistence
+  message_store: disk
+  
+  # Queue snapshots
+  queue_snapshots_enabled: true
+  snapshot_schedule: "0 * * * *"  # Hourly

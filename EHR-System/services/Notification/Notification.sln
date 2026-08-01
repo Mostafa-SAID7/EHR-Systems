@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notification.API", "src\Notification.API\Notification.API.csproj", "{O5P6Q7R8-S9T0-6E2F-GHI3-I5J6K7L8M9N0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notification.Application", "src\Notification.Application\Notification.Application.csproj", "{P6Q7R8S9-T0U1-6F3G-HIJ4-J6K7L8M9N0O1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notification.Domain", "src\Notification.Domain\Notification.Domain.csproj", "{Q7R8S9T0-U1V2-6G4H-IJK5-K7L8M9N0O1P2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notification.Infrastructure", "src\Notification.Infrastructure\Notification.Infrastructure.csproj", "{R8S9T0U1-V2W3-6H5I-JKL6-L8M9N0O1P2Q3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notification.Persistence", "src\Notification.Persistence\Notification.Persistence.csproj", "{S9T0U1V2-W3X4-6I6J-KLM7-M9N0O1P2Q3R4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{O5P6Q7R8-S9T0-6E2F-GHI3-I5J6K7L8M9N0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{O5P6Q7R8-S9T0-6E2F-GHI3-I5J6K7L8M9N0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{O5P6Q7R8-S9T0-6E2F-GHI3-I5J6K7L8M9N0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{O5P6Q7R8-S9T0-6E2F-GHI3-I5J6K7L8M9N0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{P6Q7R8S9-T0U1-6F3G-HIJ4-J6K7L8M9N0O1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{P6Q7R8S9-T0U1-6F3G-HIJ4-J6K7L8M9N0O1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{P6Q7R8S9-T0U1-6F3G-HIJ4-J6K7L8M9N0O1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{P6Q7R8S9-T0U1-6F3G-HIJ4-J6K7L8M9N0O1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{Q7R8S9T0-U1V2-6G4H-IJK5-K7L8M9N0O1P2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{Q7R8S9T0-U1V2-6G4H-IJK5-K7L8M9N0O1P2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{Q7R8S9T0-U1V2-6G4H-IJK5-K7L8M9N0O1P2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{Q7R8S9T0-U1V2-6G4H-IJK5-K7L8M9N0O1P2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{R8S9T0U1-V2W3-6H5I-JKL6-L8M9N0O1P2Q3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{R8S9T0U1-V2W3-6H5I-JKL6-L8M9N0O1P2Q3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{R8S9T0U1-V2W3-6H5I-JKL6-L8M9N0O1P2Q3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{R8S9T0U1-V2W3-6H5I-JKL6-L8M9N0O1P2Q3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{S9T0U1V2-W3X4-6I6J-KLM7-M9N0O1P2Q3R4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{S9T0U1V2-W3X4-6I6J-KLM7-M9N0O1P2Q3R4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{S9T0U1V2-W3X4-6I6J-KLM7-M9N0O1P2Q3R4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{S9T0U1V2-W3X4-6I6J-KLM7-M9N0O1P2Q3R4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

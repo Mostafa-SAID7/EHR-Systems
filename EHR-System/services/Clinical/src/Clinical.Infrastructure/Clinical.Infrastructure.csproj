@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>EHRPlatform.Services.Clinical.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RabbitMQ.Client" Version="6.7.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.7.10" />
+    <PackageReference Include="EHRPlatform.BuildingBlocks.EventBus" Version="1.0.0" />
+    <PackageReference Include="EHRPlatform.BuildingBlocks.Observability" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clinical.Domain\Clinical.Domain.csproj" />
+    <ProjectReference Include="..\Clinical.Persistence\Clinical.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

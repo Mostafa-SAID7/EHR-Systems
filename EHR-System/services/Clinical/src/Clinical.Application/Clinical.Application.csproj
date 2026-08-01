@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>EHRPlatform.Services.Clinical.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="EHRPlatform.BuildingBlocks.Common" Version="1.0.0" />
+    <PackageReference Include="EHRPlatform.BuildingBlocks.Observability" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clinical.Domain\Clinical.Domain.csproj" />
+    <ProjectReference Include="..\Clinical.Contracts\Clinical.Contracts.csproj" />
+    <ProjectReference Include="..\Clinical.Persistence\Clinical.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

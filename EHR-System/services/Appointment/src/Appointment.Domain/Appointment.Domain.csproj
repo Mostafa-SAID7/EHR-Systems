@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>EHRPlatform.Services.Appointment.Domain</RootNamespace>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\EHR-System\building-blocks\SharedKernel\src\SharedKernel.csproj" />
-  </ItemGroup>
+
 </Project>

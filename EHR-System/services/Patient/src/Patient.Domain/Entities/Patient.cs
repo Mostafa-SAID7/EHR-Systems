@@ -1,260 +1,232 @@
-using System;
-using System.Collections.Generic;
+namespace EHRPlatform.Services.Patient.Domain.Entities;
 
-namespace EHRPlatform.Services.Patient.Domain.Entities
+/// <summary>
+/// Patient aggregate root - Core patient record with medical history.
+/// MRN: Medical Record Number (format: MRN-YYYY-XXXXXX, unique)
+/// Elasticsearch indexed for full-text search
+/// </summary>
+public class Patient
 {
-    /// <summary>
-    /// Service-Specific Patient Entity
-    /// This entity belongs ONLY to the Patient Service.
-    /// Other services cannot reference this directly.
-    /// Inter-service communication uses PatientDto from EHRPlatform.Common.Shared.DTOs
-    /// </summary>
-    public class Patient
+    public Guid Id { get; set; }
+    public string Mrn { get; set; } = string.Empty; // MRN-2025-000001 (UNIQUE)
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public DateTime DateOfBirth { get; set; }
+    public string Gender { get; set; } = string.Empty; // M, F, Other, Prefer not to say
+    public string? MiddleName { get; set; }
+    
+    // Address
+    public string Street { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
+    public string ZipCode { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+    
+    // Contact preferences
+    public string PreferredContactMethod { get; set; } = "Email"; // Email, Phone, SMS
+    public string? EmergencyContactName { get; set; }
+    public string? EmergencyContactPhone { get; set; }
+    public string? EmergencyContactRelationship { get; set; }
+    
+    // Medical info
+    public string? BloodType { get; set; } // O+, O-, A+, A-, B+, B-, AB+, AB-
+    public string Status { get; set; } = "Active"; // Active, Inactive, Archived
+    public string PatientType { get; set; } = "Individual"; // Individual, Organization
+    
+    // Flags
+    public bool VIP { get; set; }
+    public bool DoNotContact { get; set; }
+    public bool IsDeceased { get; set; }
+    public DateTime? DeceasedDate { get; set; }
+    
+    // Metadata
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public DateTime? ArchivedAt { get; set; }
+    public bool IsArchived { get; set; }
+
+    // Relations
+    public ICollection<PatientAllergy> Allergies { get; } = new List<PatientAllergy>();
+    public ICollection<PatientCondition> Conditions { get; } = new List<PatientCondition>();
+    public ICollection<PatientTag> Tags { get; } = new List<PatientTag>();
+
+    private readonly List<object> _domainEvents = new();
+
+    public string GetFullName() => $"{FirstName} {LastName}".Trim();
+
+    public int GetAge() => DateTime.UtcNow.Year - DateOfBirth.Year;
+
+    public void UpdateContactInfo(string email, string phone, string preferredMethod)
     {
-        public Guid Id { get; set; }
-
-        /// <summary>Unique Medical Record Number (MRN)</summary>
-        public string MedicalRecordNumber { get; set; }
-
-        /// <summary>Patient's first name</summary>
-        public string FirstName { get; set; }
-
-        /// <summary>Patient's last name</summary>
-        public string LastName { get; set; }
-
-        /// <summary>Patient's middle name (optional)</summary>
-        public string MiddleName { get; set; }
-
-        /// <summary>Patient's date of birth</summary>
-        public DateTime DateOfBirth { get; set; }
-
-        /// <summary>Patient's gender (e.g., "Male", "Female", "Other")</summary>
-        public string Gender { get; set; }
-
-        /// <summary>Patient's email address</summary>
-        public string Email { get; set; }
-
-        /// <summary>Patient's phone number</summary>
-        public string PhoneNumber { get; set; }
-
-        /// <summary>Current status (e.g., "Active", "Inactive", "Archived")</summary>
-        public string Status { get; set; } = "Active";
-
-        // Relationships to other Patient Service entities
-        public ICollection<PatientAllergy> Allergies { get; set; } = new List<PatientAllergy>();
-        public ICollection<PatientCondition> Conditions { get; set; } = new List<PatientCondition>();
-        public ICollection<PatientContact> Contacts { get; set; } = new List<PatientContact>();
-        public ICollection<PatientInsurance> InsuranceInformation { get; set; } = new List<PatientInsurance>();
-        public ICollection<PatientEmergencyContact> EmergencyContacts { get; set; } = new List<PatientEmergencyContact>();
-        public PatientMedicalHistory MedicalHistory { get; set; }
-
-        /// <summary>Creation timestamp (UTC)</summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        /// <summary>Last modification timestamp (UTC)</summary>
-        public DateTime? UpdatedAt { get; set; }
-
-        /// <summary>Soft delete timestamp (UTC) - null if not deleted</summary>
-        public DateTime? DeletedAt { get; set; }
+        Email = email;
+        Phone = phone;
+        PreferredContactMethod = preferredMethod;
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new PatientUpdatedEvent(Id, Mrn, GetFullName()));
     }
 
-    /// <summary>
-    /// Patient's contact/address information
-    /// </summary>
-    public class PatientContact
+    public void UpdateAddress(string street, string city, string state, string zip, string country)
     {
-        public Guid Id { get; set; }
-
-        public Guid PatientId { get; set; }
-
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string PostalCode { get; set; }
-        public string Country { get; set; }
-
-        /// <summary>Is this the primary address?</summary>
-        public bool IsPrimary { get; set; } = true;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-
-        // Navigation property
-        public Patient Patient { get; set; }
+        Street = street;
+        City = city;
+        State = state;
+        ZipCode = zip;
+        Country = country;
+        UpdatedAt = DateTime.UtcNow;
     }
 
-    /// <summary>
-    /// Patient's known allergies
-    /// </summary>
-    public class PatientAllergy
+    public void AddAllergy(string allergyCode, string allergyName, string severity, string? reactionDescription)
     {
-        public Guid Id { get; set; }
-
-        public Guid PatientId { get; set; }
-
-        /// <summary>Name of allergen (e.g., "Penicillin", "Peanuts")</summary>
-        public string AllergenName { get; set; }
-
-        /// <summary>Type of allergen (e.g., "Medication", "Food", "Environmental")</summary>
-        public string AllergenType { get; set; }
-
-        /// <summary>Severity level (e.g., "Mild", "Moderate", "Severe")</summary>
-        public string Severity { get; set; }
-
-        /// <summary>Description of allergic reaction</summary>
-        public string Reaction { get; set; }
-
-        /// <summary>When did the allergy start?</summary>
-        public DateTime? OnsetDate { get; set; }
-
-        /// <summary>When did the allergy resolve? (null if still active)</summary>
-        public DateTime? ResolvedDate { get; set; }
-
-        /// <summary>Is this allergy currently active?</summary>
-        public bool IsCurrent { get; set; } = true;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-
-        // Navigation property
-        public Patient Patient { get; set; }
+        var allergy = new PatientAllergy
+        {
+            Id = Guid.NewGuid(),
+            PatientId = Id,
+            AllergyCode = allergyCode,
+            AllergyName = allergyName,
+            Severity = severity,
+            ReactionDescription = reactionDescription,
+            OnsetDate = DateTime.UtcNow
+        };
+        Allergies.Add(allergy);
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new PatientAllergyAddedEvent(Id, Mrn, allergyName, severity));
     }
 
-    /// <summary>
-    /// Patient's known medical conditions/diagnoses
-    /// </summary>
-    public class PatientCondition
+    public void AddCondition(string conditionCode, string conditionName, DateTime? onsetDate = null)
     {
-        public Guid Id { get; set; }
-
-        public Guid PatientId { get; set; }
-
-        /// <summary>Name of the condition (e.g., "Type 2 Diabetes")</summary>
-        public string ConditionName { get; set; }
-
-        /// <summary>ICD-10 code for this condition</summary>
-        public string ICD10Code { get; set; }
-
-        /// <summary>When was this condition diagnosed?</summary>
-        public DateTime? OnsetDate { get; set; }
-
-        /// <summary>When was this condition resolved? (null if ongoing)</summary>
-        public DateTime? ResolutionDate { get; set; }
-
-        /// <summary>Current status of the condition</summary>
-        public string Status { get; set; }
-
-        /// <summary>Additional clinical notes</summary>
-        public string Notes { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-
-        // Navigation property
-        public Patient Patient { get; set; }
+        var condition = new PatientCondition
+        {
+            Id = Guid.NewGuid(),
+            PatientId = Id,
+            ConditionCode = conditionCode,
+            ConditionName = conditionName,
+            OnsetDate = onsetDate ?? DateTime.UtcNow,
+            Status = "Active"
+        };
+        Conditions.Add(condition);
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new PatientConditionAddedEvent(Id, Mrn, conditionName, conditionCode));
     }
 
-    /// <summary>
-    /// Patient's insurance information
-    /// </summary>
-    public class PatientInsurance
+    public void ApplyTag(string tagName, string category, string color)
     {
-        public Guid Id { get; set; }
-
-        public Guid PatientId { get; set; }
-
-        /// <summary>Name of insurance company</summary>
-        public string InsuranceCompanyName { get; set; }
-
-        /// <summary>Policy number</summary>
-        public string PolicyNumber { get; set; }
-
-        /// <summary>Group number (if applicable)</summary>
-        public string GroupNumber { get; set; }
-
-        /// <summary>Member ID</summary>
-        public string MemberId { get; set; }
-
-        /// <summary>When does this insurance coverage start?</summary>
-        public DateTime EffectiveDate { get; set; }
-
-        /// <summary>When does this insurance coverage end? (null if ongoing)</summary>
-        public DateTime? TerminationDate { get; set; }
-
-        /// <summary>Is this the primary insurance?</summary>
-        public bool IsPrimary { get; set; } = true;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-
-        // Navigation property
-        public Patient Patient { get; set; }
+        var tag = new PatientTag
+        {
+            Id = Guid.NewGuid(),
+            PatientId = Id,
+            TagName = tagName,
+            Category = category,
+            Color = color,
+            ResourceType = "Patient",
+            AppliedAt = DateTime.UtcNow
+        };
+        Tags.Add(tag);
+        UpdatedAt = DateTime.UtcNow;
     }
 
-    /// <summary>
-    /// Patient's emergency contact information
-    /// </summary>
-    public class PatientEmergencyContact
+    public void MarkAsDeceased(DateTime deceasedDate)
     {
-        public Guid Id { get; set; }
-
-        public Guid PatientId { get; set; }
-
-        /// <summary>Name of emergency contact</summary>
-        public string ContactName { get; set; }
-
-        /// <summary>Relationship to patient (e.g., "Spouse", "Parent", "Sibling")</summary>
-        public string Relationship { get; set; }
-
-        /// <summary>Phone number</summary>
-        public string PhoneNumber { get; set; }
-
-        /// <summary>Email address</summary>
-        public string Email { get; set; }
-
-        /// <summary>Is this the primary emergency contact?</summary>
-        public bool IsPrimary { get; set; } = true;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation property
-        public Patient Patient { get; set; }
+        IsDeceased = true;
+        DeceasedDate = deceasedDate;
+        Status = "Inactive";
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new PatientDeceasedEvent(Id, Mrn));
     }
 
-    /// <summary>
-    /// Summary of patient's medical history
-    /// One per patient (1-to-1 relationship)
-    /// </summary>
-    public class PatientMedicalHistory
+    public void Archive()
     {
-        public Guid Id { get; set; }
-
-        /// <summary>Reference to Patient (unique - one history per patient)</summary>
-        public Guid PatientId { get; set; }
-
-        /// <summary>Blood type (e.g., "O+", "AB-")</summary>
-        public string BloodType { get; set; }
-
-        /// <summary>Height in cm</summary>
-        public decimal? Height { get; set; }
-
-        /// <summary>Weight in kg</summary>
-        public decimal? Weight { get; set; }
-
-        /// <summary>Summary of surgical procedures</summary>
-        public string SurgicalHistory { get; set; }
-
-        /// <summary>Summary of family medical history</summary>
-        public string FamilyHistory { get; set; }
-
-        /// <summary>Social history (smoking, alcohol, occupation, etc.)</summary>
-        public string SocialHistory { get; set; }
-
-        /// <summary>Last time this history was updated</summary>
-        public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation property
-        public Patient Patient { get; set; }
+        IsArchived = true;
+        ArchivedAt = DateTime.UtcNow;
+        Status = "Archived";
+        UpdatedAt = DateTime.UtcNow;
+        RaiseEvent(new PatientArchivedEvent(Id, Mrn));
     }
+
+    public void RaiseEvent(object @event) => _domainEvents.Add(@event);
+    public IReadOnlyList<object> GetDomainEvents() => _domainEvents.AsReadOnly();
+    public void ClearDomainEvents() => _domainEvents.Clear();
+}
+
+/// <summary>
+/// PatientAllergy - Allergy record (value object)
+/// </summary>
+public class PatientAllergy
+{
+    public Guid Id { get; set; }
+    public Guid PatientId { get; set; }
+    public string AllergyCode { get; set; } = string.Empty; // SNOMED CT code
+    public string AllergyName { get; set; } = string.Empty;
+    public string Severity { get; set; } = string.Empty; // Mild, Moderate, Severe
+    public string? ReactionDescription { get; set; }
+    public DateTime OnsetDate { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public Patient Patient { get; set; } = null!;
+}
+
+/// <summary>
+/// PatientCondition - Active/historical conditions (ICD-10)
+/// </summary>
+public class PatientCondition
+{
+    public Guid Id { get; set; }
+    public Guid PatientId { get; set; }
+    public string ConditionCode { get; set; } = string.Empty; // ICD-10 code
+    public string ConditionName { get; set; } = string.Empty;
+    public DateTime OnsetDate { get; set; }
+    public DateTime? ResolutionDate { get; set; }
+    public string Status { get; set; } = "Active"; // Active, Resolved, Chronic
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+
+    public Patient Patient { get; set; } = null!;
+}
+
+/// <summary>
+/// PatientTag - Flexible tagging system (demographics, risk, specialty)
+/// </summary>
+public class PatientTag
+{
+    public Guid Id { get; set; }
+    public Guid PatientId { get; set; }
+    public string TagName { get; set; } = string.Empty; // High Risk, VIP, Frequent Visitor, etc.
+    public string Category { get; set; } = string.Empty; // demographics, risk, specialty, engagement
+    public string Color { get; set; } = string.Empty; // For UI: red, yellow, green, blue
+    public string ResourceType { get; set; } = "Patient";
+    public DateTime AppliedAt { get; set; }
+
+    public Patient Patient { get; set; } = null!;
+}
+
+// Domain Events
+public record PatientCreatedEvent(Guid PatientId, string Mrn, string FirstName, string LastName, string Email)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record PatientUpdatedEvent(Guid PatientId, string Mrn, string FullName)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record PatientAllergyAddedEvent(Guid PatientId, string Mrn, string AllergyName, string Severity)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record PatientConditionAddedEvent(Guid PatientId, string Mrn, string ConditionName, string ConditionCode)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record PatientArchivedEvent(Guid PatientId, string Mrn)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+}
+
+public record PatientDeceasedEvent(Guid PatientId, string Mrn)
+{
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
 }

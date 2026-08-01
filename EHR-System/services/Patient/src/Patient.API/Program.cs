@@ -1,189 +1,114 @@
-using EHRPlatform.BuildingBlocks.Common.Data;
-using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
-using EHRPlatform.BuildingBlocks.Observability.HealthChecks;
-using EHRPlatform.BuildingBlocks.Common.Search;
-using EHRPlatform.BuildingBlocks.Security.Authentication;
-using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
-using EHRPlatform.Services.Patient.Application;
-using EHRPlatform.Services.Patient.Data;
-using EHRPlatform.Services.Patient.Persistence.Repositories;
+using EHRPlatform.Services.Patient.Persistence;
 using EHRPlatform.Services.Patient.Application.Services;
-using EHRPlatform.Services.Patient.Extensions;
+using EHRPlatform.Services.Patient.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Serilog;
-using StackExchange.Redis;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using MediatR;
+using System.Reflection;
+using System.Text;
 
-// Bootstrap logger to capture startup errors
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .Enrich.FromLogContext()
-    .CreateBootstrapLogger();
+var builder = WebApplication.CreateBuilder(args);
 
-try
+// Add services
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<PatientDbContext>(options =>
+    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Patient.Persistence")));
+builder.Services.AddScoped<IPatientDbContext>(sp => sp.GetRequiredService<PatientDbContext>());
+
+// MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
+    Assembly.Load("Patient.Application")));
+
+// Infrastructure Services
+builder.Services.AddScoped<IMrnGenerationService, MrnGenerationService>();
+builder.Services.AddScoped<IPatientCacheService, PatientCacheService>();
+
+// Elasticsearch
+var elasticsearchUri = builder.Configuration["Elasticsearch:Uri"] ?? "http://localhost:9200";
+builder.Services.AddSingleton(sp =>
+    new Elastic.Clients.Elasticsearch.ElasticsearchClient(new Uri(elasticsearchUri)));
+builder.Services.AddScoped<IElasticsearchService, ElasticsearchService>();
+
+// Redis Cache
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+builder.Services.AddStackExchangeRedisCache(options =>
 {
-    var builder = WebApplication.CreateBuilder(args);
+    options.Configuration = redisConnectionString;
+});
 
-    // ── Serilog ───────────────────────────────────────────────────────────────
-    builder.Host.UseSerilog((ctx, cfg) =>
-        cfg.MinimumLevel.Information()
-           .WriteTo.Console()
-           .Enrich.FromLogContext());
-
-    // ── OpenTelemetry Metrics ─────────────────────────────────────────────────
-    // Exposes /metrics endpoint for Prometheus scraping
-    // Collects: HTTP metrics, runtime (GC, memory), process (CPU), ASP.NET Core
-    builder.Services.AddOpenTelemetryObservability("patient-service");
-    builder.Services.AddPatientMetrics();  // ← Add patient-specific metrics
-
-    // ── Controllers & Swagger ─────────────────────────────────────────────────
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen(c =>
+// JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        c.SwaggerDoc("v1", new OpenApiInfo { Title = "EHR Patient Service", Version = "v1" });
-        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtKey = builder.Configuration["Jwt:PublicKeyPath"];
+
+        if (File.Exists(jwtKey))
         {
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT",
-            Description = "Enter your JWT token"
-        });
-        c.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
+            var publicKey = File.ReadAllText(jwtKey);
+            var rsa = System.Security.Cryptography.RSA.Create();
+            rsa.ImportFromPem(publicKey.ToCharArray());
+
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id   = "Bearer"
-                    }
-                },
-                Array.Empty<string>()
-            }
-        });
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new RsaSecurityKey(rsa),
+                ValidateIssuer = true,
+                ValidIssuer = jwtIssuer,
+                ValidateAudience = true,
+                ValidAudience = jwtAudience,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        }
     });
 
-    // ── Database (PostgreSQL) ─────────────────────────────────────────────────
-    var connectionString = builder.Configuration.BuildPostgresConnectionString();
-    builder.Services.AddPostgresDataAccess<PatientContext>(connectionString);
+// Authorization
+builder.Services.AddAuthorization();
 
-    // ── Migration Strategy (environment-specific) ────────────────────────────────
-    var environment = builder.Environment.EnvironmentName;
-    new MigrationConfiguration(builder.Services)
-        .WithEnvironment(environment)
-        .AddContext<PatientContext>()
-        .Build();
+// Health checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<PatientDbContext>();
 
-    // ── CQRS: handlers, validators, mappers ──────────────────────────────────
-    builder.Services.AddApplicationServices();
-
-    // ── Outbox Event Repository ────────────────────────────────────────────────
-    builder.Services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
-
-    // ── Patient Services ─────────────────────────────────────────────────────
-    builder.Services.AddScoped<IPatientCacheService, PatientCacheService>();
-
-    // ── Redis Caching (optional — degrades gracefully if unavailable) ─────────
-    var redisConnStr = builder.Configuration["Redis:ConnectionString"]
-        ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
-
-    if (!string.IsNullOrEmpty(redisConnStr))
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
     {
-        try
-        {
-            builder.Services.AddRedisCaching(redisConnStr);
-            Log.Information("Redis caching enabled");
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Redis not available — caching disabled");
-        }
-    }
-    else
-    {
-        Log.Warning("Redis:ConnectionString not configured — caching disabled");
-    }
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
-    // ── Elasticsearch (optional — degrades gracefully if unavailable) ─────────
-    var esUrl = builder.Configuration["Elasticsearch:Url"]
-        ?? Environment.GetEnvironmentVariable("ELASTICSEARCH_URL");
+var app = builder.Build();
 
-    if (!string.IsNullOrEmpty(esUrl))
-    {
-        try
-        {
-            builder.Services.AddElasticsearchSearch(esUrl);
-            Log.Information("Elasticsearch enabled at {Url}", esUrl);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Elasticsearch not available — search disabled");
-        }
-    }
-    else
-    {
-        Log.Warning("Elasticsearch:Url not configured — search disabled");
-    }
+// Database migrations
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<PatientDbContext>();
+    db.Database.Migrate();
+}
 
-    // ── CORS ─────────────────────────────────────────────────────────────────
-    builder.Services.AddCors(options =>
-        options.AddPolicy("AllowAll", p =>
-            p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-
-    // ── Health checks ─────────────────────────────────────────────────────────
-    var healthBuilder = builder.Services.AddHealthChecks()
-        .AddDbContextCheck<PatientContext>("postgres-patient", tags: new[] { "db", "postgres" });
-
-    // Redis health check — only when Redis is wired up
-    if (!string.IsNullOrEmpty(redisConnStr))
-        healthBuilder.AddCacheHealthCheck("redis-patient");
-
-    // Elasticsearch health check — only when ES is wired up
-    if (!string.IsNullOrEmpty(esUrl))
-        healthBuilder.AddElasticsearchHealthCheck("elasticsearch-patient");
-
-    // ── Build ─────────────────────────────────────────────────────────────────
-    var app = builder.Build();
-
-    // ── Apply Migrations (environment-specific strategy) ────────────────────────
-    try
-    {
-        await app.Services.RunMigrationsAsync<PatientContext>("PatientService");
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError(ex, "Migration failed for PatientService");
-        if (app.Environment.IsProduction())
-            throw;
-    }
-
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "EHR Patient Service v1");
-        c.RoutePrefix = string.Empty; // serve Swagger UI at root "/"
-    });
-
-    app.UseSerilogRequestLogging();
-    app.UseCors("AllowAll");
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.MapControllers();
-    app.MapHealthChecks("/health");
-    // app.MapPrometheusMetricsEndpoint();
-
-    await app.RunAsync();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Patient Service terminated unexpectedly");
-    throw;
-}
-finally
-{
-    Log.CloseAndFlush();
+    app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+app.MapHealthChecks("/health");
+
+app.Run();

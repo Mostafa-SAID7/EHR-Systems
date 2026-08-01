@@ -1,68 +1,95 @@
-using EHRPlatform.Services.Appointment.Application;
-using EHRPlatform.Services.Appointment.Infrastructure;
 using EHRPlatform.Services.Appointment.Persistence;
-using Serilog;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using MediatR;
+using System.Reflection;
+using System.Text;
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .Enrich.FromLogContext()
-    .CreateBootstrapLogger();
+var builder = WebApplication.CreateBuilder(args);
 
-try
-{
-    var builder = WebApplication.CreateBuilder(args);
+// Add services
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-    // ── Logging ───────────────────────────────────────────────────────────────
-    builder.Host.UseSerilog((ctx, config) =>
-        config.ReadFrom.Configuration(ctx.Configuration));
+// Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppointmentDbContext>(options =>
+    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("Appointment.Persistence")));
+builder.Services.AddScoped<IAppointmentDbContext>(sp => sp.GetRequiredService<AppointmentDbContext>());
 
-    // ── Controllers & Swagger ─────────────────────────────────────────────────
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+// MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
+    Assembly.Load("Appointment.Application")));
 
-    // ── Database ───────────────────────────────────────────────────────────────
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("DefaultConnection not configured");
-    
-    builder.Services.AddPersistenceServices(connectionString);
-
-    // ── Dependency Injection ───────────────────────────────────────────────────
-    builder.Services.AddDomainServices();
-    builder.Services.AddApplicationServices();
-    builder.Services.AddInfrastructureServices();
-
-    // ── CORS ──────────────────────────────────────────────────────────────────
-    builder.Services.AddCors(options =>
-        options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-
-    // ── Health Checks ─────────────────────────────────────────────────────────
-    builder.Services.AddHealthChecks();
-
-    // ── Build ─────────────────────────────────────────────────────────────────
-    var app = builder.Build();
-
-    if (app.Environment.IsDevelopment())
+// JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtKey = builder.Configuration["Jwt:PublicKeyPath"];
 
-    app.UseSerilogRequestLogging();
-    app.UseCors("AllowAll");
-    app.MapControllers();
-    app.MapHealthChecks("/health");
+        if (File.Exists(jwtKey))
+        {
+            var publicKey = File.ReadAllText(jwtKey);
+            var rsa = System.Security.Cryptography.RSA.Create();
+            rsa.ImportFromPem(publicKey.ToCharArray());
 
-    Log.Information("EHR Appointment Service starting");
-    await app.RunAsync();
-}
-catch (Exception ex)
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new RsaSecurityKey(rsa),
+                ValidateIssuer = true,
+                ValidIssuer = jwtIssuer,
+                ValidateAudience = true,
+                ValidAudience = jwtAudience,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        }
+    });
+
+// Authorization
+builder.Services.AddAuthorization();
+
+// Health checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppointmentDbContext>();
+
+// CORS
+builder.Services.AddCors(options =>
 {
-    Log.Fatal(ex, "Appointment Service terminated unexpectedly");
-    throw;
-}
-finally
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+var app = builder.Build();
+
+// Database migrations
+using (var scope = app.Services.CreateScope())
 {
-    Log.CloseAndFlush();
+    var db = scope.ServiceProvider.GetRequiredService<AppointmentDbContext>();
+    db.Database.Migrate();
 }
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+app.MapHealthChecks("/health");
+
+app.Run();

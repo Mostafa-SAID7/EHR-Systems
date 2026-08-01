@@ -1,0 +1,224 @@
+---
+# AWS S3 Configuration for FileStorage Service
+# Handles document storage, versioning, encryption, lifecycle management
+
+s3:
+  # Bucket configuration
+  bucket_name: ehr-platform-filestorage
+  region: us-east-1
+  
+  # Access control
+  acl: private
+  block_public_access: true
+  
+  # Versioning
+  versioning:
+    enabled: true
+    mfa_delete: false
+  
+  # Encryption
+  encryption:
+    enabled: true
+    sse_algorithm: AES256  # or kms for higher security
+    kms_key_id: ${AWS_KMS_KEY_ID}  # Optional - for production
+  
+  # Bucket policy
+  policy: arn:aws:iam::ACCOUNT_ID:policy/ehr-filestorage-policy
+
+# Folder structure within bucket
+folders:
+  clinical_documents:
+    prefix: "clinical/"
+    retention_days: 2555  # 7 years (HIPAA requirement)
+    classification: confidential
+    
+  patient_records:
+    prefix: "patients/"
+    retention_days: 2555
+    classification: confidential
+    
+  lab_results:
+    prefix: "lab-results/"
+    retention_days: 2555
+    classification: confidential
+    
+  imaging:
+    prefix: "imaging/"
+    retention_days: 2555
+    classification: confidential
+    max_file_size_mb: 500
+    
+  prescriptions:
+    prefix: "prescriptions/"
+    retention_days: 2555
+    classification: confidential
+    
+  temp_uploads:
+    prefix: "temp/"
+    retention_days: 1
+    classification: temporary
+    cleanup: automatic
+    
+  audit_logs:
+    prefix: "audit-logs/"
+    retention_days: 2555
+    classification: audit
+    access_log: true
+
+# Lifecycle rules
+lifecycle:
+  rules:
+    # Archive old clinical documents to Glacier (cost optimization)
+    - id: archive-clinical-7years
+      prefix: "clinical/"
+      filter:
+        object_size_greater_than: 0
+      transitions:
+        - storage_class: STANDARD_IA
+          days: 30
+        - storage_class: GLACIER
+          days: 365
+      expiration:
+        days: 2555
+      status: enabled
+    
+    # Delete old temp files immediately
+    - id: cleanup-temp-files
+      prefix: "temp/"
+      filter:
+        object_size_greater_than: 0
+      expiration:
+        days: 1
+      status: enabled
+    
+    # Archive imaging files
+    - id: archive-imaging
+      prefix: "imaging/"
+      filter:
+        object_size_greater_than: 0
+      transitions:
+        - storage_class: STANDARD_IA
+          days: 90
+        - storage_class: GLACIER
+          days: 365
+      status: enabled
+    
+    # Delete incomplete multipart uploads
+    - id: cleanup-incomplete-uploads
+      filter:
+        object_size_greater_than: 0
+      abort_incomplete_multipart_upload:
+        days_after_initiation: 7
+      status: enabled
+
+# CORS configuration (for direct upload from browser)
+cors:
+  enabled: true
+  rules:
+    - allowed_headers:
+        - "*"
+      allowed_methods:
+        - GET
+        - PUT
+        - POST
+        - DELETE
+        - HEAD
+      allowed_origins:
+        - "https://ehr-platform.com"
+        - "https://www.ehr-platform.com"
+        - "https://admin.ehr-platform.com"
+      expose_headers:
+        - ETag
+        - x-amz-version-id
+      max_age_seconds: 3000
+
+# Server-side request signing
+request_signing:
+  enabled: true
+  algorithm: AWS4-HMAC-SHA256
+  expires_in_seconds: 3600  # 1 hour
+
+# Multipart upload configuration
+multipart_upload:
+  enabled: true
+  min_part_size: 5242880  # 5 MB
+  max_parts: 10000
+  max_file_size: 5368709120  # 5 GB
+
+# Access logging
+access_logging:
+  enabled: true
+  target_bucket: ehr-platform-logs
+  target_prefix: s3-access-logs/
+  log_delivery_write_acp: true
+
+# Object tagging
+tagging:
+  enabled: true
+  rules:
+    clinical_documents:
+      - key: Type
+        value: ClinicalDocument
+      - key: Classification
+        value: Confidential
+      - key: DataCategory
+        value: PHI
+    
+    imaging:
+      - key: Type
+        value: MedicalImaging
+      - key: Classification
+        value: Confidential
+      - key: RetentionPolicy
+        value: HIPAA
+
+# Monitoring & Alerts
+monitoring:
+  enabled: true
+  metrics:
+    - NumberOfObjects
+    - BucketSizeBytes
+    - AllStorageTypes.ObjectCount
+  
+  cloudwatch_alarms:
+    - name: s3-bucket-size-alert
+      metric: BucketSizeBytes
+      threshold_bytes: 1099511627776  # 1 TB
+      alarm_action: sns:alert-topic
+    
+    - name: s3-object-count-alert
+      metric: NumberOfObjects
+      threshold: 1000000
+      alarm_action: sns:alert-topic
+
+# Backup & Disaster Recovery
+backup:
+  enabled: true
+  cross_region_replication:
+    enabled: true
+    destination_region: us-west-2
+    destination_bucket: ehr-platform-filestorage-backup
+    storage_class: STANDARD_IA
+    replication_time_enabled: true
+    replication_time_minutes: 15
+
+# Security scanning
+security:
+  virus_scan_enabled: true
+  virus_scan_lambda: arn:aws:lambda:us-east-1:ACCOUNT_ID:function:s3-virus-scan
+  
+  malware_protection: true
+  
+  pii_detection: true
+  pii_scan_lambda: arn:aws:lambda:us-east-1:ACCOUNT_ID:function:s3-pii-detection
+
+# Compliance
+compliance:
+  hipaa: true
+  hipaa_audit_logging: true
+  
+  gdpr: true
+  gdpr_right_to_deletion: true
+  
+  sox: true
+  sox_change_logging: true

@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: filestorage-postgres
+    environment:
+      POSTGRES_DB: filestorage_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - filestorage-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  filestorage-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: filestorage-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DATABASE_CONNECTION_STRING: "Host=postgres;Port=5432;Database=filestorage_service;Username=postgres;Password=postgres"
+    ports:
+      - "5008:5008"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  filestorage-postgres-data:
+
+networks:
+  default:
+    name: filestorage-network

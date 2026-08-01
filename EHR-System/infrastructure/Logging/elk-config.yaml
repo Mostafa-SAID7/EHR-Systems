@@ -1,0 +1,270 @@
+---
+# ELK Stack (Elasticsearch, Logstash, Kibana) Configuration
+# For centralized logging, analysis, and monitoring
+
+elasticsearch:
+  # Cluster configuration
+  cluster_name: ehr-platform
+  node_name: ${HOSTNAME}
+  
+  # Network settings
+  network:
+    host: 0.0.0.0
+    port: 9200
+    publish_host: elasticsearch
+  
+  # Node roles
+  node_roles:
+    - master
+    - data
+    - ingest
+  
+  # Memory & Performance
+  jvm_heap: 2g
+  memory_lock: true
+  
+  # Index settings
+  indices:
+    default_replicas: 2
+    default_shards: 3
+  
+  # Data retention
+  ilm_enabled: true  # Index Lifecycle Management
+  
+  # Security
+  security:
+    enabled: true
+    transport_tls: true
+    http_tls: true
+    api_key_enabled: true
+
+# Index patterns (auto-created)
+indices:
+  # Application logs
+  application_logs:
+    pattern: "logs-app-*"
+    rollover_size: 50gb
+    rollover_age: 1d
+    retention_days: 30
+    
+  # API Gateway logs
+  api_gateway_logs:
+    pattern: "logs-gateway-*"
+    rollover_size: 30gb
+    rollover_age: 1d
+    retention_days: 30
+    
+  # Service logs (per service)
+  service_logs:
+    pattern: "logs-service-*"
+    rollover_size: 20gb
+    rollover_age: 1d
+    retention_days: 30
+    
+  # Database logs
+  database_logs:
+    pattern: "logs-db-*"
+    rollover_size: 10gb
+    rollover_age: 1d
+    retention_days: 90
+    
+  # Security & Audit logs
+  audit_logs:
+    pattern: "logs-audit-*"
+    rollover_size: 20gb
+    rollover_age: 1d
+    retention_days: 2555  # 7 years (HIPAA)
+    
+  # Error logs
+  error_logs:
+    pattern: "logs-error-*"
+    rollover_size: 10gb
+    rollover_age: 1d
+    retention_days: 90
+
+# Logstash configuration
+logstash:
+  # Input plugins
+  inputs:
+    # Kubernetes container logs
+    - type: filebeat
+      port: 5044
+      codec: json
+      
+    # Syslog
+    - type: syslog
+      port: 514
+      codec: plain
+      
+    # HTTP/JSON
+    - type: http
+      port: 8080
+      codec: json
+  
+  # Filters
+  filters:
+    # Parse JSON logs
+    - type: json
+      source: message
+      
+    # Add fields
+    - type: mutate
+      operations:
+        - add_field: { "[@metadata][index_name]" => "logs-%{[service]}" }
+        - add_field: { "[@metadata][document_id]" => "%{[trace_id]}" }
+        - remove_field: [ "host", "offset" ]
+    
+    # Grok parsing for unstructured logs
+    - type: grok
+      pattern: '%{COMMONAPACHELOG}'
+      
+    # Date parsing
+    - type: date
+      match: [ "timestamp", "ISO8601" ]
+      target: "@timestamp"
+      
+    # Lookup tables (service names)
+    - type: translate
+      dictionary_path: "/etc/logstash/service_codes.yaml"
+      field: service_code
+      destination: service_name
+  
+  # Output to Elasticsearch
+  outputs:
+    - type: elasticsearch
+      hosts: ["elasticsearch:9200"]
+      index: "%{[@metadata][index_name]}-%{+YYYY.MM.dd}"
+      document_id: "%{[@metadata][document_id]}"
+      retry_on_conflict: 3
+
+# Kibana configuration
+kibana:
+  # Connection to Elasticsearch
+  elasticsearch_hosts: ["http://elasticsearch:9200"]
+  
+  # Server settings
+  server_name: kibana.ehr-platform.com
+  server_port: 5601
+  server_basePath: /kibana
+  
+  # Default index pattern
+  kibana_defaultAppId: discover
+  
+  # Security
+  security_enabled: true
+  xpack_security_enabled: true
+  xpack_security_authc_providers: ["saml", "basic"]
+
+# Pre-built dashboards
+dashboards:
+  # System Overview
+  - name: System Overview
+    panels:
+      - title: Service Health Status
+        type: stat
+      - title: Error Rate Trend
+        type: line_chart
+      - title: Request Latency P95
+        type: metric
+  
+  # API Gateway Monitoring
+  - name: API Gateway
+    panels:
+      - title: Total Requests
+        type: counter
+      - title: Request Duration Distribution
+        type: histogram
+      - title: Status Codes
+        type: pie_chart
+      - title: Endpoints Performance
+        type: table
+  
+  # Service Performance
+  - name: Service Performance
+    panels:
+      - title: CPU Usage per Service
+        type: area_chart
+      - title: Memory Usage per Service
+        type: area_chart
+      - title: Response Times
+        type: metric
+  
+  # Database Monitoring
+  - name: Database Performance
+    panels:
+      - title: Query Duration
+        type: box_plot
+      - title: Connection Pool Usage
+        type: gauge
+      - title: Slow Queries
+        type: table
+  
+  # Security & Audit
+  - name: Security Audit
+    panels:
+      - title: Authentication Failures
+        type: counter
+      - title: Failed Login Attempts
+        type: time_series
+      - title: Audit Log Events
+        type: table
+
+# Alerts (using Watcher)
+alerts:
+  # Service unavailable
+  - name: service_down_alert
+    condition: "service health status = down for 5 minutes"
+    action: send_email
+    recipients: ["ops-team@ehr-platform.com"]
+    
+  # High error rate
+  - name: high_error_rate
+    condition: "error rate > 5% for 10 minutes"
+    action: send_email,create_incident
+    threshold_percentage: 5
+    
+  # Database slow queries
+  - name: slow_queries_alert
+    condition: "average query time > 1000ms for 5 minutes"
+    action: send_email,log_alert
+    threshold_ms: 1000
+    
+  # Disk space low
+  - name: disk_space_alert
+    condition: "elasticsearch disk usage > 80%"
+    action: send_email,trigger_cleanup
+    threshold_percentage: 80
+
+# Log shipping to S3 (long-term archival)
+s3_archival:
+  enabled: true
+  s3_bucket: ehr-platform-logs-archive
+  s3_prefix: elasticsearch-logs/
+  archive_schedule: "0 2 * * *"  # 2 AM daily
+  compress: true
+  format: gzip
+  retention_days: 2555  # 7 years
+
+# Monitoring & Metrics
+monitoring:
+  enabled: true
+  prometheus_exporter: true
+  metrics_port: 9114
+  
+  metrics:
+    - elasticsearch_up
+    - elasticsearch_nodes
+    - elasticsearch_docs_count
+    - elasticsearch_query_latency
+    - logstash_up
+    - logstash_events_processed
+    - kibana_up
+
+# Backup & Recovery
+backup:
+  enabled: true
+  snapshot_repo: s3-backup
+  snapshot_schedule: "0 3 * * *"  # 3 AM daily
+  snapshot_retention: 30
+  s3_bucket: ehr-platform-elasticsearch-backup
+  s3_base_path: snapshots/

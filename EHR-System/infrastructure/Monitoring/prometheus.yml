@@ -1,0 +1,161 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'ehr-platform'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - '/etc/prometheus/rules/alerts.yml'
+  - '/etc/prometheus/rules/recording.yml'
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # EHR Platform Microservices
+  - job_name: 'ehr-api-gateway'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: api-gateway
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+
+  - job_name: 'ehr-identity-service'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: identity-service
+
+  - job_name: 'ehr-patient-service'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: patient-service
+
+  - job_name: 'ehr-appointment-service'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: appointment-service
+
+  - job_name: 'ehr-integration-service'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: integration-service
+
+  - job_name: 'ehr-terminology-service'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: terminology-service
+
+  - job_name: 'ehr-filestorage-service'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: filestorage-service
+
+  - job_name: 'ehr-ai-service'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: ai-service
+
+  - job_name: 'ehr-bff'
+    metrics_path: '/metrics'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ehr-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: bff
+
+  # Infrastructure Services
+  - job_name: 'postgresql'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: postgresql
+
+  - job_name: 'redis'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: redis
+
+  - job_name: 'rabbitmq'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: rabbitmq

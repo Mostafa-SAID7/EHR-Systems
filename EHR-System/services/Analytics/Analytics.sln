@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analytics.API", "src\Analytics.API\Analytics.API.csproj", "{T0U1V2W3-X4Y5-7J7K-LMN8-N0O1P2Q3R4S5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analytics.Application", "src\Analytics.Application\Analytics.Application.csproj", "{U1V2W3X4-Y5Z6-7K8L-MNO9-O1P2Q3R4S5T6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analytics.Domain", "src\Analytics.Domain\Analytics.Domain.csproj", "{V2W3X4Y5-Z6A7-7L9M-NOP0-P2Q3R4S5T6U7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analytics.Infrastructure", "src\Analytics.Infrastructure\Analytics.Infrastructure.csproj", "{W3X4Y5Z6-A7B8-7M0N-OPQ1-Q3R4S5T6U7V8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analytics.Persistence", "src\Analytics.Persistence\Analytics.Persistence.csproj", "{X4Y5Z6A7-B8C9-7N1O-PQR2-R4S5T6U7V8W9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{T0U1V2W3-X4Y5-7J7K-LMN8-N0O1P2Q3R4S5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{T0U1V2W3-X4Y5-7J7K-LMN8-N0O1P2Q3R4S5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{T0U1V2W3-X4Y5-7J7K-LMN8-N0O1P2Q3R4S5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{T0U1V2W3-X4Y5-7J7K-LMN8-N0O1P2Q3R4S5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{U1V2W3X4-Y5Z6-7K8L-MNO9-O1P2Q3R4S5T6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{U1V2W3X4-Y5Z6-7K8L-MNO9-O1P2Q3R4S5T6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{U1V2W3X4-Y5Z6-7K8L-MNO9-O1P2Q3R4S5T6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{U1V2W3X4-Y5Z6-7K8L-MNO9-O1P2Q3R4S5T6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{V2W3X4Y5-Z6A7-7L9M-NOP0-P2Q3R4S5T6U7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{V2W3X4Y5-Z6A7-7L9M-NOP0-P2Q3R4S5T6U7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{V2W3X4Y5-Z6A7-7L9M-NOP0-P2Q3R4S5T6U7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{V2W3X4Y5-Z6A7-7L9M-NOP0-P2Q3R4S5T6U7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{W3X4Y5Z6-A7B8-7M0N-OPQ1-Q3R4S5T6U7V8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{W3X4Y5Z6-A7B8-7M0N-OPQ1-Q3R4S5T6U7V8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{W3X4Y5Z6-A7B8-7M0N-OPQ1-Q3R4S5T6U7V8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{W3X4Y5Z6-A7B8-7M0N-OPQ1-Q3R4S5T6U7V8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{X4Y5Z6A7-B8C9-7N1O-PQR2-R4S5T6U7V8W9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{X4Y5Z6A7-B8C9-7N1O-PQR2-R4S5T6U7V8W9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{X4Y5Z6A7-B8C9-7N1O-PQR2-R4S5T6U7V8W9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{X4Y5Z6A7-B8C9-7N1O-PQR2-R4S5T6U7V8W9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
