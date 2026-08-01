@@ -1,0 +1,58 @@
+# Multi-stage build for .NET 8 microservice
+# Usage: docker build -f Dockerfile -t ehr-platform/[service]:latest --build-arg SERVICE_NAME=[Service] .
+
+ARG SERVICE_NAME=Identity
+ARG SERVICE_PROJECT_PATH=services/${SERVICE_NAME}/src/${SERVICE_NAME}.API
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 as build
+ARG SERVICE_NAME
+ARG SERVICE_PROJECT_PATH
+
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["EHR-System/", "EHR-System/"]
+COPY ["backend/", "backend/"]
+
+# Restore dependencies
+RUN dotnet restore "EHR-System/${SERVICE_PROJECT_PATH}/${SERVICE_NAME}.API.csproj"
+
+# Build
+RUN dotnet build "EHR-System/${SERVICE_PROJECT_PATH}/${SERVICE_NAME}.API.csproj" \
+    -c Release \
+    -o /app/build
+
+# Publish
+RUN dotnet publish "EHR-System/${SERVICE_PROJECT_PATH}/${SERVICE_NAME}.API.csproj" \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 as runtime
+ARG SERVICE_NAME
+
+WORKDIR /app
+
+# Install health check dependencies
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copy published app from build stage
+COPY --from=build /app/publish .
+
+# Set environment variables
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://+:5000
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV DOTNET_EnableDiagnostics=0
+
+# Expose port
+EXPOSE 5000
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Run application
+ENTRYPOINT ["dotnet", "${SERVICE_NAME}.API.dll"]

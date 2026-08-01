@@ -1,0 +1,45 @@
+# Development environment values
+global:
+  environment: development
+
+# Single replica for dev
+services:
+  identity:
+    replicas: 1
+  patient:
+    replicas: 1
+  appointment:
+    replicas: 1
+  integration:
+    replicas: 1
+  terminology:
+    replicas: 1
+  filestorage:
+    replicas: 1
+  ai:
+    replicas: 1
+  apigateway:
+    replicas: 1
+  bff:
+    replicas: 1
+
+# Development database
+postgresql:
+  primary:
+    persistence:
+      enabled: false
+
+# Development ingress
+ingress:
+  enabled: true
+  hosts:
+    - host: api.dev.ehr-platform.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    enabled: false
+
+# Minimal monitoring in dev
+monitoring:
+  enabled: false

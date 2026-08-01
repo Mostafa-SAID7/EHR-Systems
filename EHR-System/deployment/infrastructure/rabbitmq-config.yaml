@@ -1,0 +1,185 @@
+---
+# RabbitMQ Configuration for EHR Platform
+# Defines exchanges, queues, and routing keys for async messaging
+
+# Patient Service Events
+exchanges:
+  patient_events:
+    type: topic
+    durable: true
+    auto_delete: false
+
+queues:
+  # Patient events
+  patient_created_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 86400000  # 24 hours
+      x-max-length: 1000000
+
+  patient_updated_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 86400000
+
+  # Appointment events
+  appointment_scheduled_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 86400000
+
+  appointment_cancelled_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 86400000
+
+  # Clinical events
+  clinical_record_created_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 86400000
+
+  clinical_record_updated_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 86400000
+
+  # Integration events
+  integration_request_received_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 604800000  # 7 days (long retention for integration)
+      x-max-length: 100000
+
+  hl7_message_received_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 604800000
+
+  # Billing events
+  billing_invoice_created_queue:
+    durable: true
+    arguments:
+      x-message-ttl: 86400000
+
+# Bindings
+bindings:
+  # Patient event routing
+  - source: patient_events
+    destination: patient_created_queue
+    routing_key: "patient.created"
+
+  - source: patient_events
+    destination: patient_updated_queue
+    routing_key: "patient.updated"
+
+  - source: patient_events
+    destination: appointment_scheduled_queue
+    routing_key: "appointment.scheduled"
+
+  - source: patient_events
+    destination: appointment_cancelled_queue
+    routing_key: "appointment.cancelled"
+
+  - source: patient_events
+    destination: clinical_record_created_queue
+    routing_key: "clinical.record.created"
+
+  - source: patient_events
+    destination: clinical_record_updated_queue
+    routing_key: "clinical.record.updated"
+
+  - source: patient_events
+    destination: integration_request_received_queue
+    routing_key: "integration.request.#"
+
+  - source: patient_events
+    destination: hl7_message_received_queue
+    routing_key: "hl7.message.#"
+
+  - source: patient_events
+    destination: billing_invoice_created_queue
+    routing_key: "billing.invoice.created"
+
+# Publisher configuration
+publishers:
+  patient_service:
+    exchange: patient_events
+    events:
+      - PatientCreated
+      - PatientUpdated
+      - PatientDeleted
+
+  appointment_service:
+    exchange: patient_events
+    events:
+      - AppointmentScheduled
+      - AppointmentCancelled
+      - AppointmentRescheduled
+
+  clinical_service:
+    exchange: patient_events
+    events:
+      - ClinicalRecordCreated
+      - ClinicalRecordUpdated
+
+  integration_service:
+    exchange: patient_events
+    events:
+      - IntegrationRequestReceived
+      - HL7MessageReceived
+      - FHIRResourceReceived
+
+  billing_service:
+    exchange: patient_events
+    events:
+      - InvoiceCreated
+      - PaymentProcessed
+
+# Consumer configuration
+consumers:
+  # Patient service consumers
+  patient_event_handler:
+    queue: patient_created_queue
+    prefetch_count: 10
+    durable: true
+
+  # Appointment service consumers
+  appointment_event_handler:
+    queue: appointment_scheduled_queue
+    prefetch_count: 10
+    durable: true
+
+  # Clinical service consumers
+  clinical_event_handler:
+    queue: clinical_record_created_queue
+    prefetch_count: 10
+    durable: true
+
+  # Integration service consumers
+  integration_handler:
+    queue: hl7_message_received_queue
+    prefetch_count: 5
+    durable: true
+
+  # Billing service consumers
+  billing_event_handler:
+    queue: billing_invoice_created_queue
+    prefetch_count: 10
+    durable: true
+
+# Policies
+policies:
+  ha_policy:
+    pattern: "^ehr\\."
+    definition:
+      ha-mode: "all"
+      ha-sync-mode: "automatic"
+      ha-sync-batch-size: 5
+      federation-upstream-set: "all"
+
+# Monitoring
+monitoring:
+  enabled: true
+  prometheus_exporter_enabled: true
+  queue_length_alarm_threshold: 10000

@@ -1,0 +1,82 @@
+name: Deploy - Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Docker - Build & Push"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+env:
+  HELM_VERSION: v3.12.0
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: ${{ env.HELM_VERSION }}
+
+    - name: Configure kubectl
+      uses: azure/k8s-set-context@v3
+      with:
+        method: service-account
+        k8s-url: ${{ secrets.KUBE_SERVER }}
+        k8s-secret: ${{ secrets.KUBE_CONFIG }}
+
+    - name: Create namespace
+      run: |
+        kubectl create namespace ehr-platform --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Deploy with Helm (Dev)
+      if: github.event.inputs.environment == 'dev'
+      run: |
+        helm upgrade --install ehr-platform ./EHR-System/deployment/helm \
+          -f ./EHR-System/deployment/helm/values-dev.yaml \
+          -n ehr-platform \
+          --create-namespace
+
+    - name: Deploy with Helm (Staging)
+      if: github.event.inputs.environment == 'staging'
+      run: |
+        helm upgrade --install ehr-platform ./EHR-System/deployment/helm \
+          -f ./EHR-System/deployment/helm/values-staging.yaml \
+          -n ehr-platform \
+          --create-namespace
+
+    - name: Deploy with Helm (Production)
+      if: github.event.inputs.environment == 'prod'
+      run: |
+        helm upgrade --install ehr-platform ./EHR-System/deployment/helm \
+          -f ./EHR-System/deployment/helm/values-prod.yaml \
+          -n ehr-platform \
+          --create-namespace
+
+    - name: Verify deployment
+      run: |
+        kubectl rollout status deployment -n ehr-platform --timeout=5m
+        kubectl get pods -n ehr-platform
+
+    - name: Run smoke tests
+      run: |
+        kubectl run smoke-test \
+          --image=curlimages/curl:latest \
+          --restart=Never \
+          -n ehr-platform \
+          -- curl -f http://api-gateway:5000/health || exit 1

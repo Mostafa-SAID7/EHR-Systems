@@ -1,0 +1,17 @@
+apiVersion: v2
+name: ehr-platform
+description: Enterprise Healthcare Record Platform - Microservices
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ehr
+  - healthcare
+  - microservices
+  - kubernetes
+home: https://github.com/your-org/ehr-platform
+sources:
+  - https://github.com/your-org/ehr-platform
+maintainers:
+  - name: EHR Platform Team
+    email: ehr-team@example.com

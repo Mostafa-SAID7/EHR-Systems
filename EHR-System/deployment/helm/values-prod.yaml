@@ -1,0 +1,181 @@
+# Production environment values
+global:
+  environment: production
+  domain: ehr-platform.com
+
+# High availability - 3 replicas
+services:
+  identity:
+    replicas: 3
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+  patient:
+    replicas: 3
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+  appointment:
+    replicas: 3
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+  integration:
+    replicas: 2
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+  terminology:
+    replicas: 2
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+  filestorage:
+    replicas: 3
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+  ai:
+    replicas: 2
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "2000m"
+      limits:
+        memory: "4Gi"
+        cpu: "4000m"
+  apigateway:
+    replicas: 3
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+  bff:
+    replicas: 3
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+# Production database
+postgresql:
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClassName: fast-ssd
+  replication:
+    enabled: true
+    numSyncReplicas: 2
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"
+    retention: 30d
+
+# Production Redis with replication
+redis:
+  replicas: 3
+  persistence:
+    enabled: true
+    size: 10Gi
+
+# Production RabbitMQ cluster
+rabbitmq:
+  replicas: 3
+  persistence:
+    enabled: true
+    size: 20Gi
+
+# Production ingress with SSL
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: api.ehr-platform.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: ehr-platform-tls
+      hosts:
+        - api.ehr-platform.com
+
+# Service mesh for prod
+serviceMesh:
+  enabled: true
+  virtualServiceDefaults:
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+    circuitBreaker:
+      consecutiveErrors: 5
+      interval: 30s
+      maxRequests: 100
+
+# Full monitoring stack
+monitoring:
+  enabled: true
+  prometheus:
+    retention: 90d
+    scrapeInterval: 15s
+  grafana:
+    enabled: true
+  alerting:
+    enabled: true
+    rules:
+      - name: ServiceDown
+        threshold: 5m
+      - name: HighErrorRate
+        threshold: 5%
+      - name: HighLatency
+        threshold: 1s
+
+# Logging with ELK
+logging:
+  level: Warning
+  elasticsearch:
+    enabled: true
+    retention: 30d
+
+# Security policies
+security:
+  networkPolicy:
+    enabled: true
+  podSecurityPolicy:
+    enabled: true
+  rbac:
+    enabled: true

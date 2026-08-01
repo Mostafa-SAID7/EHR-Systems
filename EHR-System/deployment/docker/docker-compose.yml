@@ -1,0 +1,263 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  postgres:
+    image: postgres:15-alpine
+    container_name: ehr-postgres
+    environment:
+      POSTGRES_USER: ehruser
+      POSTGRES_PASSWORD: EhrPassword123!
+      POSTGRES_DB: ehr_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ehruser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: ehr-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ehruser
+      RABBITMQ_DEFAULT_PASS: EhrPassword123!
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  consul:
+    image: consul:1.16
+    container_name: ehr-consul
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: agent -server -ui -bootstrap-expect=1 -client=0.0.0.0
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ehr-network
+
+  # Microservices
+  identity-service:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.Identity
+    container_name: ehr-identity
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ehr_platform;User Id=ehruser;Password=EhrPassword123!;"
+      ConnectionStrings__Redis: "redis:6379"
+      ServiceRegistry__Address: "http://consul:8500"
+      JWT_SECRET: "supersecretkeyforjwttoken123!@#"
+    ports:
+      - "5001:5000"
+    networks:
+      - ehr-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  patient-service:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.Patient
+    container_name: ehr-patient
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ehr_platform;User Id=ehruser;Password=EhrPassword123!;"
+      ConnectionStrings__Redis: "redis:6379"
+      ServiceRegistry__Address: "http://consul:8500"
+    ports:
+      - "5002:5000"
+    networks:
+      - ehr-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  appointment-service:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.Appointment
+    container_name: ehr-appointment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ehr_platform;User Id=ehruser;Password=EhrPassword123!;"
+      ConnectionStrings__Redis: "redis:6379"
+      ServiceRegistry__Address: "http://consul:8500"
+    ports:
+      - "5003:5000"
+    networks:
+      - ehr-network
+
+  integration-service:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.Integration
+    container_name: ehr-integration
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ehr_platform;User Id=ehruser;Password=EhrPassword123!;"
+      ConnectionStrings__RabbitMQ: "amqp://ehruser:EhrPassword123!@rabbitmq:5672/"
+    ports:
+      - "5004:5000"
+    networks:
+      - ehr-network
+
+  terminology-service:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.Terminology
+    container_name: ehr-terminology
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ehr_platform;User Id=ehruser;Password=EhrPassword123!;"
+    ports:
+      - "5005:5000"
+    networks:
+      - ehr-network
+
+  filestorage-service:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.FileStorage
+    container_name: ehr-filestorage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ehr_platform;User Id=ehruser;Password=EhrPassword123!;"
+      Storage__Type: "Local"
+      Storage__LocalPath: "/app/storage"
+    volumes:
+      - filestorage_data:/app/storage
+    ports:
+      - "5006:5000"
+    networks:
+      - ehr-network
+
+  ai-service:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.AI
+    container_name: ehr-ai
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=postgres;Port=5432;Database=ehr_platform;User Id=ehruser;Password=EhrPassword123!;"
+      AI__Provider: "Local"
+    ports:
+      - "5007:5000"
+    networks:
+      - ehr-network
+
+  api-gateway:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.ApiGateway
+    container_name: ehr-api-gateway
+    depends_on:
+      identity-service:
+        condition: service_healthy
+      patient-service:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address: "http://identity-service:5000"
+      ReverseProxy__Clusters__patient-cluster__Destinations__destination1__Address: "http://patient-service:5000"
+      ReverseProxy__Clusters__appointment-cluster__Destinations__destination1__Address: "http://appointment-service:5000"
+      JWT_SECRET: "supersecretkeyforjwttoken123!@#"
+    ports:
+      - "5000:5000"
+    networks:
+      - ehr-network
+
+  bff:
+    build:
+      context: ../..
+      dockerfile: EHR-System/deployment/docker/Dockerfile.BFF
+    container_name: ehr-bff
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ServiceEndpoints__PatientService: "http://patient-service:5000"
+      ServiceEndpoints__AppointmentService: "http://appointment-service:5000"
+      ServiceEndpoints__IdentityService: "http://identity-service:5000"
+      ConnectionStrings__Redis: "redis:6379"
+    ports:
+      - "5001:5001"
+    networks:
+      - ehr-network
+
+volumes:
+  postgres_data:
+  filestorage_data:
+
+networks:
+  ehr-network:
+    driver: bridge

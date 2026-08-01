@@ -1,0 +1,51 @@
+# Staging environment values
+global:
+  environment: staging
+  domain: staging.ehr-platform.com
+
+# 2 replicas for staging
+services:
+  identity:
+    replicas: 2
+  patient:
+    replicas: 2
+  appointment:
+    replicas: 2
+  integration:
+    replicas: 2
+  terminology:
+    replicas: 1
+  filestorage:
+    replicas: 2
+  ai:
+    replicas: 1
+  apigateway:
+    replicas: 2
+  bff:
+    replicas: 2
+
+# Staging database with backup
+postgresql:
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+  backup:
+    enabled: true
+
+# Staging ingress
+ingress:
+  enabled: true
+  hosts:
+    - host: api.staging.ehr-platform.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Basic monitoring
+monitoring:
+  enabled: true
+  prometheus:
+    retention: 15d
+  grafana:
+    enabled: true

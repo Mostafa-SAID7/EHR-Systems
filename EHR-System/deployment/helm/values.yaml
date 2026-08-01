@@ -1,0 +1,206 @@
+---
+# Global configuration
+global:
+  environment: production
+  domain: ehr-platform.com
+  imagePullPolicy: IfNotPresent
+
+# Image registry
+image:
+  registry: docker.io
+  repository: ehr-platform
+  tag: latest
+
+# Namespace
+namespace: ehr-platform
+
+# Services configuration
+services:
+  identity:
+    enabled: true
+    replicas: 2
+    port: 5000
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  patient:
+    enabled: true
+    replicas: 2
+    port: 5000
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  appointment:
+    enabled: true
+    replicas: 2
+    port: 5000
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  integration:
+    enabled: true
+    replicas: 1
+    port: 5000
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  terminology:
+    enabled: true
+    replicas: 1
+    port: 5000
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  filestorage:
+    enabled: true
+    replicas: 2
+    port: 5000
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+  ai:
+    enabled: true
+    replicas: 1
+    port: 5000
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "2000m"
+
+  apigateway:
+    enabled: true
+    replicas: 2
+    port: 5000
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  bff:
+    enabled: true
+    replicas: 2
+    port: 5001
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# Database
+postgresql:
+  enabled: true
+  auth:
+    username: ehruser
+    password: ChangeMe123!
+  primary:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+# Redis
+redis:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+
+# RabbitMQ
+rabbitmq:
+  enabled: true
+  replicas: 3
+  auth:
+    username: ehruser
+    password: ChangeMe123!
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# Ingress
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: api.ehr-platform.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: ehr-platform-tls
+      hosts:
+        - api.ehr-platform.com
+
+# Service mesh (Istio)
+serviceMesh:
+  enabled: false
+  virtualServiceDefaults:
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+
+# Monitoring
+monitoring:
+  enabled: true
+  prometheus:
+    scrapeInterval: 30s
+  grafana:
+    enabled: true
+
+# Logging
+logging:
+  level: Information
+  elasticsearch:
+    enabled: false
