@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>HL7/FHIR/NPHIES Integration Service - Application Layer</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.3.0" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Integration.Domain\Integration.Domain.csproj" />
+    <ProjectReference Include="..\Integration.Contracts\Integration.Contracts.csproj" />
+  </ItemGroup>
+</Project>
