@@ -1,5 +1,9 @@
 using EHRPlatform.Services.Audit.Persistence;
 using EHRPlatform.Services.Audit.Infrastructure.Kafka;
+using EHRPlatform.BuildingBlocks.Common.Caching;
+using EHRPlatform.BuildingBlocks.Security.MultiTenancy;
+using EHRPlatform.BuildingBlocks.Security.CurrentUser;
+using EHRPlatform.BuildingBlocks.EventBus.Broker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -72,6 +76,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Authorization
 builder.Services.AddAuthorization();
+
+// Building-Blocks Services Integration
+builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<ITenantContext, TenantContext>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IMessageBroker, MessageBroker>();
 
 // Health checks
 builder.Services.AddHealthChecks()

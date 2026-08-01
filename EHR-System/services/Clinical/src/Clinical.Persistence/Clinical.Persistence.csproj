@@ -22,4 +22,9 @@
     <ProjectReference Include="..\Clinical.Domain\Clinical.Domain.csproj" />
   </ItemGroup>
 
+  <!-- Building Blocks -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\building-blocks\SharedKernel\src\SharedKernel.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -3,6 +3,10 @@ using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
 using EHRPlatform.BuildingBlocks.Observability.HealthChecks;
 using EHRPlatform.BuildingBlocks.Security.Authentication;
 using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Caching;
+using EHRPlatform.BuildingBlocks.Security.MultiTenancy;
+using EHRPlatform.BuildingBlocks.Security.CurrentUser;
+using EHRPlatform.BuildingBlocks.EventBus.Broker;
 using EHRPlatform.Services.Clinical.Application.Services;
 using EHRPlatform.Services.Clinical.Persistence;
 using EHRPlatform.Services.Clinical.Persistence.Documents;
@@ -93,6 +97,15 @@ try
         ?? Environment.GetEnvironmentVariable("JWT_SECRET")
         ?? throw new InvalidOperationException("JWT_SECRET is required");
     builder.Services.AddJwtAuthentication(jwtSecret);
+
+    // ── Authorization ─────────────────────────────────────────────────────────
+    builder.Services.AddAuthorization();
+
+    // ── Building-Blocks Services Integration ───────────────────────────────────
+    builder.Services.AddScoped<ICacheService, CacheService>();
+    builder.Services.AddScoped<ITenantContext, TenantContext>();
+    builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+    builder.Services.AddScoped<IMessageBroker, MessageBroker>();
 
     // ── CORS ──────────────────────────────────────────────────────────────────
     builder.Services.AddCors(options =>

@@ -20,4 +20,12 @@
     <ProjectReference Include="..\Clinical.Persistence\Clinical.Persistence.csproj" />
   </ItemGroup>
 
+  <!-- Building Blocks -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\building-blocks\SharedKernel\src\SharedKernel.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Common\src\Common.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Security\src\Security.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\EventBus\src\EventBus.csproj" />
+  </ItemGroup>
+
 </Project>

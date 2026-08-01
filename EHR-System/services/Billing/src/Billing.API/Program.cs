@@ -2,6 +2,10 @@ using Serilog;
 using EHRPlatform.Services.Billing.Persistence;
 using EHRPlatform.Services.Billing.Application.Features.Invoicing.Mappers;
 using EHRPlatform.Services.Billing.Application.Features.Invoicing.Handlers;
+using EHRPlatform.BuildingBlocks.Common.Caching;
+using EHRPlatform.BuildingBlocks.Security.MultiTenancy;
+using EHRPlatform.BuildingBlocks.Security.CurrentUser;
+using EHRPlatform.BuildingBlocks.EventBus.Broker;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,6 +50,15 @@ try
 
     // ── Application Services ──────────────────────────────────────────────────
     builder.Services.AddScoped<InvoiceMapper>();
+
+    // ── Authorization ─────────────────────────────────────────────────────────
+    builder.Services.AddAuthorization();
+
+    // ── Building-Blocks Services Integration ───────────────────────────────────
+    builder.Services.AddScoped<ICacheService, CacheService>();
+    builder.Services.AddScoped<ITenantContext, TenantContext>();
+    builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+    builder.Services.AddScoped<IMessageBroker, MessageBroker>();
 
     // ── CORS ──────────────────────────────────────────────────────────────────
     builder.Services.AddCors(options =>

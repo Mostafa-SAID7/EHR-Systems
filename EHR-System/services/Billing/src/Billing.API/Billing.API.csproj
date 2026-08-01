@@ -21,11 +21,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Billing.Application\Billing.Application.csproj" />
     <ProjectReference Include="..\Billing.Contracts\Billing.Contracts.csproj" />
     <ProjectReference Include="..\Billing.Domain\Billing.Domain.csproj" />
-    <ProjectReference Include="..\Billing.Infrastructure\Billing.Infrastructure.csproj" />
     <ProjectReference Include="..\Billing.Persistence\Billing.Persistence.csproj" />
+  </ItemGroup>
+
+  <!-- Building Blocks -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\building-blocks\SharedKernel\src\SharedKernel.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Common\src\Common.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Security\src\Security.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\EventBus\src\EventBus.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Contracts\src\Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Observability\src\Observability.csproj" />
   </ItemGroup>
 
 </Project>
