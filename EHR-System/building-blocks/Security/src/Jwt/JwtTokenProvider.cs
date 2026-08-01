@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -8,9 +9,10 @@ using Microsoft.IdentityModel.Tokens;
 namespace EHRPlatform.Security.Jwt;
 
 /// <summary>
-/// JWT token generation and validation provider.
+/// Implementation of JWT token generation and validation.
+/// Single responsibility: JWT token provider implementation.
 /// </summary>
-public class JwtTokenProvider
+public class JwtTokenProvider : IJwtTokenProvider
 {
     private readonly JwtSettings _settings;
 

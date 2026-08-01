@@ -4,7 +4,7 @@ namespace EHRPlatform.Security.Authorization;
 
 /// <summary>
 /// Authorization policy definitions for EHR platform.
-/// Defines what operations require which permissions/roles.
+/// Single responsibility: Policy registration and definitions.
 /// </summary>
 public static class AuthorizationPolicies
 {
@@ -47,44 +47,5 @@ public static class AuthorizationPolicies
         // Any authenticated user
         options.AddPolicy(AnyAuthenticatedUser, policy =>
             policy.RequireAuthenticatedUser());
-    }
-}
-
-/// <summary>
-/// Role definitions for EHR platform.
-/// </summary>
-public static class ApplicationRoles
-{
-    public const string Admin = "Admin";
-    public const string Clinician = "Clinician";
-    public const string Nurse = "Nurse";
-    public const string Receptionist = "Receptionist";
-    public const string Pharmacist = "Pharmacist";
-    public const string Patient = "Patient";
-    public const string SystemService = "SystemService";
-
-    /// <summary>
-    /// Get all available roles.
-    /// </summary>
-    public static IEnumerable<string> GetAllRoles()
-    {
-        yield return Admin;
-        yield return Clinician;
-        yield return Nurse;
-        yield return Receptionist;
-        yield return Pharmacist;
-        yield return Patient;
-        yield return SystemService;
-    }
-
-    /// <summary>
-    /// Get healthcare provider roles (staff).
-    /// </summary>
-    public static IEnumerable<string> GetProviderRoles()
-    {
-        yield return Clinician;
-        yield return Nurse;
-        yield return Receptionist;
-        yield return Pharmacist;
     }
 }

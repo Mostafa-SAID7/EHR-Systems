@@ -5,14 +5,15 @@ using System.Text;
 namespace EHRPlatform.Security.Encryption;
 
 /// <summary>
-/// Service for password hashing and verification using bcrypt.
+/// Implementation of encryption and hashing operations.
+/// Single responsibility: Encryption and password hashing implementation.
 /// </summary>
-public class EncryptionService
+public class EncryptionService : IEncryptionService
 {
     /// <summary>
     /// Hash password using bcrypt (one-way, salted).
     /// </summary>
-    public static string HashPassword(string password)
+    public string HashPassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Password cannot be empty", nameof(password));
@@ -24,7 +25,7 @@ public class EncryptionService
     /// <summary>
     /// Verify password against hash.
     /// </summary>
-    public static bool VerifyPassword(string password, string hash)
+    public bool VerifyPassword(string password, string hash)
     {
         if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(hash))
             return false;
@@ -42,7 +43,7 @@ public class EncryptionService
     /// <summary>
     /// Generate cryptographically secure random token.
     /// </summary>
-    public static string GenerateSecureToken(int length = 32)
+    public string GenerateSecureToken(int length = 32)
     {
         using var rng = new RNGCryptoServiceProvider();
         var tokenData = new byte[length];
@@ -53,7 +54,7 @@ public class EncryptionService
     /// <summary>
     /// Generate OTP (One-Time Password) for MFA.
     /// </summary>
-    public static string GenerateOtp(int length = 6)
+    public string GenerateOtp(int length = 6)
     {
         using var rng = new RNGCryptoServiceProvider();
         var tokenData = new byte[length];
@@ -72,7 +73,7 @@ public class EncryptionService
     /// <summary>
     /// Encrypt sensitive data (AES-256-GCM).
     /// </summary>
-    public static string EncryptAes256(string plainText, string key)
+    public string EncryptAes256(string plainText, string key)
     {
         if (string.IsNullOrEmpty(plainText) || string.IsNullOrEmpty(key))
             throw new ArgumentException("Plain text and key cannot be empty");
@@ -97,7 +98,7 @@ public class EncryptionService
     /// <summary>
     /// Decrypt AES-256-GCM encrypted data.
     /// </summary>
-    public static string DecryptAes256(string cipherText, string key)
+    public string DecryptAes256(string cipherText, string key)
     {
         if (string.IsNullOrEmpty(cipherText) || string.IsNullOrEmpty(key))
             throw new ArgumentException("Cipher text and key cannot be empty");
