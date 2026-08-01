@@ -3,16 +3,8 @@ using System;
 namespace EHRPlatform.EventBus.Outbox;
 
 /// <summary>
-/// Outbox message for transactional event publishing.
-/// 
-/// OUTBOX PATTERN:
-/// 1. Service writes domain change + outbox entry in same transaction
-/// 2. OutboxProcessor reads unpublished outbox entries
-/// 3. Publishes to message broker (RabbitMQ/Kafka)
-/// 4. Marks as published
-/// 
-/// This guarantees "at-least-once" delivery of events.
-/// Services must be idempotent when handling events.
+/// Outbox message data model for transactional event publishing.
+/// Single responsibility: Outbox message data structure.
 /// </summary>
 public class OutboxMessage
 {
@@ -53,11 +45,6 @@ public class OutboxMessage
     public DateTime? PublishedAt { get; set; }
 
     /// <summary>
-    /// Whether this event has been successfully published.
-    /// </summary>
-    public bool IsPublished => PublishedAt.HasValue;
-
-    /// <summary>
     /// Number of publish attempts.
     /// </summary>
     public int PublishAttempts { get; set; }
@@ -76,29 +63,4 @@ public class OutboxMessage
     /// Correlation ID for tracing.
     /// </summary>
     public string? CorrelationId { get; set; }
-
-    /// <summary>
-    /// Mark as published.
-    /// </summary>
-    public void MarkAsPublished()
-    {
-        PublishedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Record failed publish attempt.
-    /// </summary>
-    public void RecordFailedAttempt(string error)
-    {
-        PublishAttempts++;
-        Error = error;
-    }
-
-    /// <summary>
-    /// Check if should retry (max attempts not exceeded).
-    /// </summary>
-    public bool ShouldRetry()
-    {
-        return !IsPublished && PublishAttempts < MaxPublishAttempts;
-    }
 }
