@@ -1,0 +1,14 @@
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.Services.Patient.Application.Patients.Responses;
+
+namespace EHRPlatform.Services.Patient.Application.Features.Patients.Queries;
+
+public class GetPatientsQuery : IQuery<PatientListDto>
+{
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+    public string? Status { get; set; }
+}
+
+
+

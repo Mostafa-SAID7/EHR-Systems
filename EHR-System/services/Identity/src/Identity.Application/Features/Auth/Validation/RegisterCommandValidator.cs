@@ -1,0 +1,40 @@
+﻿#nullable enable
+
+using EHRPlatform.Services.Identity.Features.Auth.Commands;
+using FluentValidation;
+
+namespace EHRPlatform.Services.Identity.Application.Features.Auth.Validation;
+
+/// <summary>
+/// Validator for user registration command.
+/// Enforces HIPAA-compliant password requirements.
+/// </summary>
+public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
+{
+    /// <summary>
+    /// Initialize registration validator with rules.
+    /// </summary>
+    public RegisterCommandValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email is required")
+            .EmailAddress().WithMessage("Email must be a valid email address");
+
+        RuleFor(x => x.FirstName)
+            .NotEmpty().WithMessage("First name is required")
+            .MaximumLength(100).WithMessage("First name must not exceed 100 characters");
+
+        RuleFor(x => x.LastName)
+            .NotEmpty().WithMessage("Last name is required")
+            .MaximumLength(100).WithMessage("Last name must not exceed 100 characters");
+
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Password is required")
+            .MinimumLength(12).WithMessage("Password must be at least 12 characters")
+            .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter")
+            .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter")
+            .Matches(@"[0-9]").WithMessage("Password must contain at least one digit")
+            .Matches(@"[!@#$%^&*]").WithMessage("Password must contain at least one special character (!@#$%^&*)");
+    }
+}
+
