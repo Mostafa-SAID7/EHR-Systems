@@ -62,6 +62,86 @@ public class NotificationController : ControllerBase
     }
 
     /// <summary>
+    /// Mark notification as read
+    /// </summary>
+    [HttpPost("{notificationId}/mark-read")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> MarkAsRead(
+        Guid notificationId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(new MarkAsReadCommand(notificationId), cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>
+    /// Delete/archive a notification
+    /// </summary>
+    [HttpDelete("{notificationId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteNotification(
+        Guid notificationId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(new DeleteNotificationCommand(notificationId), cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>
+    /// Get notification history for user with optional filters
+    /// </summary>
+    [HttpGet("user/{userId}/history")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNotificationHistory(
+        Guid userId,
+        [FromQuery] string? type = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new GetNotificationHistoryQuery(userId, type, fromDate, toDate, pageNumber, pageSize),
+            cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get all notification templates
+    /// </summary>
+    [HttpGet("templates")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTemplates(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new GetNotificationTemplatesQuery(pageNumber, pageSize),
+            cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Create notification template
+    /// </summary>
+    [HttpPost("templates")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateTemplate(
+        [FromBody] CreateNotificationTemplateRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new CreateNotificationTemplateCommand(request.TemplateName, request.Subject, request.Body, request.ContentType),
+            cancellationToken);
+        return result.Success ? CreatedAtAction(nameof(GetTemplates), new { id = result.TemplateId }, result) : BadRequest(result);
+    }
+
+    /// <summary>
     /// Health check endpoint
     /// </summary>
     [HttpGet("health")]

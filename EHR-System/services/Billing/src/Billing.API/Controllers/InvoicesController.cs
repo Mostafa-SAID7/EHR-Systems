@@ -71,6 +71,80 @@ public class InvoicesController : ControllerBase
     }
 
     /// <summary>
+    /// Update invoice details (status, notes, payment info)
+    /// </summary>
+    [HttpPut("by-number/{invoiceNumber}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateInvoice(
+        string invoiceNumber,
+        [FromBody] UpdateInvoiceRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Updating invoice: {InvoiceNumber}", invoiceNumber);
+        var command = new UpdateInvoiceCommand(invoiceNumber, request.Notes, request.Status, request.PaidAmount);
+        var result = await _mediator.Send(command, cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>
+    /// Cancel an invoice with reason
+    /// </summary>
+    [HttpPost("by-number/{invoiceNumber}/cancel")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CancelInvoice(
+        string invoiceNumber,
+        [FromBody] CancelInvoiceRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Cancelling invoice: {InvoiceNumber}", invoiceNumber);
+        var command = new CancelInvoiceCommand(invoiceNumber, request.Reason);
+        var result = await _mediator.Send(command, cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>
+    /// Get all invoices for a patient
+    /// </summary>
+    [HttpGet("patient/{patientId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPatientInvoices(
+        Guid patientId,
+        [FromQuery] string? status = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Retrieving invoices for patient {PatientId}", patientId);
+        var query = new GetPatientInvoicesQuery(patientId, status, fromDate, toDate, pageNumber, pageSize);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Generate PDF for an invoice
+    /// </summary>
+    [HttpPost("by-number/{invoiceNumber}/pdf")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GenerateInvoicePDF(
+        string invoiceNumber,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Generating PDF for invoice: {InvoiceNumber}", invoiceNumber);
+        var command = new GenerateInvoicePDFCommand(invoiceNumber);
+        var result = await _mediator.Send(command, cancellationToken);
+        
+        if (!result.Success)
+            return BadRequest(result);
+        
+        return File(result.PdfContent, "application/pdf", result.FileName);
+    }
+
+    /// <summary>
     /// Health check endpoint.
     /// </summary>
     [HttpGet("health")]
