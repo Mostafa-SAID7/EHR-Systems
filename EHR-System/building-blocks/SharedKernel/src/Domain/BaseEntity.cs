@@ -3,70 +3,43 @@ using System;
 namespace EHRPlatform.SharedKernel.Domain;
 
 /// <summary>
-/// Base entity class - core entity with ID and deletion support only.
-/// Separates core entity concern from audit trails.
+/// Base entity class.
+/// Single responsibility: Base entity functionality.
 /// </summary>
-public abstract class BaseEntity : IEntity
+public abstract class BaseEntity
 {
     /// <summary>
-    /// Unique identifier (GUID).
+    /// Entity ID.
     /// </summary>
-    public Guid Id { get; protected set; }
+    public string Id { get; protected set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Soft delete timestamp.
-    /// Null if entity is not deleted.
+    /// Created timestamp.
+    /// </summary>
+    public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Created by user ID.
+    /// </summary>
+    public string? CreatedBy { get; protected set; }
+
+    /// <summary>
+    /// Last modified timestamp.
+    /// </summary>
+    public DateTime? ModifiedAt { get; protected set; }
+
+    /// <summary>
+    /// Last modified by user ID.
+    /// </summary>
+    public string? ModifiedBy { get; protected set; }
+
+    /// <summary>
+    /// Is entity deleted (soft delete).
+    /// </summary>
+    public bool IsDeleted { get; protected set; }
+
+    /// <summary>
+    /// Deleted timestamp.
     /// </summary>
     public DateTime? DeletedAt { get; protected set; }
-
-    /// <summary>
-    /// User that deleted entity.
-    /// Null if entity is not deleted.
-    /// </summary>
-    public string? DeletedBy { get; protected set; }
-
-    /// <summary>
-    /// Correlation ID for distributed tracing (e.g., request ID).
-    /// Links entity changes across microservices.
-    /// </summary>
-    public string? CorrelationId { get; set; }
-
-    /// <summary>
-    /// Whether entity is soft-deleted.
-    /// </summary>
-    public bool IsDeleted => DeletedAt.HasValue;
-
-    /// <summary>
-    /// Initialize entity with new ID.
-    /// </summary>
-    protected BaseEntity()
-    {
-        Id = Guid.NewGuid();
-    }
-
-    /// <summary>
-    /// Soft delete entity.
-    /// </summary>
-    public virtual void Delete(string deletedBy)
-    {
-        DeletedAt = DateTime.UtcNow;
-        DeletedBy = deletedBy;
-    }
-
-    /// <summary>
-    /// Restore soft-deleted entity.
-    /// </summary>
-    public virtual void Restore()
-    {
-        DeletedAt = null;
-        DeletedBy = null;
-    }
-
-    /// <summary>
-    /// Set correlation ID for tracing.
-    /// </summary>
-    public void SetCorrelationId(string correlationId)
-    {
-        CorrelationId = correlationId;
-    }
 }

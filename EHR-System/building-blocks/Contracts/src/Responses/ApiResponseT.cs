@@ -3,59 +3,38 @@ using System.Collections.Generic;
 namespace EHRPlatform.Contracts.Responses;
 
 /// <summary>
-/// Typed API response with data payload.
-/// Single responsibility: Success response with typed data.
+/// Generic typed API response.
+/// Single responsibility: Generic typed response envelope.
 /// </summary>
-public class ApiResponse<T> : ApiResponse
+public class ApiResponse<T>
 {
+    /// <summary>
+    /// Success flag.
+    /// </summary>
+    public bool Success { get; set; }
+
+    /// <summary>
+    /// Response message.
+    /// </summary>
+    public string? Message { get; set; }
+
     /// <summary>
     /// Response data.
     /// </summary>
     public T? Data { get; set; }
 
-    public ApiResponse()
-    {
-    }
-
-    public ApiResponse(bool success, int statusCode, T? data = default, string? message = null)
-        : base(success, statusCode, message)
-    {
-        Data = data;
-    }
+    /// <summary>
+    /// Error details (if failed).
+    /// </summary>
+    public ErrorDetails? Error { get; set; }
 
     /// <summary>
-    /// Create successful response with data.
+    /// Errors list (for validation).
     /// </summary>
-    public static ApiResponse<T> Ok(T? data, string? message = "Request successful", string? traceId = null)
-    {
-        return new ApiResponse<T>(true, 200, data, message) { TraceId = traceId };
-    }
+    public Dictionary<string, string[]>? Errors { get; set; }
 
     /// <summary>
-    /// Create error response.
+    /// Request ID for tracing.
     /// </summary>
-    public static new ApiResponse<T> Failure(int statusCode, string message, List<string>? details = null, string? traceId = null)
-    {
-        return new ApiResponse<T>(false, statusCode, default, message)
-        {
-            ErrorInfo = new ErrorDetails { Message = message, Details = details ?? new List<string>() },
-            TraceId = traceId
-        };
-    }
-
-    /// <summary>
-    /// Create not found response.
-    /// </summary>
-    public static ApiResponse<T> NotFound(string message = "Resource not found", string? traceId = null)
-    {
-        return Failure(404, message, traceId: traceId);
-    }
-
-    /// <summary>
-    /// Create created response (201).
-    /// </summary>
-    public static ApiResponse<T> Created(T data, string? message = "Resource created", string? traceId = null)
-    {
-        return new ApiResponse<T>(true, 201, data, message) { TraceId = traceId };
-    }
+    public string? TraceId { get; set; }
 }

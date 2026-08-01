@@ -1,51 +1,35 @@
 using System;
-using MediatR;
 
 namespace EHRPlatform.EventBus.Events;
 
 /// <summary>
 /// Base class for domain events.
-/// Domain events represent something that happened in the business domain.
-/// 
-/// Example: PatientCreatedDomainEvent, AppointmentScheduledDomainEvent
-/// 
-/// Domain events are published and consumed within the same service.
-/// For inter-service communication, use IntegrationEvent instead.
+/// Single responsibility: Domain event base.
 /// </summary>
-public abstract class DomainEvent : INotification
+public abstract class DomainEvent
 {
     /// <summary>
-    /// Event ID (unique identifier for this event instance).
+    /// Event ID.
     /// </summary>
-    public Guid EventId { get; protected set; } = Guid.NewGuid();
+    public string Id { get; protected set; } = Guid.NewGuid().ToString();
 
     /// <summary>
-    /// Aggregate ID (the root entity this event belongs to).
+    /// Aggregate ID that raised the event.
     /// </summary>
-    public Guid AggregateId { get; protected set; }
+    public string AggregateId { get; protected set; } = null!;
 
     /// <summary>
-    /// Aggregate type (e.g., "Patient", "Appointment").
+    /// Event creation timestamp.
     /// </summary>
-    public string AggregateType { get; protected set; } = null!;
+    public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// When the event occurred.
+    /// Event version/sequence number.
     /// </summary>
-    public DateTime OccurredAt { get; protected set; } = DateTime.UtcNow;
+    public int Version { get; protected set; }
 
     /// <summary>
-    /// Correlation ID for tracing.
-    /// </summary>
-    public string? CorrelationId { get; set; }
-
-    /// <summary>
-    /// User who triggered the event.
+    /// User ID who triggered the event.
     /// </summary>
     public string? UserId { get; set; }
-
-    /// <summary>
-    /// Event version (for schema evolution).
-    /// </summary>
-    public int Version { get; protected set; } = 1;
 }
