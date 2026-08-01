@@ -6,7 +6,7 @@ namespace EHRPlatform.Observability.Middleware;
 
 /// <summary>
 /// Middleware to add correlation ID to all requests for distributed tracing.
-/// Correlation ID is unique per request and flows through all microservices.
+/// Single responsibility: Correlation ID injection and propagation.
 /// </summary>
 public class CorrelationIdMiddleware
 {
@@ -42,34 +42,3 @@ public class CorrelationIdMiddleware
     }
 }
 
-/// <summary>
-/// Extension methods for correlation ID middleware.
-/// </summary>
-public static class CorrelationIdMiddlewareExtensions
-{
-    /// <summary>
-    /// Add correlation ID middleware to pipeline.
-    /// </summary>
-    public static IApplicationBuilder UseCorrelationId(this IApplicationBuilder app)
-    {
-        return app.UseMiddleware<CorrelationIdMiddleware>();
-    }
-
-    /// <summary>
-    /// Get correlation ID from HTTP context.
-    /// </summary>
-    public static string? GetCorrelationId(this HttpContext context)
-    {
-        return context.Items["X-Correlation-ID"] as string;
-    }
-
-    /// <summary>
-    /// Get correlation ID from HTTP context items (for use in application code).
-    /// </summary>
-    public static string? GetCorrelationIdFromContext(this HttpContext? context)
-    {
-        return context?.Items.TryGetValue("X-Correlation-ID", out var correlationId) == true
-            ? correlationId as string
-            : null;
-    }
-}
