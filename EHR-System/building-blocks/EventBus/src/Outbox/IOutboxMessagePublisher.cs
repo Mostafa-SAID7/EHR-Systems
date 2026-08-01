@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,26 +33,4 @@ public interface IOutboxMessagePublisher
     /// Get publisher health status.
     /// </summary>
     Task<PublisherHealthStatus> GetHealthAsync(CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Publisher health status enumeration.
-/// Single responsibility: Health status values.
-/// </summary>
-public enum PublisherHealthStatus
-{
-    /// <summary>
-    /// Publisher is healthy.
-    /// </summary>
-    Healthy = 0,
-
-    /// <summary>
-    /// Publisher is degraded.
-    /// </summary>
-    Degraded = 1,
-
-    /// <summary>
-    /// Publisher is unhealthy.
-    /// </summary>
-    Unhealthy = 2
 }

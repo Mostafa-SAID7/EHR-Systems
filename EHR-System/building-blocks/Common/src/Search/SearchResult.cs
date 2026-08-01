@@ -3,10 +3,10 @@ using System.Collections.Generic;
 namespace EHRPlatform.Common.Search;
 
 /// <summary>
-/// Search result with aggregations (facets).
-/// Single responsibility: Search results with faceted data.
+/// Search result.
+/// Single responsibility: Search result data.
 /// </summary>
-public class SearchResultWithAggregations<T> where T : class
+public class SearchResult<T> where T : class
 {
     /// <summary>
     /// Total matches.
@@ -22,9 +22,4 @@ public class SearchResultWithAggregations<T> where T : class
     /// Result items.
     /// </summary>
     public IReadOnlyList<T> Items { get; set; } = new List<T>();
-
-    /// <summary>
-    /// Aggregations/facets.
-    /// </summary>
-    public Dictionary<string, AggregationBucket[]> Aggregations { get; set; } = new();
 }
