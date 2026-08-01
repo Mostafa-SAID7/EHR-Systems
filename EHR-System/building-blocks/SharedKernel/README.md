@@ -1,172 +1,68 @@
 # SharedKernel Package
 
-Core DDD building blocks for all EHR microservices.
+Core domain and application patterns.
 
-## Folder Structure
+## Contents (36 files)
 
-Each class has single responsibility, organized by concern:
+### CQRS (6 files)
+- `ICommand.cs` - Command marker
+- `ICommandHandler.cs` - Command handler
+- `IQuery.cs` - Query marker
+- `IQueryHandler.cs` - Query handler
+- `CommandResult.cs` - Execution result
+- `QueryResult.cs` - Query result
 
-### `Domain/` - Domain-Driven Design Foundations
+### Event Sourcing (4 files)
+- `IEventStore.cs` - Event persistence
+- `EventEnvelope.cs` - Event with metadata
+- `ISnapshotStore.cs` - Snapshot storage
+- `Snapshot.cs` - Snapshot data
 
-#### Entities
-- **BaseEntity.cs** - Core entity with ID, soft delete, correlation ID
-- **AuditableEntity.cs** - Extends BaseEntity with audit trail (CreatedAt, UpdatedAt, etc.)
-- **IEntity.cs** - Core entity contract (Id, IsDeleted)
-- **IAuditableEntity.cs** - Auditable entity contract
+### Repositories (4 files)
+- `IRepository.cs` - Generic repository (20+ methods)
+- `IUnitOfWork.cs` - Transaction coordination
+- `RepositoryOptions.cs` - Query options
+- `QuerySpecification.cs` - Query specification
 
-#### ValueObjects
-- **ValueObject.cs** - Base value object (value semantics, immutability)
-- **ValueObjects/Address.cs** - Physical address value object
-- **ValueObjects/EmailAddress.cs** - Email value object
-- **ValueObjects/PhoneNumber.cs** - Phone number value object
+### Domain (9 files)
+- `IAggregateRoot.cs` - Aggregate root contract
+- `BaseEntity.cs` - Base entity
+- `AuditableEntity.cs` - Audit trail support
+- `IEntity.cs` - Entity marker
+- `IValueObject.cs` - Value object marker
+- `ValueObject.cs` - Base value object
+- `IAuditableEntity.cs` - Auditability contract
+- `IDomainEvent.cs` - Domain event marker
 
-#### Specifications
-- **Specifications/Specification.cs** - DDD specification pattern (filtering, paging, eager loading)
+### Specifications (7 files)
+- `ISpecification.cs` - Specification contract
+- `BaseSpecification.cs` - Base implementation
+- `SpecificationBuilder.cs` - Fluent builder
+- `IncludeExpression.cs` - Navigation includes
+- `OrderByExpression.cs` - Sorting
+- `PaginationExpression.cs` - Pagination
+- `SearchExpression.cs` - Search criteria
 
-#### Repositories (Abstractions)
-- **Repositories/IRepository.cs** - Generic CRUD interface
-- **Repositories/ISpecificationRepository.cs** - Specification-based queries
-- **Repositories/IUnitOfWork.cs** - Transaction coordination
+### Result Pattern (3 files)
+- `Result.cs` - Base result
+- `ResultT.cs` - Generic result
+- `ResultExtensions.cs` - Combinators (Map, FlatMap, Match)
 
-#### Domain Events
-- **Events/IDomainEvent.cs** - Domain event contract
-- **Events/IAggregateRoot.cs** - Aggregate root interface
-
-#### Business Rules
-- **Rules/IBusinessRule.cs** - Business rule pattern
-- **Rules/BusinessRuleException.cs** - Exception when rule violated
-
-### `Result/` - Railway-Oriented Programming
-
-Functional error handling (instead of exceptions):
-
-- **Result.cs** - Basic Result (success/failure without value)
-- **ResultT.cs** - Result<T> (success with value or failure)
-- **ResultExtensions.cs** - Functional combinators (Map, FlatMap, Match, Bind, Recover, Fold)
-
-### `Guards/` - Input Validation
-
-- **Guard.cs** - Guard clauses for parameter validation (AgainstNull, AgainstNullOrEmpty, etc.)
-
----
-
-## Usage Examples
-
-### Entity Hierarchy
-
-```csharp
-// Use BaseEntity for entities that don't need audit trail
-public class Product : BaseEntity
-{
-    public string Name { get; set; }
-}
-
-// Use AuditableEntity for entities that need full audit trail
-public class Patient : AuditableEntity
-{
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-}
-```
-
-### Result Pattern
-
-```csharp
-// Creating results
-var success = Result<int>.Success(42);
-var failure = Result<int>.Failure("Invalid input");
-
-// Using results
-success
-    .Map(x => x * 2)
-    .Match(
-        onSuccess: value => $"Result: {value}",
-        onFailure: error => $"Error: {error}"
-    );
-
-// Chaining operations
-Result<User>.Success(user)
-    .Bind(u => ValidateUser(u))
-    .FlatMap(u => SaveUser(u))
-    .Recover(error => CreateDefaultUser());
-```
-
-### Guard Clauses
-
-```csharp
-public void CreateUser(string email, int age)
-{
-    Guard.AgainstNullOrEmpty(email, nameof(email));
-    Guard.AgainstNegative(age, nameof(age));
-    Guard.AgainstOutOfRange(age, 18, 120, nameof(age));
-    
-    // Continue with validated inputs
-}
-```
-
-### Specification Pattern
-
-```csharp
-public class GetActivePatientsByNameSpec : Specification<Patient>
-{
-    public GetActivePatientsByNameSpec(string name)
-    {
-        Criteria = p => !p.IsDeleted && p.FirstName.Contains(name);
-        AddInclude(p => p.Appointments);
-        OrderBy = p => p.LastName;
-        ApplyPaging(skip: 0, take: 20);
-    }
-}
-
-// Usage
-var spec = new GetActivePatientsByNameSpec("John");
-var patients = await _repository.GetAsync(spec);
-```
-
-### Value Objects
-
-```csharp
-var email = EmailAddress.Create("john@example.com");
-if (email.IsSuccess)
-{
-    var localPart = email.Value.GetLocalPart();  // "john"
-}
-
-var address = Address.Create(
-    street: "123 Main St",
-    city: "Springfield",
-    state: "IL",
-    postalCode: "62701",
-    country: "USA"
-);
-```
+### Services (3 files)
+- `IApplicationService.cs` - Application service
+- `IDomainService.cs` - Domain service
+- `INotificationService.cs` - Notifications
 
 ---
 
-## Single Responsibility Principle
+## Usage
 
-Each file has **one responsibility**:
+```csharp
+using EHRPlatform.SharedKernel.CQRS;
+using EHRPlatform.SharedKernel.EventSourcing;
+using EHRPlatform.SharedKernel.Domain;
+```
 
-| File | Responsibility |
-|------|-----------------|
-| BaseEntity.cs | Core entity (ID, soft delete) |
-| AuditableEntity.cs | Audit trail (CreatedAt, UpdatedAt) |
-| ValueObject.cs | Value semantics and equality |
-| Result.cs | Success result without value |
-| ResultT.cs | Success result with value |
-| ResultExtensions.cs | Functional combinators |
-| Guard.cs | Input validation |
-| Specification.cs | DDD specification pattern |
-| IBusinessRule.cs | Business rule contract |
-| BusinessRuleException.cs | Rule violation exception |
+## Parent
 
----
-
-## Architecture Benefits
-
-✅ **Clear Separation of Concerns** - Each class does one thing well  
-✅ **Easy to Test** - Small, focused classes  
-✅ **Reusable** - Used across all 12 microservices  
-✅ **Type-Safe** - Strong abstractions  
-✅ **Extensible** - Open for extension (inheritance), closed for modification  
-
+[← Building Blocks](../README.md)
