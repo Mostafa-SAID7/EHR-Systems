@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 
-namespace EHRPlatform.SharedKernel.Domain.Events;
+namespace EHRPlatform.SharedKernel.Domain;
 
 /// <summary>
 /// Aggregate root interface - entity that manages domain events.
+/// Single responsibility: Aggregate root contract.
 /// </summary>
 public interface IAggregateRoot : IEntity
 {

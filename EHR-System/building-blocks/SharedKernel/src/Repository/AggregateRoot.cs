@@ -7,7 +7,7 @@ namespace EHRPlatform.SharedKernel.Repository;
 /// Base class for aggregate root entities in domain-driven design.
 /// Single responsibility: Aggregate root marker and base implementation.
 /// </summary>
-public abstract class AggregateRoot : AuditableEntity
+public abstract class AggregateRoot : AuditableEntity, IAggregateRoot
 {
     /// <summary>
     /// Collection of domain events raised by this aggregate.
@@ -20,9 +20,19 @@ public abstract class AggregateRoot : AuditableEntity
     public IReadOnlyList<IDomainEvent> GetUncommittedEvents() => _domainEvents.AsReadOnly();
 
     /// <summary>
+    /// Mark events as committed (alias for ClearUncommittedEvents).
+    /// </summary>
+    public void MarkEventsAsCommitted() => _domainEvents.Clear();
+
+    /// <summary>
     /// Clear domain events after publishing.
     /// </summary>
     public void ClearUncommittedEvents() => _domainEvents.Clear();
+
+    /// <summary>
+    /// Clear all events.
+    /// </summary>
+    public void ClearEvents() => _domainEvents.Clear();
 
     /// <summary>
     /// Raise a domain event.
