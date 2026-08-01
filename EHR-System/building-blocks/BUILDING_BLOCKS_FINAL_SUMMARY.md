@@ -9,13 +9,13 @@ Complete Single Responsibility Principle (SRP) refactoring of all building block
 
 ## Package Summary
 
-### 1. Common (10 files) ✅
+### 1. Common (22 files) ✅
 **Extensions (3 files - utility classes):**
 - `CollectionExtensions.cs` - Collection manipulation (Batch, Flatten, DistinctBy, Paginate, etc.)
 - `EnumExtensions.cs` - Enum display names, descriptions, parsing
 - `StringExtensions.cs` - String validation, formatting, masking (HIPAA compliance)
 
-**Abstractions (7 files):**
+**Core Abstractions (7 files):**
 - `Serialization/ISerializer.cs` - JSON serialization contract
 - `Caching/ICacheService.cs` - Distributed caching contract
 - `IdGeneration/IIdGenerator.cs` - ID generation strategies (GUID, ULID, Sequential)
@@ -23,6 +23,20 @@ Complete Single Responsibility Principle (SRP) refactoring of all building block
 - `Validation/ValidationResult.cs` - Validation errors data structure
 - `Mapping/IMapper.cs` - Object mapping/transformation contract
 - `DateTime/IDateTimeProvider.cs` - Testable clock abstraction
+
+**Enterprise Patterns (12 files):**
+- `Configuration/IConfigurationProvider.cs` - Configuration access contract
+- `Exceptions/ApplicationException.cs` - Base exception with error codes
+- `Exceptions/ValidationException.cs` - Validation error handling
+- `Exceptions/NotFoundException.cs` - Resource not found handling
+- `Exceptions/BusinessRuleViolationException.cs` - Business rule violations
+- `Exceptions/ConflictException.cs` - Conflict (409) error handling
+- `Middleware/IMiddleware.cs` - Middleware pipeline contract
+- `Middleware/IMiddlewarePipeline.cs` - Pipeline execution contract
+- `FeatureFlags/IFeatureFlagService.cs` - Feature toggle management
+- `Sorting/ISortingProvider.cs` - API sorting specification
+- `Sorting/SortSpecification.cs` - Sort specification data
+- `Sorting/SortDirection.cs` - Sort direction enumeration
 
 ---
 
