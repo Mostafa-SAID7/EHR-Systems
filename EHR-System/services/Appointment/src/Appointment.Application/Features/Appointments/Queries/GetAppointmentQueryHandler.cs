@@ -1,72 +1,48 @@
-namespace EHRPlatform.Services.Appointment.Application.Features.Appointments.Queries;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.Services.Appointment.Application.Appointments.Mappers;
+using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
+using EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 
-using MediatR;
-using EHRPlatform.Services.Appointment.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+namespace EHRPlatform.Services.Appointment.Features.Appointments.Handlers;
 
 /// <summary>
-/// Handler for GetAppointmentQuery - Retrieves appointment details.
+/// Get appointment by ID handler.
+/// Single Responsibility: Fetch a single appointment and project to response DTO via AppointmentMapper.
 /// </summary>
-public class GetAppointmentQueryHandler : IRequestHandler<GetAppointmentQuery, GetAppointmentResponse>
+public class GetAppointmentQueryHandler : IQueryHandler<GetAppointmentQuery, AppointmentResponseDto>
 {
-    private readonly IAppointmentDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly AppointmentMapper _mapper;
     private readonly ILogger<GetAppointmentQueryHandler> _logger;
 
     public GetAppointmentQueryHandler(
-        IAppointmentDbContext context,
+        IUnitOfWork unitOfWork,
+        AppointmentMapper mapper,
         ILogger<GetAppointmentQueryHandler> logger)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
         _logger = logger;
     }
 
-    public async Task<GetAppointmentResponse> Handle(GetAppointmentQuery request, CancellationToken cancellationToken)
+    public async Task<AppointmentResponseDto> Handle(
+        GetAppointmentQuery request,
+        CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Getting appointment: {AppointmentId}", request.AppointmentId);
+        _logger.LogInformation("Fetching appointment {AppointmentId}", request.AppointmentId);
 
-        try
-        {
-            var appointment = await _context.Appointments
-                .FirstOrDefaultAsync(a => a.Id == request.AppointmentId, cancellationToken);
+        var repo = _unitOfWork.Repository<Domain.Appointment>();
+        var appointment = await repo.FirstOrDefaultAsync(
+            q => q.Where(a => a.Id == request.AppointmentId),
+            cancellationToken);
 
-            if (appointment == null)
-            {
-                return new GetAppointmentResponse
-                {
-                    Success = false,
-                    Message = "Appointment not found"
-                };
-            }
+        if (appointment == null)
+            throw new InvalidOperationException($"Appointment {request.AppointmentId} not found");
 
-            var appointmentDto = new AppointmentDto
-            {
-                Id = appointment.Id,
-                PatientId = appointment.PatientId,
-                ProviderId = appointment.ProviderId,
-                AppointmentType = appointment.AppointmentType,
-                ScheduledStart = appointment.ScheduledStart,
-                ScheduledEnd = appointment.ScheduledEnd,
-                Status = appointment.Status,
-                ReasonForVisit = appointment.ReasonForVisit,
-                DurationMinutes = appointment.GetDurationMinutes(),
-                CreatedAt = appointment.CreatedAt
-            };
-
-            return new GetAppointmentResponse
-            {
-                Success = true,
-                Appointment = appointmentDto
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting appointment");
-            return new GetAppointmentResponse
-            {
-                Success = false,
-                Message = "An error occurred while retrieving the appointment"
-            };
-        }
+        return _mapper.MapToResponseDto(appointment);
     }
 }
+
+
+

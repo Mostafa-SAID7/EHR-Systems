@@ -1,63 +1,62 @@
-namespace EHRPlatform.Services.Appointment.Application.Features.Appointments.Commands;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
+using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
+using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
-using MediatR;
-using EHRPlatform.Services.Appointment.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+namespace EHRPlatform.Services.Appointment.Features.Appointments.Handlers;
 
 /// <summary>
-/// Handler for ConfirmAppointmentCommand - Confirms scheduled appointment.
+/// Confirm appointment handler.
 /// </summary>
-public class ConfirmAppointmentCommandHandler : IRequestHandler<ConfirmAppointmentCommand, ConfirmAppointmentResponse>
+public class ConfirmAppointmentCommandHandler : ICommandHandler<ConfirmAppointmentCommand>
 {
-    private readonly IAppointmentDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IOutboxRepository _outbox;
     private readonly ILogger<ConfirmAppointmentCommandHandler> _logger;
 
     public ConfirmAppointmentCommandHandler(
-        IAppointmentDbContext context,
+        IUnitOfWork unitOfWork,
+        IOutboxRepository outbox,
         ILogger<ConfirmAppointmentCommandHandler> logger)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
+        _outbox = outbox;
         _logger = logger;
     }
 
-    public async Task<ConfirmAppointmentResponse> Handle(ConfirmAppointmentCommand request, CancellationToken cancellationToken)
+    public async Task Handle(ConfirmAppointmentCommand command, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Confirming appointment: {AppointmentId}", request.AppointmentId);
+        _logger.LogInformation("Confirming appointment {AppointmentId}", command.AppointmentId);
 
-        try
+        var repo = _unitOfWork.Repository<Domain.Appointment>();
+        var appointment = await repo.FirstOrDefaultAsync(
+            q => q.Where(a => a.Id == command.AppointmentId),
+            cancellationToken);
+
+        if (appointment == null)
+            throw new InvalidOperationException($"Appointment {command.AppointmentId} not found");
+
+        appointment.Confirm();
+        await repo.UpdateAsync(appointment, cancellationToken);
+
+        // Publish event
+        var confirmEvent = new AppointmentConfirmedEvent(
+            appointment.Id, appointment.PatientId, appointment.ProviderId, appointment.ScheduledStart);
+
+        await _outbox.AddAsync(new OutboxEvent
         {
-            var appointment = await _context.Appointments
-                .FirstOrDefaultAsync(a => a.Id == request.AppointmentId, cancellationToken);
+            Id = Guid.NewGuid(),
+            AggregateId = appointment.Id,
+            EventType = nameof(AppointmentConfirmedEvent),
+            EventData = System.Text.Json.JsonSerializer.Serialize(confirmEvent),
+            CreatedAt = DateTime.UtcNow
+        }, cancellationToken);
 
-            if (appointment == null)
-            {
-                return new ConfirmAppointmentResponse
-                {
-                    Success = false,
-                    Message = "Appointment not found"
-                };
-            }
-
-            appointment.Confirm();
-            await _context.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Appointment confirmed: {AppointmentId}", request.AppointmentId);
-
-            return new ConfirmAppointmentResponse
-            {
-                Success = true,
-                Message = "Appointment confirmed"
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error confirming appointment");
-            return new ConfirmAppointmentResponse
-            {
-                Success = false,
-                Message = "An error occurred while confirming the appointment"
-            };
-        }
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
+
+

@@ -1,32 +1,34 @@
-namespace EHRPlatform.Services.Appointment.Application.Features.Appointments.Queries;
+using EHRPlatform.BuildingBlocks.EventBus.Behaviors;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
+using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
-using MediatR;
+namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 
 /// <summary>
-/// Query to get appointment details.
+/// Get appointment by ID - CACHED query.
 /// </summary>
-public class GetAppointmentQuery : IRequest<GetAppointmentResponse>
+public record GetAppointmentQuery : IQuery<AppointmentResponseDto>, ICachedQuery
 {
-    public Guid AppointmentId { get; set; }
+    public Guid AppointmentId { get; init; }
+
+    public string CacheKey => $"appointment_{AppointmentId}";
+    public TimeSpan? Duration => TimeSpan.FromSeconds(600);
 }
 
-public class GetAppointmentResponse
+/// <summary>
+/// Get patient appointments (paginated, optional date range filter).
+/// </summary>
+public record GetPatientAppointmentsQuery : IQuery<PagedResult<AppointmentResponseDto>>, ICachedQuery
 {
-    public bool Success { get; set; }
-    public string? Message { get; set; }
-    public AppointmentDto? Appointment { get; set; }
+    public Guid PatientId { get; init; }
+    public DateTime? FromDate { get; init; }
+    public DateTime? ToDate { get; init; }
+    public int PageNumber { get; init; } = 1;
+    public int PageSize { get; init; } = 20;
+
+    public string CacheKey => $"appointments_patient_{PatientId}_{FromDate:yyyyMMdd}_{ToDate:yyyyMMdd}_{PageNumber}_{PageSize}";
+    public TimeSpan? Duration => TimeSpan.FromSeconds(600);
 }
 
-public class AppointmentDto
-{
-    public Guid Id { get; set; }
-    public Guid PatientId { get; set; }
-    public Guid ProviderId { get; set; }
-    public string AppointmentType { get; set; } = string.Empty;
-    public DateTime ScheduledStart { get; set; }
-    public DateTime ScheduledEnd { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string ReasonForVisit { get; set; } = string.Empty;
-    public int DurationMinutes { get; set; }
-    public DateTime CreatedAt { get; set; }
-}
+

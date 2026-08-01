@@ -1,109 +1,108 @@
-namespace EHRPlatform.Services.Appointment.Application.Features.Appointments.Commands;
+using Mapster;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
+using EHRPlatform.Services.Appointment.Application.Appointments.Mappers;
+using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
+using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
+using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
-using MediatR;
-using EHRPlatform.Services.Appointment.Domain.Entities;
-using EHRPlatform.Services.Appointment.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+namespace EHRPlatform.Services.Appointment.Features.Appointments.Handlers;
 
 /// <summary>
-/// Handler for ScheduleAppointmentCommand - Schedules appointment with conflict detection.
+/// Schedule appointment handler.
+/// Validates provider availability, publishes event.
+/// Delegates all mapping to AppointmentMapper (SRP).
 /// </summary>
-public class ScheduleAppointmentCommandHandler : IRequestHandler<ScheduleAppointmentCommand, ScheduleAppointmentResponse>
+public class ScheduleAppointmentCommandHandler : ICommandHandler<ScheduleAppointmentCommand, AppointmentResponseDto>
 {
-    private readonly IAppointmentDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IOutboxRepository _outbox;
+    private readonly AppointmentMapper _mapper;
     private readonly ILogger<ScheduleAppointmentCommandHandler> _logger;
 
     public ScheduleAppointmentCommandHandler(
-        IAppointmentDbContext context,
+        IUnitOfWork unitOfWork,
+        IOutboxRepository outbox,
+        AppointmentMapper mapper,
         ILogger<ScheduleAppointmentCommandHandler> logger)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
+        _outbox = outbox;
+        _mapper = mapper;
         _logger = logger;
     }
 
-    public async Task<ScheduleAppointmentResponse> Handle(ScheduleAppointmentCommand request, CancellationToken cancellationToken)
+    public async Task<AppointmentResponseDto> Handle(
+        ScheduleAppointmentCommand command,
+        CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Scheduling appointment: Patient={PatientId}, Provider={ProviderId}, Start={ScheduledStart}",
-            request.PatientId, request.ProviderId, request.ScheduledStart);
+        _logger.LogInformation(
+            "Scheduling appointment: Patient {PatientId}, Provider {ProviderId}, Start {Start}",
+            command.PatientId, command.ProviderId, command.ScheduledStart);
 
-        try
+        var availRepo = _unitOfWork.Repository<ProviderAvailability>();
+        var availSlot = await availRepo.FirstOrDefaultAsync(
+            q => q.Where(a =>
+                a.ProviderId == command.ProviderId &&
+                a.SlotStart <= command.ScheduledStart &&
+                a.SlotEnd >= command.ScheduledStart.AddMinutes(command.DurationMinutes) &&
+                a.IsActive),
+            cancellationToken);
+
+        if (availSlot == null || !availSlot.HasAvailability())
+            throw new InvalidOperationException("Provider slot not available at requested time");
+
+        var appointment = new Domain.Appointment
         {
-            // Check for provider conflicts
-            var conflicts = await _context.Appointments
-                .Where(a => a.ProviderId == request.ProviderId &&
-                           a.Status != "Cancelled" &&
-                           a.ScheduledStart < request.ScheduledEnd &&
-                           a.ScheduledEnd > request.ScheduledStart)
-                .FirstOrDefaultAsync(cancellationToken);
+            Id = Guid.NewGuid(),
+            PatientId = command.PatientId,
+            ProviderId = command.ProviderId,
+            ScheduledStart = command.ScheduledStart,
+            ScheduledEnd = command.ScheduledStart.AddMinutes(command.DurationMinutes),
+            AppointmentType = command.AppointmentType,
+            Status = "Scheduled",
+            ReasonForVisit = command.ReasonForVisit,
+            Notes = command.Notes,
+            DurationMinutes = command.DurationMinutes
+        };
 
-            if (conflicts != null)
-            {
-                _logger.LogWarning("Appointment conflict detected for provider {ProviderId}", request.ProviderId);
-                return new ScheduleAppointmentResponse
-                {
-                    Success = false,
-                    Message = "Provider has conflicting appointment"
-                };
-            }
+        // Add default reminders (24 hours, 2 hours before)
+        appointment.AddReminder(command.ScheduledStart.AddHours(-24), "Email");
+        appointment.AddReminder(command.ScheduledStart.AddHours(-2), "SMS");
 
-            // Check for patient conflicts
-            var patientConflicts = await _context.Appointments
-                .Where(a => a.PatientId == request.PatientId &&
-                           a.Status != "Cancelled" &&
-                           a.ScheduledStart < request.ScheduledEnd &&
-                           a.ScheduledEnd > request.ScheduledStart)
-                .FirstOrDefaultAsync(cancellationToken);
+        // Book the availability slot
+        availSlot.BookSlot();
 
-            if (patientConflicts != null)
-            {
-                _logger.LogWarning("Appointment conflict detected for patient {PatientId}", request.PatientId);
-                return new ScheduleAppointmentResponse
-                {
-                    Success = false,
-                    Message = "Patient has conflicting appointment"
-                };
-            }
+        var appointmentRepo = _unitOfWork.Repository<Domain.Appointment>();
+        await appointmentRepo.AddAsync(appointment, cancellationToken);
+        await availRepo.UpdateAsync(availSlot, cancellationToken);
 
-            // Create appointment
-            var appointment = new Appointment
-            {
-                Id = Guid.NewGuid(),
-                PatientId = request.PatientId,
-                ProviderId = request.ProviderId,
-                ScheduledStart = request.ScheduledStart,
-                ScheduledEnd = request.ScheduledEnd,
-                AppointmentType = request.AppointmentType,
-                ReasonForVisit = request.ReasonForVisit,
-                CreatedAt = DateTime.UtcNow
-            };
+        // Publish event
+        var scheduledEvent = new AppointmentScheduledEvent(
+            appointment.Id,
+            appointment.PatientId,
+            appointment.ProviderId,
+            appointment.ScheduledStart,
+            appointment.AppointmentType);
 
-            // Schedule reminders
-            foreach (var reminder in request.Reminders)
-            {
-                appointment.ScheduleReminder(reminder.Method, reminder.MinutesBefore);
-            }
-
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Appointment scheduled successfully: {AppointmentId}", appointment.Id);
-
-            return new ScheduleAppointmentResponse
-            {
-                Success = true,
-                AppointmentId = appointment.Id,
-                Message = "Appointment scheduled successfully"
-            };
-        }
-        catch (Exception ex)
+        await _outbox.AddAsync(new OutboxEvent
         {
-            _logger.LogError(ex, "Error scheduling appointment");
-            return new ScheduleAppointmentResponse
-            {
-                Success = false,
-                Message = "An error occurred while scheduling the appointment"
-            };
-        }
+            Id = Guid.NewGuid(),
+            AggregateId = appointment.Id,
+            EventType = nameof(AppointmentScheduledEvent),
+            EventData = System.Text.Json.JsonSerializer.Serialize(scheduledEvent),
+            CreatedAt = DateTime.UtcNow
+        }, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Appointment scheduled {AppointmentId}", appointment.Id);
+
+        return _mapper.MapToResponseDto(appointment);
     }
 }
+
+
+

@@ -1,17 +1,13 @@
-namespace EHRPlatform.Services.Appointment.Application.Features.Appointments.Commands;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
-using MediatR;
+namespace EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 
 /// <summary>
-/// Command to confirm scheduled appointment.
+/// Confirm appointment command.
 /// </summary>
-public class ConfirmAppointmentCommand : IRequest<ConfirmAppointmentResponse>
+public record ConfirmAppointmentCommand : ICommand
 {
-    public Guid AppointmentId { get; set; }
+    public Guid AppointmentId { get; init; }
 }
 
-public class ConfirmAppointmentResponse
-{
-    public bool Success { get; set; }
-    public string? Message { get; set; }
-}
+
