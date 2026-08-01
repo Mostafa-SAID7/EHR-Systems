@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using EHRPlatform.Gateway.Infrastructure.Routing;
 using EHRPlatform.Gateway.Infrastructure.Observability;
 using EHRPlatform.Gateway.Models;
+using EHRPlatform.BuildingBlocks.Common.Caching;
 using System.Text.Json;
 
 namespace EHRPlatform.Gateway.Controllers;
@@ -28,20 +29,20 @@ public class DashboardController : ControllerBase
     private readonly IServiceRegistry _serviceRegistry;
     private readonly IGatewayMetrics _metrics;
     private readonly ILogger<DashboardController> _logger;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cacheService;
 
     public DashboardController(
         IHttpClientFactory httpClientFactory,
         IServiceRegistry serviceRegistry,
         IGatewayMetrics metrics,
         ILogger<DashboardController> logger,
-        IMemoryCache cache)
+        ICacheService cacheService)
     {
         _httpClientFactory = httpClientFactory;
         _serviceRegistry = serviceRegistry;
         _metrics = metrics;
         _logger = logger;
-        _cache = cache;
+        _cacheService = cacheService;
     }
 
     /// <summary>
@@ -65,7 +66,8 @@ public class DashboardController : ControllerBase
         try
         {
             var cacheKey = $"dashboard:patient:{patientId}";
-            if (_cache.TryGetValue(cacheKey, out PatientDashboardResponse cachedResponse))
+            var cachedResponse = await _cacheService.GetAsync<PatientDashboardResponse>(cacheKey);
+            if (cachedResponse != null)
             {
                 _logger.LogInformation("Dashboard cache hit for patient {PatientId}", patientId);
                 _metrics.RecordCacheHit(cacheKey);
@@ -130,7 +132,7 @@ public class DashboardController : ControllerBase
             };
 
             // Cache for 5 minutes
-            _cache.Set(cacheKey, response, TimeSpan.FromMinutes(5));
+            await _cacheService.SetAsync(cacheKey, response, TimeSpan.FromMinutes(5));
 
             _logger.LogInformation(
                 "Patient dashboard aggregated successfully. PatientId: {PatientId}, UserId: {UserId}",

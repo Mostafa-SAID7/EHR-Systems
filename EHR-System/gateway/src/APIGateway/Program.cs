@@ -4,6 +4,11 @@ using EHRPlatform.Gateway.Infrastructure.Services;
 using EHRPlatform.Gateway.Infrastructure.Observability;
 using EHRPlatform.Gateway.Infrastructure.HealthChecks;
 using EHRPlatform.Gateway.DTOs.Responses;
+using EHRPlatform.BuildingBlocks.Common.Caching;
+using EHRPlatform.BuildingBlocks.Security.RateLimiting;
+using EHRPlatform.BuildingBlocks.Security.CurrentUser;
+using EHRPlatform.BuildingBlocks.Observability.ErrorReporting;
+using EHRPlatform.BuildingBlocks.EventBus.Broker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -69,6 +74,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization
 builder.Services.AddAuthorization();
 
+// Building-Blocks Services Integration
+builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<IRateLimitingService, RateLimitingService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IErrorReporter, ErrorReporter>();
+builder.Services.AddScoped<IMessageBroker, MessageBroker>();
+
 // Health Checks
 builder.Services.AddHealthChecks()
     .AddCheck<ServiceHealthCheck>("identity-health", tags: new[] { "services", "identity" })
@@ -76,7 +88,7 @@ builder.Services.AddHealthChecks()
     .AddCheck<ServiceHealthCheck>("appointment-health", tags: new[] { "services", "appointment" })
     .AddCheck<ServiceHealthCheck>("audit-health", tags: new[] { "services", "audit" });
 
-// Rate Limiting
+// Rate Limiting - Using Building-Blocks IRateLimitingService
 builder.Services.AddRateLimiter(rateLimiterOptions =>
 {
     rateLimiterOptions.AddFixedWindowLimiter(policyName: "standard", options =>
