@@ -5,6 +5,7 @@ namespace EHRPlatform.Contracts.Responses;
 
 /// <summary>
 /// Health check response for service readiness/liveness probes.
+/// Single responsibility: Service health status response.
 /// </summary>
 public class HealthCheckResponse
 {
@@ -56,25 +57,4 @@ public class HealthCheckResponse
             Timestamp = DateTime.UtcNow
         };
     }
-}
-
-/// <summary>
-/// Individual component health status.
-/// </summary>
-public class ComponentHealth
-{
-    /// <summary>
-    /// Component status (Healthy, Degraded, Unhealthy).
-    /// </summary>
-    public string Status { get; set; } = null!;
-
-    /// <summary>
-    /// Description or error message.
-    /// </summary>
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// Timestamp of check.
-    /// </summary>
-    public DateTime Timestamp { get; set; }
 }
