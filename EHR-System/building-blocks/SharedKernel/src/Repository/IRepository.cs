@@ -88,17 +88,3 @@ public interface IRepository<T> where T : AggregateRoot
     /// </summary>
     Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
 }
-
-/// <summary>
-/// Base class for aggregate root entities.
-/// </summary>
-public abstract class AggregateRoot : AuditableEntity
-{
-    protected AggregateRoot()
-    {
-    }
-
-    protected AggregateRoot(Guid id) : base(id)
-    {
-    }
-}

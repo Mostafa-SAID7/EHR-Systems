@@ -1,4 +1,5 @@
 using EHRPlatform.SharedKernel.Domain;
+using EHRPlatform.SharedKernel.Domain.Events;
 
 namespace EHRPlatform.SharedKernel.Repository;
 
@@ -38,20 +39,4 @@ public abstract class AggregateRoot : AuditableEntity
     protected AggregateRoot(Guid id) : base(id)
     {
     }
-}
-
-/// <summary>
-/// Marker interface for domain events.
-/// </summary>
-public interface IDomainEvent
-{
-    /// <summary>
-    /// Event occurrence date/time.
-    /// </summary>
-    DateTime OccurredAt { get; }
-
-    /// <summary>
-    /// Event ID for tracking.
-    /// </summary>
-    Guid EventId { get; }
 }
