@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>BFF - Application Layer (aggregation queries, client-specific logic)</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.3.0" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BFF.Domain\BFF.Domain.csproj" />
+    <ProjectReference Include="..\BFF.Contracts\BFF.Contracts.csproj" />
+  </ItemGroup>
+</Project>

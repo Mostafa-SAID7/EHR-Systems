@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>EHR Platform API Gateway - Central routing, rate limiting, and request/response transformation</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Yarp.ReverseProxy" Version="2.2.0" />
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApiGateway.Application\ApiGateway.Application.csproj" />
+    <ProjectReference Include="..\ApiGateway.Infrastructure\ApiGateway.Infrastructure.csproj" />
+    <ProjectReference Include="..\ApiGateway.Persistence\ApiGateway.Persistence.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\building-blocks\EventBus\src\EventBus.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Observability\src\Observability.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Security\src\Security.csproj" />
+    <ProjectReference Include="..\..\..\..\building-blocks\Common\src\Common.csproj" />
+  </ItemGroup>
+</Project>
