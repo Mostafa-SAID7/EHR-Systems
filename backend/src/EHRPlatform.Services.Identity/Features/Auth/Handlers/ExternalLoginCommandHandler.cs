@@ -1,8 +1,8 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Infrastructure.Security;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Auth.Commands;
@@ -92,4 +92,5 @@ public class ExternalLoginCommandHandler : ICommandHandler<ExternalLoginCommand,
         };
     }
 }
+
 

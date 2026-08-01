@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Infrastructure.Caching;
+using EHRPlatform.BuildingBlocks.Observability.Caching;
 
 namespace EHRPlatform.Services.Analytics.Application.Services;
 
@@ -212,4 +212,5 @@ public class AnalyticsCacheService : IAnalyticsCacheService
         }
     }
 }
+
 

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 
@@ -9,4 +9,5 @@ public record ConfirmAppointmentCommand : ICommand
 {
     public Guid AppointmentId { get; init; }
 }
+
 

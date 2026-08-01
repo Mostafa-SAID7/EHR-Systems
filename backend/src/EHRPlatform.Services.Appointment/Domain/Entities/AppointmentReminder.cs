@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 using EHRPlatform.Services.Appointment.Domain.Enums;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
@@ -44,4 +44,5 @@ public class AppointmentReminder : BaseEntity
     /// </summary>
     public Appointment Appointment { get; set; } = null!;
 }
+
 

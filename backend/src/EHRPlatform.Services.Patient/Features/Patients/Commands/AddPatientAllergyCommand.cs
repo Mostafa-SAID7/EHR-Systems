@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Commands;
@@ -13,4 +13,5 @@ public record AddPatientAllergyCommand : ICommand<PatientResponse>
     public string Severity { get; init; } = string.Empty;
     public string? Notes { get; init; }
 }
+
 

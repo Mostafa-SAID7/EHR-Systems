@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Analytics.Domain.Entities;
 
@@ -14,4 +14,5 @@ public class ReportExecution : BaseEntity
     // Navigation
     public Report? Report { get; set; }
 }
+
 

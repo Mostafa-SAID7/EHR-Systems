@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Clinical.Domain.Events;
 
@@ -17,3 +17,4 @@ public class DiagnosisRecordedEvent : IntegrationEvent
         DiagnosisText = text;
     }
 }
+

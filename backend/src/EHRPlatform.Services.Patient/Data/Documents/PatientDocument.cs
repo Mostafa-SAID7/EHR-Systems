@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace EHRPlatform.Services.Patient.Data.Documents;
@@ -51,3 +51,4 @@ public sealed class ConditionEmbedded
     [BsonElement("resolvedDate")][BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? ResolvedDate { get; set; }
 }
+

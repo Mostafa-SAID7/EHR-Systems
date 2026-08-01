@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Commands;
 
@@ -56,4 +56,5 @@ public record ExportAuditLogsCommand : ICommand<AuditExportResponseDto>
     public string Format { get; init; } = "JSON"; // PDF, CSV, JSON
     public bool EncryptFile { get; init; }
 }
+
 

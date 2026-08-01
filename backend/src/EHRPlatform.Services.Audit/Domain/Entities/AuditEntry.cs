@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Audit.Domain.Entities;
 
@@ -30,4 +30,5 @@ public class AuditEntry : BaseEntity
     /// </summary>
     public bool VerifyIntegrity(string computedHash) => IntegrityHash == computedHash;
 }
+
 

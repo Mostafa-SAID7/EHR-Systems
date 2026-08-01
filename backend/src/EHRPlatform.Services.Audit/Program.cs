@@ -1,7 +1,7 @@
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Infrastructure.Health;
-using EHRPlatform.Common.Infrastructure.Security;
-using EHRPlatform.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Observability.HealthChecks;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.Audit.Data;
 using EHRPlatform.Services.Audit.Data.Repositories;
 using EHRPlatform.Services.Audit.Data.Queries;
@@ -132,5 +132,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Notification.Features.Notifications.Commands;
 
@@ -13,4 +13,5 @@ public record SetNotificationPreferenceCommand : ICommand
     public string NotificationType { get; init; } = string.Empty;
     public bool IsEnabled { get; init; }
 }
+
 

@@ -1,9 +1,9 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Domain.Exceptions;
-using EHRPlatform.Common.Infrastructure.Security;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.SharedKernel.Exceptions;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Domain.Events;
@@ -82,4 +82,5 @@ public class ChangePasswordCommandHandler : ICommandHandler<ChangePasswordComman
         };
     }
 }
+
 

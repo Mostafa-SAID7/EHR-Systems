@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace EHRPlatform.Services.Notification.Data.Documents;
@@ -44,3 +44,4 @@ public sealed class NotificationPreferenceDocument : MongoBaseDocument
     [BsonElement("notificationType")]public string NotificationType { get; set; } = string.Empty;
     [BsonElement("isEnabled")]       public bool   IsEnabled        { get; set; } = true;
 }
+

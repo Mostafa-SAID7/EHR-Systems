@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using Appointment = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
 
 namespace EHRPlatform.Services.Appointment.Domain.Repositories;
@@ -71,3 +71,4 @@ public interface IAppointmentRepository : IRepository<Appointment>
         Guid? excludeAppointmentId = null,
         CancellationToken cancellationToken = default);
 }
+

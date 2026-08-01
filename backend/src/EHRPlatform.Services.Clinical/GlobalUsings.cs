@@ -10,10 +10,11 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Extensions.Logging;
 global using MediatR;
 
-global using EHRPlatform.Common.Data;
-global using EHRPlatform.Common.Shared.DTOs;
-global using EHRPlatform.Common.Infrastructure.EventDriven;
+global using EHRPlatform.BuildingBlocks.Common.Data;
+global using EHRPlatform.BuildingBlocks.Contracts.DTOs;
+global using EHRPlatform.BuildingBlocks.EventBus.Messaging;
 global using EHRPlatform.Services.Clinical.Domain.Entities;
 global using EHRPlatform.Services.Clinical.Domain.Events;
 global using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
+
 

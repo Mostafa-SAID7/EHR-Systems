@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Notification.Domain.Events;
 
@@ -20,3 +20,4 @@ public class NotificationCreatedEvent : IntegrationEvent
         NotificationType = type;
     }
 }
+

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
+    <PackageId>EHRPlatform.BuildingBlocks.SharedKernel</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>EHR Platform Team</Authors>
+    <Description>Shared kernel containing base entities, value objects, domain events, and specifications for all EHR microservices.</Description>
+    <PackageTags>healthcare;microservices;ddd;domain-driven-design;shared-kernel</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- No external dependencies for SharedKernel - pure domain -->
+  </ItemGroup>
+
+</Project>

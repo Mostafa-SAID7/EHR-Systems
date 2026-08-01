@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Search;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Search;
 // Domain entities via GlobalUsings (Domain.Entities)
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 using Mapster;
@@ -196,4 +196,5 @@ public class GetPatientDetailQueryHandler : IQueryHandler<GetPatientDetailQuery,
         return detail;
     }
 }
+
 

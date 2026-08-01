@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Appointment.Domain.Events;
 
@@ -42,3 +42,4 @@ public class AppointmentConfirmedEvent : IntegrationEvent
         ScheduledStart = start;
     }
 }
+

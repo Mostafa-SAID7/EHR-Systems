@@ -1,5 +1,5 @@
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 
@@ -13,4 +13,5 @@ public record AddDiagnosisCommand : ICommand<ClinicalNoteResponse>
     public string DiagnosisText { get; init; } = string.Empty;
     public string DiagnosisType { get; init; } = "Secondary"; // Principal or Secondary
 }
+
 

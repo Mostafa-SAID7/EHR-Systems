@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Billing.Domain.Entities;
 
@@ -15,4 +15,5 @@ public class Payment : BaseEntity
     public DateTime ReceivedAt { get; set; }
     public Invoice Invoice { get; set; } = null!;
 }
+
 

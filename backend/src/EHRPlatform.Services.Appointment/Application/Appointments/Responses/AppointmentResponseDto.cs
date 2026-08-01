@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 
 namespace EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
@@ -47,4 +47,5 @@ public class AppointmentResponseDto : StatusDto
     /// <summary>Gets or sets the cancellation reason.</summary>
     public string? CancellationReason { get; set; }
 }
+
 

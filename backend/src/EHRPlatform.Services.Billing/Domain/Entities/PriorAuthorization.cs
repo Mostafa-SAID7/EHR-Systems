@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 using EHRPlatform.Services.Billing.Domain.Enums;
 
 namespace EHRPlatform.Services.Billing.Domain.Entities;
@@ -83,4 +83,5 @@ public class PriorAuthorization : BaseEntity
         AuthorizedToDate.HasValue &&
         AuthorizedToDate.Value < DateTime.UtcNow;
 }
+
 

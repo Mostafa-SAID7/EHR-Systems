@@ -1,7 +1,7 @@
 using System.Text;
 using System.Threading.RateLimiting;
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Shared.Middleware;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Common.Middleware;
 using EHRPlatform.Services.ApiGateway.Extensions;
 using EHRPlatform.Services.ApiGateway.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -211,4 +211,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 

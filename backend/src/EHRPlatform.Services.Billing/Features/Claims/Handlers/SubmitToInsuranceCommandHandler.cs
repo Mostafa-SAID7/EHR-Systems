@@ -1,7 +1,7 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Messaging;
-using EHRPlatform.Common.Infrastructure.Security;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
 using EHRPlatform.Services.Billing.Domain.Entities;
 using EHRPlatform.Services.Billing.Domain.Enums;
 using EHRPlatform.Services.Billing.Features.Claims.Commands;
@@ -91,5 +91,6 @@ public class SubmitToInsuranceCommandHandler : ICommandHandler<SubmitToInsurance
             command.InvoiceId, fraudResult.RiskScore);
     }
 }
+
 
 

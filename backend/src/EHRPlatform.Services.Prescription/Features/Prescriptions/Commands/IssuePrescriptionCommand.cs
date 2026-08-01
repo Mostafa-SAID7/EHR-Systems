@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
@@ -24,4 +24,5 @@ public record IssuePrescriptionCommand : ICommand<PrescriptionResponseDto>
     public bool IsControlledSubstance { get; init; }
     public string? NDCCode { get; init; }
 }
+
 

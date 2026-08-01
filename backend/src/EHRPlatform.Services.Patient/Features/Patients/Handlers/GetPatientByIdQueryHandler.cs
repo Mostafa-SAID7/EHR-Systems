@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.Services.Patient.Features.Patients.Queries;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
 using EHRPlatform.Services.Patient.Application.Patients.Mappers;
@@ -40,4 +40,5 @@ public class GetPatientByIdQueryHandler : IQueryHandler<GetPatientByIdQuery, Pat
         return _mapper.MapToResponse(patient);
     }
 }
+
 

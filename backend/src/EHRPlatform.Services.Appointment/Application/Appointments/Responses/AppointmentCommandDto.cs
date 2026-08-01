@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 
 namespace EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
@@ -35,4 +35,5 @@ public class AppointmentCommandDto : StatusDto
     /// <summary>Gets or sets the duration in minutes.</summary>
     public int DurationMinutes { get; set; }
 }
+
 

@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Billing.Domain.Entities;
 using EHRPlatform.Services.Billing.Domain.Enums;
 using EHRPlatform.Services.Billing.Features.Claims.Commands;
@@ -82,4 +82,5 @@ public class RequestPriorAuthorizationCommandHandler : ICommandHandler<RequestPr
         _logger.LogInformation("Prior Auth {PaId} created with status {Status}", pa.Id, pa.Status);
     }
 }
+
 

@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using EHRPlatform.Common.Domain.Entities;
-using EHRPlatform.Common.Data.Models;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
+using EHRPlatform.BuildingBlocks.Common.Data.Models;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Billing.Domain.Entities;
 
 namespace EHRPlatform.Services.Billing.Controllers;
@@ -154,3 +154,4 @@ public class InvoiceTagsController : ControllerBase
         }
     }
 }
+

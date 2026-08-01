@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 
@@ -47,4 +47,5 @@ public class UpdateSOAPCommandHandler : ICommandHandler<UpdateSOAPCommand>
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
 

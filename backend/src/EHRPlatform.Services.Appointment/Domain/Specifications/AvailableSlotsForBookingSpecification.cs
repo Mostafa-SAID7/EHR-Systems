@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Specifications;
+using EHRPlatform.BuildingBlocks.SharedKernel.Specifications;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
 namespace EHRPlatform.Services.Appointment.Domain.Specifications;
@@ -29,4 +29,5 @@ public class AvailableSlotsForBookingSpecification : Specification<ProviderAvail
         AddOrderBy(a => a.SlotStart);
     }
 }
+
 

@@ -1,8 +1,8 @@
 using MediatR;
 using EHRPlatform.Services.Audit.Features.Audit.Queries;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Handlers;
@@ -65,4 +65,5 @@ public class GetAuditEntriesHandler : IRequestHandler<GetAuditEntriesQuery, Page
         return PagedResult<AuditEntryResponse>.Create(items, total, request.PageNumber, request.PageSize);
     }
 }
+
 

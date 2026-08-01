@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Infrastructure.Telemetry;
+using EHRPlatform.BuildingBlocks.Observability.Telemetry;
 using EHRPlatform.Services.Notification.Hubs;
 using EHRPlatform.Services.Notification.Models;
 using MassTransit;
@@ -94,4 +94,5 @@ public record SendWelcomeNotificationMessage
     public Guid? TenantId { get; init; }
     public DateTime RegisteredAt { get; init; } = DateTime.UtcNow;
 }
+
 

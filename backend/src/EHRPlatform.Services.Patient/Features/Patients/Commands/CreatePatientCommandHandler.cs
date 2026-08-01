@@ -1,7 +1,7 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 // Domain entities via GlobalUsings (Domain.Entities)
 using Mapster;
@@ -238,4 +238,5 @@ public class AddConditionCommandHandler : ICommandHandler<AddConditionCommand>
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
 

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Infrastructure.Caching;
+using EHRPlatform.BuildingBlocks.Observability.Caching;
 
 namespace EHRPlatform.Services.Billing.Application.Services;
 
@@ -128,4 +128,5 @@ public class BillingCacheService : IBillingCacheService
         return SetAsync(key, value, expiry, ct);
     }
 }
+
 

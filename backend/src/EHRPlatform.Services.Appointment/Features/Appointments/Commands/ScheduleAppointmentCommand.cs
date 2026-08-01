@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Appointment.Application.AppointmentManagement.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Commands;
@@ -16,5 +16,6 @@ public record ScheduleAppointmentCommand : ICommand<AppointmentResponseDto>
     public string? ReasonForVisit { get; init; }
     public string? Notes { get; init; }
 }
+
 
 

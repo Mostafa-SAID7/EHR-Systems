@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 
@@ -73,4 +73,5 @@ public record GetDiagnosisHistoryQuery : ICachedQuery<DiagnosisDetailDto>
     public string CacheKey => $"diagnosis_history_{PatientId}";
     public int CacheDurationSeconds => 900;
 }
+
 

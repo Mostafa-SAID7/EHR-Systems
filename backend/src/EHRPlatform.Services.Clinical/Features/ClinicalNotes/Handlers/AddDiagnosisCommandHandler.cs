@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;
@@ -66,4 +66,5 @@ public class AddDiagnosisCommandHandler : ICommandHandler<AddDiagnosisCommand, C
         return _mapper.MapToResponse(note);
     }
 }
+
 

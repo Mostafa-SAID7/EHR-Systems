@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.Services.Billing.Domain.Entities;
 using EHRPlatform.Services.Billing.Domain.Enums;
 
@@ -79,4 +79,5 @@ public class GetClaimStatusQueryHandler : IQueryHandler<GetClaimStatusQuery, Cla
         );
     }
 }
+
 

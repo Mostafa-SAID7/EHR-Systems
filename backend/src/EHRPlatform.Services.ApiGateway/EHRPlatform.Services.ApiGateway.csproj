@@ -36,7 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../EHRPlatform.Common/EHRPlatform.Common.csproj" />
+    
   </ItemGroup>
 
 </Project>
+

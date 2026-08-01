@@ -1,8 +1,8 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Domain.Exceptions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.SharedKernel.Exceptions;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Users.Commands;
 using Microsoft.Extensions.Logging;
@@ -41,4 +41,5 @@ public class UnlockUserCommandHandler : ICommandHandler<UnlockUserCommand>
         _logger.LogInformation("User {UserId} successfully unlocked", command.UserId);
     }
 }
+
 

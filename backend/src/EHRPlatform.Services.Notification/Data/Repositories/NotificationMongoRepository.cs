@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.Services.Notification.Data.Documents;
 
 namespace EHRPlatform.Services.Notification.Data.Repositories;
@@ -78,3 +78,4 @@ public sealed class NotificationMongoRepository : INotificationMongoRepository
         }
     }
 }
+

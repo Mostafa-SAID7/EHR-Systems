@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Queries;
@@ -33,4 +33,5 @@ public record GetPatientDetailByMRNQuery : ICachedQuery<PatientDetailDto>
     public string CacheKey => $"patient_detail_mrn_{MRN.ToLower().Replace(" ", "_")}";
     public int CacheDurationSeconds => 900; // 15 minutes
 }
+
 

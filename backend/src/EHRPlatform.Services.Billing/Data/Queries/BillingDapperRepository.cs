@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 
 namespace EHRPlatform.Services.Billing.Data.Queries;
 
@@ -159,3 +159,4 @@ public sealed class BillingDapperRepository : IBillingDapperRepository
             ct);
     }
 }
+

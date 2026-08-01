@@ -1,8 +1,8 @@
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Infrastructure.Health;
-using EHRPlatform.Common.Messaging;
-using EHRPlatform.Common.Infrastructure.Security;
-using EHRPlatform.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Observability.HealthChecks;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.Patient.Data;
 using EHRPlatform.Services.Patient.Messaging.Consumers;
 using EHRPlatform.Services.Patient.Sagas;
@@ -238,6 +238,7 @@ app.MapHealthChecks("/health");
 // app.MapPrometheusMetricsEndpoint();
 
 await app.RunAsync();
+
 
 
 

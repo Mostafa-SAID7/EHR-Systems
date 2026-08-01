@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Billing.Domain.Entities;
 
@@ -16,4 +16,5 @@ public class LineItem : BaseEntity
     public decimal Amount { get; set; }
     public Invoice Invoice { get; set; } = null!;
 }
+
 

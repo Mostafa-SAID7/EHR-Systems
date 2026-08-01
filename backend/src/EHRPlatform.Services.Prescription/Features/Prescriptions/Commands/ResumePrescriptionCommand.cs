@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 
@@ -9,4 +9,5 @@ public record ResumePrescriptionCommand : ICommand
 {
     public Guid PrescriptionId { get; init; }
 }
+
 

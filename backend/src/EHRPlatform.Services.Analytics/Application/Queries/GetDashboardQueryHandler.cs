@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.Common.CQRS;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
 using EHRPlatform.Services.Analytics.Application.Services;
 using EHRPlatform.Services.Analytics.Data;
 using MediatR;
@@ -99,4 +99,5 @@ public record DashboardWidgetDto(
     string Title,
     string WidgetType,
     string Config);
+
 

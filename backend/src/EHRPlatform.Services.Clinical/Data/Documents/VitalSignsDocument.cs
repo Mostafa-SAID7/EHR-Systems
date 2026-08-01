@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace EHRPlatform.Services.Clinical.Data.Documents;
@@ -87,3 +87,4 @@ public class VitalSignsDocument : MongoBaseDocument
     [BsonElement("bloodPressureText")]
     public string BloodPressureText => $"{SystolicBP}/{DiastolicBP}";
 }
+

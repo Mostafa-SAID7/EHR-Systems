@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Appointment.Application.ProviderAvailability.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.ProviderAvailability.Commands;
@@ -15,4 +15,5 @@ public record SetProviderAvailabilityCommand : ICommand<ProviderAvailabilityDto>
     public string? RecurrencePattern { get; init; }
     public int? MaxAppointmentsPerSlot { get; init; }
 }
+
 

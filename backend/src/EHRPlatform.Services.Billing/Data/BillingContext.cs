@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data.Contexts;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data.Contexts;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Billing.Data;
 
@@ -36,3 +36,4 @@ public class BillingContext : BaseDbContext
         modelBuilder.SeedReports();
     }
 }
+

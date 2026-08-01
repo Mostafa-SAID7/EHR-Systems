@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
@@ -10,4 +10,5 @@ namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
 public record GetPendingRemindersQuery : IQuery<IEnumerable<AppointmentReminderDto>>
 {
 }
+
 

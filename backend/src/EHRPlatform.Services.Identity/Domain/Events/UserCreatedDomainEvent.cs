@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Events;
 
@@ -13,4 +13,5 @@ public class UserCreatedDomainEvent : DomainEvent
     public string Email  { get; set; } = string.Empty;
     public string Role   { get; set; } = string.Empty;
 }
+
 

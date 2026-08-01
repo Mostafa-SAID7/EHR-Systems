@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 
 namespace EHRPlatform.Services.Clinical.Data;
@@ -28,3 +28,4 @@ public class ClinicalContext : BaseDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ClinicalContext).Assembly);
     }
 }
+

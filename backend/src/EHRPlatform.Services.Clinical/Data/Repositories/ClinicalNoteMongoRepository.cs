@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.Services.Clinical.Data.Documents;
 
 namespace EHRPlatform.Services.Clinical.Data.Repositories;
@@ -46,3 +46,4 @@ public sealed class ClinicalNoteMongoRepository : IClinicalNoteMongoRepository
                 await _repo.DeleteAsync(t.Result.Id, ct);
         }, ct).Unwrap();
 }
+

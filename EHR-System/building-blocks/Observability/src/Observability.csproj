@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
+    <PackageId>EHRPlatform.BuildingBlocks.Observability</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>EHR Platform Team</Authors>
+    <Description>Observability building block including OpenTelemetry integration, structured logging with Serilog, health checks, metrics collection, and correlation IDs for distributed tracing.</Description>
+    <PackageTags>healthcare;microservices;observability;telemetry;logging;metrics;healthchecks</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.9.0" />
+    <PackageReference Include="Serilog" Version="4.1.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.1.0" />
+    <PackageReference Include="Serilog.Enrichers.Context" Version="4.2.0" />
+    <PackageReference Include="HealthChecks.UI.Client" Version="8.2.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.2.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.MongoDB" Version="8.2.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.2.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.PostgreSql" Version="8.2.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.7.10" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SharedKernel/src/SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

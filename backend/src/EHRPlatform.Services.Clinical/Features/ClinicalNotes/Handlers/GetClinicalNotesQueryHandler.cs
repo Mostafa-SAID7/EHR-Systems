@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Mappers;
@@ -48,4 +48,5 @@ public class GetClinicalNotesQueryHandler : IQueryHandler<GetClinicalNotesQuery,
         return _mapper.MapToPagedResult(notes, total, query.PageNumber, query.PageSize);
     }
 }
+
 

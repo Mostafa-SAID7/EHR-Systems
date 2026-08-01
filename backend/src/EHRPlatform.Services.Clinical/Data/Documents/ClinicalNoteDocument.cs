@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace EHRPlatform.Services.Clinical.Data.Documents;
@@ -105,3 +105,4 @@ public class NoteAttachmentRef
     public DateTime UploadedAt  { get; set; }
     public Guid     UploadedBy  { get; set; }
 }
+

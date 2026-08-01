@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 using EHRPlatform.Services.Appointment.Domain.Enums;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -274,4 +274,5 @@ public class Appointment : AuditableEntity
     /// </summary>
     public void ClearDomainEvents() => _domainEvents.Clear();
 }
+
 

@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.Mapping;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.Mapping;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 using Microsoft.Extensions.Logging;
@@ -82,4 +82,5 @@ public class ClinicalNoteMapper : MappingServiceBase<Domain.Entities.ClinicalNot
         return PagedResult<ClinicalNoteResponse>.Create(dtos, total, pageNumber, pageSize);
     }
 }
+
 

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Infrastructure.Telemetry;
+using EHRPlatform.BuildingBlocks.Observability.Telemetry;
 using EHRPlatform.Services.Patient.Messaging.Messages;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -69,4 +69,5 @@ public sealed class WelcomeNotificationConsumer : IConsumer<SendWelcomeNotificat
         }
     }
 }
+
 

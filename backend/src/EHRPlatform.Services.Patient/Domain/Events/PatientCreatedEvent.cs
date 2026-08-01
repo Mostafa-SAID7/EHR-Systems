@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Patient.Domain.Events;
 
@@ -22,3 +22,4 @@ public class PatientCreatedEvent : IntegrationEvent
         MRN = mrn;
     }
 }
+

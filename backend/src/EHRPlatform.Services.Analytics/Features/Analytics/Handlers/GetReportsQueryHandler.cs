@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.Common.CQRS;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Analytics.Features.Analytics.Queries;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 using EHRPlatform.Services.Analytics.Application.Analytics.Mappers;
@@ -36,4 +36,5 @@ public class GetReportsQueryHandler : IQueryHandler<GetReportsQuery, PagedResult
         return _mapper.MapToReportPagedResult(reports, total, query.PageNumber, query.PageSize);
     }
 }
+
 

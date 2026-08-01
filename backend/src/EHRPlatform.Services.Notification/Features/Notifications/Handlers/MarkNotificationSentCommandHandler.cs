@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Notification.Features.Notifications.Commands;
 
 
@@ -55,4 +55,5 @@ public class MarkNotificationSentCommandHandler : ICommandHandler<MarkNotificati
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
 

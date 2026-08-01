@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Identity.Features.Users.Commands;
 
@@ -9,4 +9,5 @@ namespace EHRPlatform.Services.Identity.Features.Users.Commands;
 /// Single Responsibility: Encapsulate payload for clearing account lockout.
 /// </summary>
 public record UnlockUserCommand(Guid UserId, Guid UnlockedBy) : ICommand;
+
 

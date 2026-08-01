@@ -1,6 +1,6 @@
 using Mapster;
-using EHRPlatform.Common.Application.Mapping;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.Mapping;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using Microsoft.Extensions.Logging;
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 
@@ -51,4 +51,5 @@ public class PatientMapper : MappingServiceBase<PatientEntity, PatientResponseDt
             pageSize);
     }
 }
+
 

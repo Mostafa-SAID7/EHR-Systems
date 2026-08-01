@@ -1,6 +1,6 @@
 using Mapster;
-using EHRPlatform.Common.Application.Common.Mapping;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Mapping;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 using Microsoft.Extensions.Logging;
@@ -47,4 +47,5 @@ public class AnalyticsMapper : MappingServiceBase<Dashboard, DashboardResponse>
             pageSize);
     }
 }
+
 

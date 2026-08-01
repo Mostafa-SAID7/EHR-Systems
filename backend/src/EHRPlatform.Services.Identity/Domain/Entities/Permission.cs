@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Entities;
 
@@ -40,4 +40,5 @@ public class Permission : BaseEntity
             Description = description
         };
 }
+
 

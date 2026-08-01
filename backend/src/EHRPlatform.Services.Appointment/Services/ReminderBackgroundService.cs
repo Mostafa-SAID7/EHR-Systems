@@ -1,6 +1,6 @@
 using EHRPlatform.Services.Appointment.Domain.Enums;
 using EHRPlatform.Services.Appointment.Services.Notifications;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
 namespace EHRPlatform.Services.Appointment.Services;
@@ -168,4 +168,5 @@ public class ReminderBackgroundService : BackgroundService
         }
     }
 }
+
 

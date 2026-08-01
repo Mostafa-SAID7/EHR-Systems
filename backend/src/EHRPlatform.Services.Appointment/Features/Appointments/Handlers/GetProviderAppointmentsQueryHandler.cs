@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.Services.Appointment.Application.Appointments.Mappers;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
@@ -54,5 +54,6 @@ public class GetProviderAppointmentsQueryHandler : IQueryHandler<GetProviderAppo
         return _mapper.MapToProviderCalendarDto(request.ProviderId, request.CalendarDate, appointments);
     }
 }
+
 
 

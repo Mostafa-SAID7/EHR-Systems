@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Entities;
 
@@ -15,4 +15,5 @@ public class LoginAudit : BaseEntity
     public string UserAgent { get; set; } = string.Empty;
     public User User { get; set; } = null!;
 }
+
 

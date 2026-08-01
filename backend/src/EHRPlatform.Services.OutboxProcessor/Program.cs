@@ -1,9 +1,9 @@
 using System.Reflection;
 using Confluent.Kafka;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.OutboxProcessor.Workers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -111,4 +111,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 

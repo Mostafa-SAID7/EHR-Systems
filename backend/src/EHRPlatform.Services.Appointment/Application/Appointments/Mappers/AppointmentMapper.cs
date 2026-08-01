@@ -1,6 +1,6 @@
 using Mapster;
-using EHRPlatform.Common.Application.Mapping;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.Mapping;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 using Microsoft.Extensions.Logging;
 using ApptEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
@@ -116,4 +116,5 @@ public class AppointmentMapper : MappingServiceBase<ApptEntity, AppointmentRespo
         };
     }
 }
+
 

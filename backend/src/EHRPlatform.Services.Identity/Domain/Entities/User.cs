@@ -1,41 +1,55 @@
-using EHRPlatform.Common.Domain.Entities;
+using System;
+using System.Collections.Generic;
 
-namespace EHRPlatform.Services.Identity.Domain.Entities;
-
-/// <summary>
-/// User entity for identity and access management.
-/// HIPAA compliant with audit trail.
-/// </summary>
-public class User : AuditableEntity
+namespace EHRPlatform.Services.Identity.Domain.Entities
 {
-    public string Email { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
-    public string PasswordSalt { get; set; } = string.Empty;
-    public bool IsActive { get; set; } = true;
-    public bool EmailConfirmed { get; set; }
-    public DateTime? LastLogin { get; set; }
-    public int FailedLoginAttempts { get; set; }
-    public DateTime? LockoutEnd { get; set; }
-    public bool MfaEnabled { get; set; }
-    public string? MfaSecret { get; set; }
-    public string? MfaSecretBackupCodes { get; set; }
-
-    // Collections
-    public ICollection<UserRole>     Roles         { get; } = new List<UserRole>();
-    public ICollection<RefreshToken> RefreshTokens { get; } = new List<RefreshToken>();
-    public ICollection<LoginAudit>   LoginAudits   { get; } = new List<LoginAudit>();
-    public ICollection<MfaSetup>     MfaSetups     { get; } = new List<MfaSetup>();
-
-    public bool IsLocked() => LockoutEnd.HasValue && LockoutEnd > DateTime.UtcNow;
-
-    public void Lock() => LockoutEnd = DateTime.UtcNow.AddMinutes(15);
-
-    public void Unlock()
+    /// <summary>
+    /// Service-Specific User Entity
+    /// This entity belongs ONLY to the Identity Service.
+    /// Other services cannot reference this directly.
+    /// Inter-service communication uses UserDto from EHRPlatform.Common.Shared.DTOs
+    /// </summary>
+    public class User
     {
-        LockoutEnd = null;
-        FailedLoginAttempts = 0;
+        public Guid Id { get; set; }
+
+        /// <summary>Unique email address (username)</summary>
+        public string Email { get; set; }
+
+        /// <summary>Bcrypt hashed password</summary>
+        public string PasswordHash { get; set; }
+
+        /// <summary>User's first name</summary>
+        public string FirstName { get; set; }
+
+        /// <summary>User's last name</summary>
+        public string LastName { get; set; }
+
+        /// <summary>Formatted phone number</summary>
+        public string PhoneNumber { get; set; }
+
+        /// <summary>Has user verified their email address?</summary>
+        public bool IsEmailVerified { get; set; } = false;
+
+        /// <summary>Is account active (not suspended/deactivated)?</summary>
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>Last successful login timestamp</summary>
+        public DateTime? LastLoginAt { get; set; }
+
+        /// <summary>Associated roles (many-to-many)</summary>
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
+        /// <summary>Issued refresh tokens</summary>
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
+        /// <summary>Creation timestamp (UTC)</summary>
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>Last modification timestamp (UTC)</summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>Soft delete timestamp (UTC) - null if not deleted</summary>
+        public DateTime? DeletedAt { get; set; }
     }
 }
-

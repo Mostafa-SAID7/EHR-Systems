@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 using Mapster;
@@ -48,5 +48,6 @@ public class GetPrescriptionQueryHandler : IQueryHandler<GetPrescriptionQuery, P
         return dto;
     }
 }
+
 
 

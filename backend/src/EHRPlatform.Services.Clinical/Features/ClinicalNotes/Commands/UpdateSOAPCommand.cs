@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
 
@@ -13,4 +13,5 @@ public record UpdateSOAPCommand : ICommand
     public string? Assessment { get; init; }
     public string? Plan { get; init; }
 }
+
 

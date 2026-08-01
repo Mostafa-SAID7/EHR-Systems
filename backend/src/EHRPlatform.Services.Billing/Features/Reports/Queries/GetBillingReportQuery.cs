@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.Common.Behaviors;
-using EHRPlatform.Common.Application.Common.CQRS;
+using EHRPlatform.BuildingBlocks.EventBus.Behaviors;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
 using EHRPlatform.Services.Billing.Application.Reports.Responses;
 
 namespace EHRPlatform.Services.Billing.Features.Reports.Queries;
@@ -15,4 +15,5 @@ public record GetBillingReportQuery : IQuery<BillingReportDto>, ICachedQuery
     public string CacheKey => $"report_billing_{StartDate:yyyyMMdd}_{EndDate:yyyyMMdd}";
     public TimeSpan? Duration => TimeSpan.FromSeconds(3600);
 }
+
 

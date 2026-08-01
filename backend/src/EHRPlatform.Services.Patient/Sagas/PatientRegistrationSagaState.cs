@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Sagas;
+using EHRPlatform.BuildingBlocks.Common.Sagas;
 using MassTransit;
 
 namespace EHRPlatform.Services.Patient.Sagas;
@@ -38,3 +38,4 @@ public class PatientRegistrationSagaState : SagaStateBase, SagaStateMachineInsta
     public string? FailureReason { get; set; }
     public bool CompensationExecuted { get; set; }
 }
+

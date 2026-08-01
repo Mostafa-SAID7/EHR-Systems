@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Identity.Domain.Events;
 
@@ -17,3 +17,4 @@ public class RoleAssignedEvent : IntegrationEvent
         RoleName = roleName;
     }
 }
+

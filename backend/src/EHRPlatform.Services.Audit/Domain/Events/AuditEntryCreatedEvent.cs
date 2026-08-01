@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Audit.Domain.Events;
 
@@ -19,3 +19,4 @@ public class AuditEntryCreatedEvent : IntegrationEvent
         ResourceId = resourceId;
     }
 }
+

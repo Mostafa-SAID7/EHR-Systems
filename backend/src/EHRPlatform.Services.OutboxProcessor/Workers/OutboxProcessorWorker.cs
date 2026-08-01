@@ -1,6 +1,6 @@
 using Confluent.Kafka;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -168,3 +168,4 @@ public class OutboxProcessorWorker : BackgroundService
         await db.SaveChangesAsync(ct);
     }
 }
+

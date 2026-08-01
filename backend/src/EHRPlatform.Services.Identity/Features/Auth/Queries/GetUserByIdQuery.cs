@@ -1,7 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.Common.Behaviors;
-using EHRPlatform.Common.Application.Common.CQRS;
+using EHRPlatform.BuildingBlocks.EventBus.Behaviors;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 
 namespace EHRPlatform.Services.Identity.Features.Auth.Queries;
@@ -27,4 +27,5 @@ public class GetUserByIdQuery : IQuery<UserResponseDto>, ICachedQuery
     /// </summary>
     public TimeSpan? Duration => TimeSpan.FromSeconds(300);
 }
+
 

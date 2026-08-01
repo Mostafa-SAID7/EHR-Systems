@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Identity.Features.Auth.Commands;
 
@@ -30,4 +30,5 @@ public class LogoutResponse
     /// </summary>
     public string Message { get; set; } = "Logged out successfully";
 }
+
 

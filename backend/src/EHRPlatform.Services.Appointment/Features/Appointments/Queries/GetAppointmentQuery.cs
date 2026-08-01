@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.Common.Behaviors;
-using EHRPlatform.Common.Application.Common.CQRS;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.EventBus.Behaviors;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
@@ -30,4 +30,5 @@ public record GetPatientAppointmentsQuery : IQuery<PagedResult<AppointmentRespon
     public string CacheKey => $"appointments_patient_{PatientId}_{FromDate:yyyyMMdd}_{ToDate:yyyyMMdd}_{PageNumber}_{PageSize}";
     public TimeSpan? Duration => TimeSpan.FromSeconds(600);
 }
+
 

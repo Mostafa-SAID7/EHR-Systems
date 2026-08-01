@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 
 namespace EHRPlatform.Services.Identity.Features.Auth.Commands;
@@ -25,4 +25,5 @@ public class ChangePasswordCommand : ICommand<ChangePasswordResponse>
     /// </summary>
     public string NewPassword { get; set; } = string.Empty;
 }
+
 

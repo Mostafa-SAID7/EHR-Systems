@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Clinical.Domain.Events;
 
@@ -30,3 +30,4 @@ public class ClinicalNoteCreatedEvent : IntegrationEvent
         Status = status;
     }
 }
+

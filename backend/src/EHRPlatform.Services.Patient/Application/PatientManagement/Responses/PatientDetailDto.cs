@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 
 namespace EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 
@@ -37,5 +37,6 @@ public class PatientDetailDto : StatusDto
     public DateTime CreatedAt { get; set; }
     public DateTime? LastModifiedAt { get; set; }
 }
+
 
 

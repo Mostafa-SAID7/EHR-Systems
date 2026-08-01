@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Billing.Domain;
 using EHRPlatform.Services.Billing.Features.Payments.Commands;
 using Microsoft.Extensions.Logging;
@@ -60,4 +60,5 @@ public class RecordPaymentCommandHandler : ICommandHandler<RecordPaymentCommand>
         _logger.LogInformation("Payment recorded for invoice {InvoiceId}", command.InvoiceId);
     }
 }
+
 

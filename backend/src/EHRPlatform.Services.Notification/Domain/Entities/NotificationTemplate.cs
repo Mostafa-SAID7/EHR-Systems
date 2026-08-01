@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Notification.Domain.Entities;
 
@@ -27,4 +27,5 @@ public class NotificationTemplate : BaseEntity
         return body;
     }
 }
+
 

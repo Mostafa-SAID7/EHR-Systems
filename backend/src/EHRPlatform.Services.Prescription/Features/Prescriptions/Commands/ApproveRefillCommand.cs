@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Commands;
 
@@ -10,4 +10,5 @@ public record ApproveRefillCommand : ICommand
     public Guid PrescriptionId { get; init; }
     public Guid RefillId { get; init; }
 }
+
 

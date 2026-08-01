@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 
 namespace EHRPlatform.Services.Audit.Features.Audit.Queries;
 
@@ -53,4 +53,5 @@ public class GetUserAuditActivityQueryHandler : IQueryHandler<GetUserAuditActivi
         };
     }
 }
+
 

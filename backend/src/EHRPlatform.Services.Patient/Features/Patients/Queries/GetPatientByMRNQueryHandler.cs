@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Slugs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Slugs;
 // Domain entities via GlobalUsings (Domain.Entities)
 using EHRPlatform.Services.Patient.Application.PatientManagement.Responses;
 using Mapster;
@@ -134,4 +134,5 @@ public class GetPatientDetailByMRNQueryHandler : IQueryHandler<GetPatientDetailB
         return detail;
     }
 }
+
 

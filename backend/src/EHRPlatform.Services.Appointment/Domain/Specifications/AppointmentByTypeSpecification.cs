@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Specifications;
+using EHRPlatform.BuildingBlocks.SharedKernel.Specifications;
 using EHRPlatform.Services.Appointment.Domain.Enums;
 using Appointment = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
 
@@ -32,4 +32,5 @@ public class AppointmentByTypeSpecification : Specification<Appointment>
         AddOrderByDescending(a => a.ScheduledStart);
     }
 }
+
 

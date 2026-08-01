@@ -1,0 +1,87 @@
+// Example Program.cs setup for Patient Service with MassTransit and Kafka
+// This shows how to register the DbContext, MassTransit messaging, and other dependencies
+
+using Microsoft.EntityFrameworkCore;
+using EHRPlatform.Services.Patient.Data;
+using EHRPlatform.Common.Infrastructure.Messaging;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
+
+// 1. Register DbContext for Patient Service
+//    - Uses service-specific connection string
+//    - Enables service-specific migrations
+builder.Services.AddDbContext<PatientContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    
+    options.UseNpgsql(
+        connectionString,
+        npgsqlOptions => npgsqlOptions.MigrationsAssembly("EHRPlatform.Services.Patient")
+    );
+
+    // Enable query logging in development
+    if (builder.Environment.IsDevelopment())
+    {
+        options.LogTo(Console.WriteLine);
+        options.EnableSensitiveDataLogging();
+    }
+});
+
+// 2. Register MassTransit with Kafka
+//    - Auto-discovers consumers in this assembly
+//    - Configures retry policies
+//    - Sets up circuit breaker
+//    - Enables dead letter queue
+builder.Services.AddMicroserviceMessaging(
+    builder.Configuration,
+    typeof(Program).Assembly
+);
+
+// 3. Register application services
+builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
+// 4. Register HTTP client for inter-service calls (if needed)
+builder.Services.AddHttpClient();
+
+// 5. Add API controllers and Swagger
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen();
+
+// 6. Add logging
+builder.Services.AddLogging(configure =>
+{
+    configure.AddConsole();
+    configure.AddDebug();
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+// 7. Apply database migrations on startup
+//    Ensures schema is up-to-date
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<PatientContext>();
+    await dbContext.Database.MigrateAsync();
+    
+    // Optional: Seed data
+    // await PatientSeedData.SeedAsync(dbContext);
+}
+
+app.Run();

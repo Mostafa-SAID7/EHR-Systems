@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Analytics.Application.Analytics.Responses;
 
 namespace EHRPlatform.Services.Analytics.Features.Analytics.Queries;
@@ -17,4 +17,5 @@ public record GetDashboardsQuery : ICachedQuery<PagedResult<DashboardResponse>>
     public string CacheKey => $"dashboards_{UserId}_{PageNumber}_{PageSize}";
     public int CacheDurationSeconds => 600;
 }
+
 

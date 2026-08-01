@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
+    <PackageId>EHRPlatform.BuildingBlocks.Contracts</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>EHR Platform Team</Authors>
+    <Description>Cross-service contracts including domain events, DTOs, enums, and constants used for communication between microservices.</Description>
+    <PackageTags>healthcare;microservices;contracts;events;dtos;fhir</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SharedKernel/src/SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

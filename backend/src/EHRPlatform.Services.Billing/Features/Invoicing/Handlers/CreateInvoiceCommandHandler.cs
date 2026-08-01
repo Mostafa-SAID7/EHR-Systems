@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Billing.Features.Invoicing.Commands;
 using Microsoft.Extensions.Logging;
 
@@ -91,4 +91,5 @@ public class CreateInvoiceCommandHandler : ICommandHandler<CreateInvoiceCommand,
         return $"INV-{timestamp}-{random}";
     }
 }
+
 

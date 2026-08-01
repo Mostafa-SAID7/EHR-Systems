@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
@@ -11,4 +11,5 @@ public record FinalizeClinicalNoteCommand : ICommand<ClinicalNoteResponse>
 {
     public Guid ClinicalNoteId { get; init; }
 }
+
 

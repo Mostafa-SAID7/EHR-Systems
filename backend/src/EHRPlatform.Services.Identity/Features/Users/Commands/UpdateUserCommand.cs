@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 
 namespace EHRPlatform.Services.Identity.Features.Users.Commands;
@@ -40,4 +40,5 @@ public class UpdateUserCommand : ICommand<UpdateUserResponse>
     /// </summary>
     public Guid UpdatedBy { get; set; }
 }
+
 

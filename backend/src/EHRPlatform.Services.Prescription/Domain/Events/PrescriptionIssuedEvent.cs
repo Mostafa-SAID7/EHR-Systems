@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Prescription.Domain.Events;
 
@@ -19,3 +19,4 @@ public class PrescriptionIssuedEvent : IntegrationEvent
         Dosage = dosage;
     }
 }
+

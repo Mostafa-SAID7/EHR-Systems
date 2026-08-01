@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace EHRPlatform.Services.Audit.Data.Documents;
@@ -108,3 +108,4 @@ public class AuditEntryDocument : MongoBaseDocument
     // DeletedAt from MongoBaseDocument is intentionally ignored for this type.
     // Entries are immutable from the moment they are written.
 }
+

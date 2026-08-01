@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Appointment.Application.ProviderAvailability.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.ProviderAvailability.Queries;
@@ -20,4 +20,5 @@ public record GetProviderAvailabilityQuery : IQuery<ProviderAvailabilityListDto>
     /// <summary>Optional appointment type filter (e.g., "Office", "Telehealth").</summary>
     public string? AppointmentType { get; init; }
 }
+
 

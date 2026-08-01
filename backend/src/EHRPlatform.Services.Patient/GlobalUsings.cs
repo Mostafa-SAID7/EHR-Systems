@@ -1,5 +1,5 @@
-global using EHRPlatform.Common.Data;
-global using EHRPlatform.Common.Infrastructure.EventDriven;
+global using EHRPlatform.BuildingBlocks.Common.Data;
+global using EHRPlatform.BuildingBlocks.EventBus.Messaging;
 global using EHRPlatform.Services.Patient.Data;
 global using EHRPlatform.Services.Patient.Data.Configuration;
 global using EHRPlatform.Services.Patient.Data.Seeds;
@@ -16,4 +16,5 @@ global using EHRPlatform.Services.Patient.Features.Patients.Validation;
 // Type alias: resolves 'Patient' ambiguity between namespace 'EHRPlatform.Services.Patient'
 // and class 'EHRPlatform.Services.Patient.Domain.Entities.Patient'
 global using PatientEntity = EHRPlatform.Services.Patient.Domain.Entities.Patient;
+
 

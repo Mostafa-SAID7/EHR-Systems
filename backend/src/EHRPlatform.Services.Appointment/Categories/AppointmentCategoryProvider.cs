@@ -1,7 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Shared.Contracts;
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.Contracts.Contracts;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Appointment.Categories;
 
@@ -232,3 +232,4 @@ public class AppointmentCategoryProvider : ICategoryProvider
         }
     }
 }
+

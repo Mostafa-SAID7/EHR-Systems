@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Appointment.Domain.Events;
 
@@ -56,3 +56,4 @@ public class AppointmentNoShowEvent : IntegrationEvent
         Reason = reason;
     }
 }
+

@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 
 namespace EHRPlatform.Services.Audit.Data.Queries;
 
@@ -142,3 +142,4 @@ public sealed class AuditDapperRepository : IAuditDapperRepository
             ct);
     }
 }
+

@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Infrastructure.Security;
-using EHRPlatform.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.Analytics.Data;
 using EHRPlatform.Services.Analytics.Data.Repositories;
 using EHRPlatform.Services.Analytics.Application.Services;
@@ -140,6 +140,7 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 
 

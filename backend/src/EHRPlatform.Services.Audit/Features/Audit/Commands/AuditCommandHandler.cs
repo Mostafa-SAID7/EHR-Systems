@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using Mapster;
 using System.Security.Cryptography;
 using System.Text;
@@ -222,4 +222,5 @@ public class ExportAuditLogsCommandHandler : ICommandHandler<ExportAuditLogsComm
         }
     }
 }
+
 

@@ -1,0 +1,2 @@
+# 16 independent microservices (16 bounded contexts)
+# Each service: API | Application | Domain | Infrastructure | Persistence | Contracts

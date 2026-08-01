@@ -1,6 +1,6 @@
 using Mapster;
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.Services.Appointment.Application.ProviderAvailability.Mappers;
 using EHRPlatform.Services.Appointment.Application.ProviderAvailability.Responses;
 using EHRPlatform.Services.Appointment.Features.ProviderAvailability.Commands;
@@ -57,5 +57,6 @@ public class SetProviderAvailabilityCommandHandler : ICommandHandler<SetProvider
         return availSlot.Adapt<ProviderAvailabilityDto>();
     }
 }
+
 
 

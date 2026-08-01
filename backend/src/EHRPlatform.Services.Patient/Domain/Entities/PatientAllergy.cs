@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Patient.Domain.Entities;
 
@@ -13,4 +13,5 @@ public class PatientAllergy : BaseEntity
     public string Notes { get; set; } = string.Empty;
     public Patient Patient { get; set; } = null!;
 }
+
 

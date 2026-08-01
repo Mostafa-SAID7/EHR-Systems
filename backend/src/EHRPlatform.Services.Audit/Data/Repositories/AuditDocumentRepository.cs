@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.Services.Audit.Data.Documents;
 using MongoDB.Driver;
 
@@ -213,3 +213,4 @@ public class AuditDocumentRepository : IAuditDocumentRepository
         return (items, total);
     }
 }
+

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
@@ -16,4 +16,5 @@ public record RecordVitalsCommand : ICommand<ClinicalNoteResponse>
     public int RespiratoryRate { get; init; }
     public decimal? Weight { get; init; }
 }
+
 

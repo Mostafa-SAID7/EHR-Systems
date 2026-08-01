@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using EHRPlatform.Services.Prescription.Domain.Entities;
 
 namespace EHRPlatform.Services.Prescription.Data;
@@ -26,3 +26,4 @@ public class PrescriptionContext : BaseDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PrescriptionContext).Assembly);
     }
 }
+

@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Audit.Features.Audit.Queries;
 using EHRPlatform.Services.Audit.Application.Audit.Responses;
 using EHRPlatform.Services.Audit.Application.Audit.Mappers;
@@ -37,4 +37,5 @@ public class GetAccessLogsQueryHandler : IQueryHandler<GetAccessLogsQuery, Paged
         return _mapper.MapToAccessLogPagedResult(accessLogs, total, query.PageNumber, query.PageSize);
     }
 }
+
 

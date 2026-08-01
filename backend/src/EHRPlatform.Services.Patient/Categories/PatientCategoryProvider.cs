@@ -1,7 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Shared.Contracts;
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.Contracts.Contracts;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Patient.Categories;
 
@@ -224,3 +224,4 @@ public class PatientCategoryProvider : ICategoryProvider
         }
     }
 }
+

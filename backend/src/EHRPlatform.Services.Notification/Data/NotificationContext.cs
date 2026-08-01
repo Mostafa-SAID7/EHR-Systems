@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using EHRPlatform.Services.Notification.Domain.Entities;
 
 namespace EHRPlatform.Services.Notification.Data;
@@ -26,3 +26,4 @@ public class NotificationContext : BaseDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(NotificationContext).Assembly);
     }
 }
+

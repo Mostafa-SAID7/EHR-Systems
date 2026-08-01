@@ -1,7 +1,7 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Patient.Features.Patients.Commands;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
 using EHRPlatform.Services.Patient.Application.Patients.Mappers;
@@ -75,4 +75,5 @@ public class RegisterPatientCommandHandler : ICommandHandler<RegisterPatientComm
         return _mapper.MapToResponse(patient);
     }
 }
+
 

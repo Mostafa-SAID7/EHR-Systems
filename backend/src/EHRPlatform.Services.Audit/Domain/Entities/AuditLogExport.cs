@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Audit.Domain.Entities;
 
@@ -18,4 +18,5 @@ public class AuditLogExport : BaseEntity
     public string Status { get; set; } = string.Empty; // Pending, Completed, Failed
     public bool IsEncrypted { get; set; }
 }
+
 

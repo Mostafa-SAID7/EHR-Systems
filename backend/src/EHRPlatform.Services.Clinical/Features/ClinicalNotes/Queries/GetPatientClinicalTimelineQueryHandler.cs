@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Clinical.Domain.Entities;
 using EHRPlatform.Services.Clinical.Application.ClinicalNoteManagement.Responses;
 
@@ -70,4 +70,5 @@ public class GetPatientClinicalTimelineQueryHandler : IQueryHandler<GetPatientCl
         return PagedResult<ClinicalNoteTimelineItemDto>.Create(timelineItems, total, request.PageNumber, request.PageSize);
     }
 }
+
 

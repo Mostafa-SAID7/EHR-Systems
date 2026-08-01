@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -22,3 +22,4 @@ public sealed class DesignTimeContextFactory : IDesignTimeDbContextFactory<Multi
         return new MultiServiceOutboxDbContext(options);
     }
 }
+

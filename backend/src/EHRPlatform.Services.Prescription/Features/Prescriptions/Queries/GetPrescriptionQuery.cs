@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Prescription.Application.PrescriptionManagement.Responses;
 
 namespace EHRPlatform.Services.Prescription.Features.Prescriptions.Queries;
@@ -53,4 +53,5 @@ public record GetPendingRefillsQuery : ICachedQuery<PagedResult<RefillRequestDto
     public string CacheKey => $"refills_provider_{ProviderId}_{PageNumber}_{PageSize}";
     public int CacheDurationSeconds => 300; // 5 minutes - more frequently updated
 }
+
 

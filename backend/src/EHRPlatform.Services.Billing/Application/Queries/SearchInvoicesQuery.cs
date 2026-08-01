@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Billing.Application.Services;
 
 namespace EHRPlatform.Services.Billing.Application.Queries;
@@ -37,4 +37,5 @@ public sealed class SearchInvoicesQueryHandler : IQueryHandler<SearchInvoicesQue
         }
     }
 }
+
 

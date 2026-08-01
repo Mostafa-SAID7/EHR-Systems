@@ -1,8 +1,8 @@
 using Mapster;
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Events;
-using EHRPlatform.Common.Messaging;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Messaging;
 using EHRPlatform.Services.Appointment.Application.Appointments.Mappers;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
@@ -103,5 +103,6 @@ public class ScheduleAppointmentCommandHandler : ICommandHandler<ScheduleAppoint
         return _mapper.MapToResponseDto(appointment);
     }
 }
+
 
 

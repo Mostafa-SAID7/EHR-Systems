@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Infrastructure.EventDriven;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.EventBus.Messaging;
 using EHRPlatform.Services.Appointment.Features.Appointments.Commands;
 using EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -72,5 +72,6 @@ public class CancelAppointmentCommandHandler : ICommandHandler<CancelAppointment
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
+
 
 

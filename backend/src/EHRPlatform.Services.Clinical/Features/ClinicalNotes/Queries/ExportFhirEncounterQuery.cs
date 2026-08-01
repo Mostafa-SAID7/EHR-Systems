@@ -1,7 +1,7 @@
 using MediatR;
 using EHRPlatform.Services.Clinical.Application.Mappers;
 using EHRPlatform.Services.Clinical.Domain.Entities;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Queries;
 
@@ -29,3 +29,4 @@ public class ExportFhirEncounterQueryHandler : IRequestHandler<ExportFhirEncount
         return FhirEncounterMapper.ToFhirR4BundleJson(note);
     }
 }
+

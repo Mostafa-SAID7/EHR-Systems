@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.Services.Patient.Features.Patients.Queries;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
 using EHRPlatform.Services.Patient.Application.Patients.Mappers;
@@ -49,4 +49,5 @@ public class GetPatientsQueryHandler : IQueryHandler<GetPatientsQuery, PatientLi
         return _mapper.MapToListDto(patients, total, query.PageNumber, query.PageSize);
     }
 }
+
 

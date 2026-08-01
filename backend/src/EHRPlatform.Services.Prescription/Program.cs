@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Infrastructure.Security;
-using EHRPlatform.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.Prescription.Application.Services;
 using EHRPlatform.Services.Prescription.Data;
 using Serilog;
@@ -105,6 +105,7 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 
 

@@ -1,7 +1,7 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Application.Identity.Mappers;
 using EHRPlatform.Services.Identity.Domain.Entities;
@@ -80,4 +80,5 @@ public class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, GetUsersRespons
         return response;
     }
 }
+
 

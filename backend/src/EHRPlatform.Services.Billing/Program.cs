@@ -1,11 +1,11 @@
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Infrastructure.Security;
-using EHRPlatform.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.Billing.Data;
 using EHRPlatform.Services.Billing.Data.Repositories;
 using EHRPlatform.Services.Billing.Data.Queries;
 using EHRPlatform.Services.Billing.Application.Services;
-using EHRPlatform.Common.Infrastructure.Health;
+using EHRPlatform.BuildingBlocks.Observability.HealthChecks;
 using Elastic.Clients.Elasticsearch;
 using Serilog;
 
@@ -144,6 +144,7 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 
 

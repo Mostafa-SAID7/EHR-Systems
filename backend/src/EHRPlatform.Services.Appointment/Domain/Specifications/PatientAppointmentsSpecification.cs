@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Specifications;
+using EHRPlatform.BuildingBlocks.SharedKernel.Specifications;
 using Appointment = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
 
 namespace EHRPlatform.Services.Appointment.Domain.Specifications;
@@ -31,4 +31,5 @@ public class PatientAppointmentsSpecification : Specification<Appointment>
         AddOrderByDescending(a => a.ScheduledStart);
     }
 }
+
 

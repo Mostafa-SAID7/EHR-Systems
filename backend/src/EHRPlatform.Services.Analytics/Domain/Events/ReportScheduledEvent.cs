@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 
 namespace EHRPlatform.Services.Analytics.Domain.Events;
 
@@ -15,3 +15,4 @@ public class ReportScheduledEvent : IntegrationEvent
         Schedule = schedule;
     }
 }
+

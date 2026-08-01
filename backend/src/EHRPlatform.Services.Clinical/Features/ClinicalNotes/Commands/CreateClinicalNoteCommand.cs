@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Clinical.Application.ClinicalNotes.Responses;
 
 namespace EHRPlatform.Services.Clinical.Features.ClinicalNotes.Commands;
@@ -20,4 +20,5 @@ public record CreateClinicalNoteCommand : ICommand<ClinicalNoteResponse>
     public string? Assessment { get; init; }
     public string? Plan { get; init; }
 }
+
 

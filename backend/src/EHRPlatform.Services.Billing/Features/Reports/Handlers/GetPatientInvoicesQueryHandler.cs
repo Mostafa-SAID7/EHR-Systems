@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.Services.Billing.Features.Reports.Queries;
 using Microsoft.Extensions.Logging;
 
@@ -82,4 +82,5 @@ public class GetPatientOutstandingBalanceQueryHandler : IQueryHandler<GetPatient
         return _mapper.MapToOutstandingBalanceDto(request.PatientId, invoices);
     }
 }
+
 

@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Commands;
 
@@ -13,4 +13,5 @@ public record AddConditionCommand : ICommand
     public string ICD10Code { get; init; } = string.Empty;
     public DateTime? OnsetDate { get; init; }
 }
+
 

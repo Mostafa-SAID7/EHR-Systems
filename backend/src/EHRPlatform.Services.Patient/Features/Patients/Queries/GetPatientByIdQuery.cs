@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Patient.Application.Patients.Responses;
 
 namespace EHRPlatform.Services.Patient.Features.Patients.Queries;
@@ -10,4 +10,5 @@ public class GetPatientByIdQuery : IQuery<PatientResponse>
 {
     public Guid PatientId { get; set; }
 }
+
 

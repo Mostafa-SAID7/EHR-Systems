@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Billing.Application.Invoicing.Requests;
 using EHRPlatform.Services.Billing.Application.Invoicing.Responses;
 
@@ -18,5 +18,6 @@ public record CreateInvoiceCommand : ICommand<InvoiceResponseDto>
     public string? InsurancePolicyNumber { get; init; }
     public string? Notes { get; init; }
 }
+
 
 

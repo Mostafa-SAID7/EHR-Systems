@@ -1,6 +1,6 @@
 #nullable enable
 
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace EHRPlatform.Services.Audit.Data.Documents;
@@ -72,3 +72,4 @@ public class AccessLogDocument : MongoBaseDocument
     [BsonElement("sessionId")]
     public string? SessionId { get; set; }
 }
+

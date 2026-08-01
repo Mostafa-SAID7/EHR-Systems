@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using ApptEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.Appointment;
 using ProvAvailEntity = EHRPlatform.Services.Appointment.Features.Appointments.Domain.ProviderAvailability;
 
@@ -27,3 +27,4 @@ public class AppointmentContext : BaseDbContext
         modelBuilder.SeedAppointments();
     }
 }
+

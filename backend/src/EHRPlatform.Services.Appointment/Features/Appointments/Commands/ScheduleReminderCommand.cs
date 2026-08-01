@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.Services.Appointment.Domain.Enums;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Commands;
@@ -12,4 +12,5 @@ public record ScheduleReminderCommand : ICommand
     public DateTime ReminderTime { get; init; }
     public ReminderType ReminderType { get; init; }
 }
+
 

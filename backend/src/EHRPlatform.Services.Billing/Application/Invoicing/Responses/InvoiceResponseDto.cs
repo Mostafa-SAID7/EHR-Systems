@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 
 namespace EHRPlatform.Services.Billing.Application.Invoicing.Responses;
 
@@ -42,4 +42,5 @@ public class InvoiceResponseDto : StatusDto
     public List<PaymentDto> Payments { get; set; } = new();
     public List<InsuranceClaimDto> Claims { get; set; } = new();
 }
+
 

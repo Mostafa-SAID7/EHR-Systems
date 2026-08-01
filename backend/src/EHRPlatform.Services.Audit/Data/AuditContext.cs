@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data.Contexts;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data.Contexts;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using EHRPlatform.Services.Audit.Domain.Entities;
 
 namespace EHRPlatform.Services.Audit.Data;
@@ -28,3 +28,4 @@ public class AuditContext : BaseDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AuditContext).Assembly);
     }
 }
+

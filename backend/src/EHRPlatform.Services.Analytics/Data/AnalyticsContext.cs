@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using EHRPlatform.Common.Data.Contexts;
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Data.Contexts;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 
 namespace EHRPlatform.Services.Analytics.Data;
@@ -29,4 +29,5 @@ public class AnalyticsContext : BaseDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AnalyticsContext).Assembly);
     }
 }
+
 

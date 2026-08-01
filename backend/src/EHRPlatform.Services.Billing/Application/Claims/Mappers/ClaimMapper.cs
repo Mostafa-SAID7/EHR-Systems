@@ -1,5 +1,5 @@
 using Mapster;
-using EHRPlatform.Common.Application.Mapping;
+using EHRPlatform.BuildingBlocks.Common.Application.Mapping;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Billing.Application.Claims.Mappers;
@@ -32,4 +32,5 @@ public class ClaimMapper : MappingServiceBase<InsuranceClaim, ClaimResponseDto>
         return claims.Adapt<List<ClaimResponseDto>>();
     }
 }
+
 

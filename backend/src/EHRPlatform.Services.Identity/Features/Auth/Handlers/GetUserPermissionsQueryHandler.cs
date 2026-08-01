@@ -1,8 +1,8 @@
 #nullable enable
 
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Domain.Exceptions;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.SharedKernel.Exceptions;
 using EHRPlatform.Services.Identity.Application.Identity.DTOs.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Auth.Queries;
@@ -74,4 +74,5 @@ public class GetUserPermissionsQueryHandler : IQueryHandler<GetUserPermissionsQu
         };
     }
 }
+
 

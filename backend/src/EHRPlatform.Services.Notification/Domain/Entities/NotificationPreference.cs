@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Notification.Domain.Entities;
 
@@ -12,4 +12,5 @@ public class NotificationPreference : BaseEntity
     public string NotificationType { get; set; } = string.Empty;
     public bool IsEnabled { get; set; } = true;
 }
+
 

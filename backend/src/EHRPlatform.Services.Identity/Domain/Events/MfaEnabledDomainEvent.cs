@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Identity.Domain.Events;
 
@@ -11,4 +11,5 @@ public class MfaEnabledDomainEvent : DomainEvent
 {
     public Guid UserId { get; set; }
 }
+
 

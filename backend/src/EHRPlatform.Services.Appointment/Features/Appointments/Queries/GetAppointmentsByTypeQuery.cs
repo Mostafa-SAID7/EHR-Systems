@@ -1,5 +1,5 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Shared.DTOs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Contracts.DTOs;
 using EHRPlatform.Services.Appointment.Application.Appointments.Responses;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Queries;
@@ -85,4 +85,5 @@ public record GetAppointmentDetailsByTypeQuery : ICachedQuery<PagedResult<Appoin
     public string CacheKey => $"appointments_detail_type_{AppointmentType.ToLower()}_{PatientId}_{ProviderId}_{PageNumber}_{PageSize}";
     public int CacheDurationSeconds => 600; // 10 minutes
 }
+
 

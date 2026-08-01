@@ -9,10 +9,10 @@ global using System.Threading;
 global using System.Threading.Tasks;
 
 // EHR Platform common
-global using EHRPlatform.Common.Application.Common.CQRS;
-global using EHRPlatform.Common.Data;
-global using EHRPlatform.Common.Infrastructure.EventDriven;
-global using EHRPlatform.Common.Application.Common.Mapping;
+global using EHRPlatform.BuildingBlocks.EventBus.CQRS;
+global using EHRPlatform.BuildingBlocks.Common.Data;
+global using EHRPlatform.BuildingBlocks.EventBus.Messaging;
+global using EHRPlatform.BuildingBlocks.Common.Mapping;
 
 // Domain entities and enums
 global using EHRPlatform.Services.Prescription.Domain.Entities;
@@ -29,4 +29,5 @@ global using EHRPlatform.Services.Prescription.Application.PrescriptionManagemen
 
 // Data layer
 global using EHRPlatform.Services.Prescription.Data;
+
 

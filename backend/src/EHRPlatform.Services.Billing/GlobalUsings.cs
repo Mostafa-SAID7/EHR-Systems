@@ -19,5 +19,6 @@ global using EHRPlatform.Services.Billing.Application.Claims.Requests;
 global using EHRPlatform.Services.Billing.Application.Reports;
 global using EHRPlatform.Services.Billing.Application.Reports.Mappers;
 global using EHRPlatform.Services.Billing.Application.Reports.Responses;
-global using EHRPlatform.Common.Events;
+global using EHRPlatform.BuildingBlocks.Common.Events;
 global using Microsoft.EntityFrameworkCore;
+

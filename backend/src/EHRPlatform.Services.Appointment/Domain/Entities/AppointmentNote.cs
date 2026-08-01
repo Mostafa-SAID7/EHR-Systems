@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Domain.Entities;
+using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
 namespace EHRPlatform.Services.Appointment.Features.Appointments.Domain;
 
@@ -90,4 +90,5 @@ public enum NotePrivacyLevel
     /// <summary>Internal only - visible to clinical staff only.</summary>
     InternalOnly = 3
 }
+
 

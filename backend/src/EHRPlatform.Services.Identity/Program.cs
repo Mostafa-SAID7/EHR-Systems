@@ -1,9 +1,9 @@
-using EHRPlatform.Common.Data;
-using EHRPlatform.Common.Application.Common.Extensions;
-using EHRPlatform.Common.Infrastructure.Health;
-using EHRPlatform.Common.Search;
-using EHRPlatform.Common.Infrastructure.Security;
-using EHRPlatform.Common.Data.Migrations;
+using EHRPlatform.BuildingBlocks.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
+using EHRPlatform.BuildingBlocks.Observability.HealthChecks;
+using EHRPlatform.BuildingBlocks.Common.Search;
+using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.Identity.Application.Identity.Extensions;
 using EHRPlatform.Services.Identity.Data;
 using EHRPlatform.Services.Identity.Data.Repositories;
@@ -207,6 +207,7 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 
 

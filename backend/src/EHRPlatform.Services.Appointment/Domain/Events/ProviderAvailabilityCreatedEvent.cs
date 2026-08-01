@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Events;
+using EHRPlatform.BuildingBlocks.Common.Events;
 using EHRPlatform.Services.Appointment.Domain.Enums;
 
 namespace EHRPlatform.Services.Appointment.Domain.Events;
@@ -57,3 +57,4 @@ public class ProviderAvailabilityCreatedEvent : IntegrationEvent
         MaxAppointmentsPerSlot = maxAppointmentsPerSlot;
     }
 }
+

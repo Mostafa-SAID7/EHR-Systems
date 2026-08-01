@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Data;
+using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.Services.Patient.Data.Documents;
 using MongoDB.Driver;
 using System.Linq.Expressions;
@@ -64,3 +64,4 @@ public sealed class PatientMongoRepository : IPatientMongoRepository
     public Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
         => _repo.AnyAsync(p => p.Email == email && p.DeletedAt == null, ct);
 }
+

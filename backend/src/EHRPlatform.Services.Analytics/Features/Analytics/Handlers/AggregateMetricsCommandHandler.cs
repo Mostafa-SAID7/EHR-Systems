@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.Common.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Data.Implementations;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Data.Implementations;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Features.Analytics.Commands;
 
@@ -62,5 +62,6 @@ public class AggregateMetricsCommandHandler : ICommandHandler<AggregateMetricsCo
         _                                                  => "System"
     };
 }
+
 
 

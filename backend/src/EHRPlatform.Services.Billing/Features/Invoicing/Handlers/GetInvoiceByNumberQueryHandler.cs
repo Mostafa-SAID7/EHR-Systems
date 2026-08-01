@@ -1,6 +1,6 @@
-using EHRPlatform.Common.Application.CQRS;
-using EHRPlatform.Common.Data.Abstractions;
-using EHRPlatform.Common.Slugs;
+using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
+using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
+using EHRPlatform.BuildingBlocks.Common.Slugs;
 using EHRPlatform.Services.Billing.Features.Invoicing.Queries;
 using Microsoft.Extensions.Logging;
 
@@ -55,4 +55,5 @@ public class GetInvoiceByNumberQueryHandler : IQueryHandler<GetInvoiceByNumberQu
         return dto;
     }
 }
+
 

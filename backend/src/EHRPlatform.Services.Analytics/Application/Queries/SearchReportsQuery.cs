@@ -1,4 +1,4 @@
-using EHRPlatform.Common.Application.Common.CQRS;
+using EHRPlatform.BuildingBlocks.EventBus.CQRS;
 using EHRPlatform.Services.Analytics.Application.Services;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 
@@ -38,4 +38,5 @@ public sealed class SearchReportsQueryHandler : IQueryHandler<SearchReportsQuery
         }
     }
 }
+
 
