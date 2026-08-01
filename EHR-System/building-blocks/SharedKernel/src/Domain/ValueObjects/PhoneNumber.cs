@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using EHRPlatform.SharedKernel.Result;
 
 namespace EHRPlatform.SharedKernel.Domain.ValueObjects;
 

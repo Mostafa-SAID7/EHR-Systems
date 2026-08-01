@@ -4,6 +4,7 @@ namespace EHRPlatform.SharedKernel.Domain;
 
 /// <summary>
 /// Auditable entity interface - tracks creation and modifications.
+/// Separated from core entity to support optional audit trails.
 /// </summary>
 public interface IAuditableEntity : IEntity
 {
@@ -23,17 +24,12 @@ public interface IAuditableEntity : IEntity
     DateTime UpdatedAt { get; }
 
     /// <summary>
-    /// User that last updated entity.
+    /// User that last updated entity (null if never updated).
     /// </summary>
     string? UpdatedBy { get; }
 
     /// <summary>
-    /// When entity was deleted (soft delete).
+    /// Mark entity as updated.
     /// </summary>
-    DateTime? DeletedAt { get; }
-
-    /// <summary>
-    /// User that deleted entity.
-    /// </summary>
-    string? DeletedBy { get; }
+    void MarkAsUpdated(string updatedBy);
 }

@@ -1,4 +1,5 @@
 using System;
+using EHRPlatform.SharedKernel.Result;
 
 namespace EHRPlatform.SharedKernel.Domain.ValueObjects;
 

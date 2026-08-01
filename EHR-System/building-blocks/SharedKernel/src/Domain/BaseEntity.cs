@@ -3,11 +3,10 @@ using System;
 namespace EHRPlatform.SharedKernel.Domain;
 
 /// <summary>
-/// Base entity class for all domain entities.
-/// Provides common audit fields: CreatedAt, CreatedBy, UpdatedAt, UpdatedBy, DeletedAt, DeletedBy.
-/// Supports soft deletes and correlation tracking for distributed tracing.
+/// Base entity class - core entity with ID and deletion support only.
+/// Separates core entity concern from audit trails.
 /// </summary>
-public abstract class BaseEntity
+public abstract class BaseEntity : IEntity
 {
     /// <summary>
     /// Unique identifier (GUID).
@@ -15,37 +14,16 @@ public abstract class BaseEntity
     public Guid Id { get; protected set; }
 
     /// <summary>
-    /// UTC timestamp when entity was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// User ID (or system) that created the entity.
-    /// </summary>
-    public string CreatedBy { get; set; } = null!;
-
-    /// <summary>
-    /// UTC timestamp when entity was last updated.
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
-
-    /// <summary>
-    /// User ID (or system) that last updated the entity.
-    /// Null if entity has not been updated since creation.
-    /// </summary>
-    public string? UpdatedBy { get; set; }
-
-    /// <summary>
-    /// UTC timestamp when entity was soft-deleted.
+    /// Soft delete timestamp.
     /// Null if entity is not deleted.
     /// </summary>
-    public DateTime? DeletedAt { get; set; }
+    public DateTime? DeletedAt { get; protected set; }
 
     /// <summary>
-    /// User ID (or system) that deleted the entity.
+    /// User that deleted entity.
     /// Null if entity is not deleted.
     /// </summary>
-    public string? DeletedBy { get; set; }
+    public string? DeletedBy { get; protected set; }
 
     /// <summary>
     /// Correlation ID for distributed tracing (e.g., request ID).
@@ -59,22 +37,11 @@ public abstract class BaseEntity
     public bool IsDeleted => DeletedAt.HasValue;
 
     /// <summary>
-    /// Initialize entity with new ID, creation timestamp, and creator.
+    /// Initialize entity with new ID.
     /// </summary>
     protected BaseEntity()
     {
         Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Mark entity as updated.
-    /// </summary>
-    public virtual void MarkAsUpdated(string updatedBy)
-    {
-        UpdatedAt = DateTime.UtcNow;
-        UpdatedBy = updatedBy;
     }
 
     /// <summary>
