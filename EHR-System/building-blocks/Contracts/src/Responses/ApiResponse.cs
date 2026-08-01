@@ -5,7 +5,7 @@ namespace EHRPlatform.Contracts.Responses;
 
 /// <summary>
 /// Standard API response envelope for all endpoints.
-/// Provides consistent error handling and metadata across services.
+/// Single responsibility: Success/failure response with metadata.
 /// </summary>
 public class ApiResponse
 {
@@ -27,7 +27,7 @@ public class ApiResponse
     /// <summary>
     /// Error details (null if successful).
     /// </summary>
-    public ErrorDetails? Error { get; set; }
+    public ErrorDetails? ErrorInfo { get; set; }
 
     /// <summary>
     /// Request trace ID for debugging and logging.
@@ -61,11 +61,11 @@ public class ApiResponse
     /// <summary>
     /// Create error response.
     /// </summary>
-    public static ApiResponse Error(int statusCode, string message, List<string>? details = null, string? traceId = null)
+    public static ApiResponse Failure(int statusCode, string message, List<string>? details = null, string? traceId = null)
     {
         return new ApiResponse(false, statusCode, message)
         {
-            Error = new ErrorDetails { Message = message, Details = details ?? new List<string>() },
+            ErrorInfo = new ErrorDetails { Message = message, Details = details ?? new List<string>() },
             TraceId = traceId
         };
     }
@@ -75,15 +75,15 @@ public class ApiResponse
     /// </summary>
     public static ApiResponse NotFound(string message = "Resource not found", string? traceId = null)
     {
-        return Error(404, message, traceId: traceId);
+        return Failure(404, message, traceId: traceId);
     }
 
     /// <summary>
     /// Create validation error response.
     /// </summary>
-    public static ApiResponse ValidationError(List<string> errors, string? traceId = null)
+    public static ApiResponse ValidationFailed(List<string> errors, string? traceId = null)
     {
-        return Error(400, "Validation failed", errors, traceId);
+        return Failure(400, "Validation failed", errors, traceId);
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class ApiResponse
     /// </summary>
     public static ApiResponse Unauthorized(string message = "Unauthorized", string? traceId = null)
     {
-        return Error(401, message, traceId: traceId);
+        return Failure(401, message, traceId: traceId);
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public class ApiResponse
     /// </summary>
     public static ApiResponse Forbidden(string message = "Forbidden", string? traceId = null)
     {
-        return Error(403, message, traceId: traceId);
+        return Failure(403, message, traceId: traceId);
     }
 
     /// <summary>
@@ -107,12 +107,13 @@ public class ApiResponse
     /// </summary>
     public static ApiResponse InternalServerError(string message = "An error occurred", string? traceId = null)
     {
-        return Error(500, message, traceId: traceId);
+        return Failure(500, message, traceId: traceId);
     }
 }
 
 /// <summary>
 /// Typed API response with data payload.
+/// Single responsibility: Success response with data.
 /// </summary>
 public class ApiResponse<T> : ApiResponse
 {
@@ -142,11 +143,11 @@ public class ApiResponse<T> : ApiResponse
     /// <summary>
     /// Create error response.
     /// </summary>
-    public new static ApiResponse<T> Error(int statusCode, string message, List<string>? details = null, string? traceId = null)
+    public static new ApiResponse<T> Failure(int statusCode, string message, List<string>? details = null, string? traceId = null)
     {
         return new ApiResponse<T>(false, statusCode, default, message)
         {
-            Error = new ErrorDetails { Message = message, Details = details ?? new List<string>() },
+            ErrorInfo = new ErrorDetails { Message = message, Details = details ?? new List<string>() },
             TraceId = traceId
         };
     }
@@ -156,7 +157,7 @@ public class ApiResponse<T> : ApiResponse
     /// </summary>
     public static ApiResponse<T> NotFound(string message = "Resource not found", string? traceId = null)
     {
-        return Error(404, message, traceId: traceId);
+        return Failure(404, message, traceId: traceId);
     }
 
     /// <summary>
@@ -170,6 +171,7 @@ public class ApiResponse<T> : ApiResponse
 
 /// <summary>
 /// Error details included in error responses.
+/// Single responsibility: Error detail structure.
 /// </summary>
 public class ErrorDetails
 {

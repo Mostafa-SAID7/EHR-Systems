@@ -4,7 +4,7 @@ namespace EHRPlatform.Contracts.Dto;
 
 /// <summary>
 /// Base DTO for all data transfer objects.
-/// Provides audit trail information for responses.
+/// Single responsibility: Audit trail information in responses.
 /// </summary>
 public abstract class BaseDto
 {

@@ -1,11 +1,13 @@
 using System;
 
-namespace EHRPlatform.Contracts.Common;
+namespace EHRPlatform.Contracts.Dto.Healthcare;
 
 /// <summary>
-/// Patient data transfer object (commonly referenced across services).
+/// Patient data transfer object for healthcare domain.
+/// Single responsibility: Patient data representation in API responses.
+/// Commonly referenced across services.
 /// </summary>
-public class PatientDto : EHRPlatform.Contracts.Dto.BaseDto
+public class PatientDto : BaseDto
 {
     /// <summary>
     /// Medical record number (MRN) - unique identifier for patient.
@@ -48,7 +50,7 @@ public class PatientDto : EHRPlatform.Contracts.Dto.BaseDto
     public string FullName => $"{FirstName} {LastName}";
 
     /// <summary>
-    /// Age convenience property.
+    /// Age convenience property (calculated from DateOfBirth).
     /// </summary>
     public int Age => (int)((DateTime.Now - DateOfBirth).TotalDays / 365.25);
 }
