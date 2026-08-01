@@ -1,6 +1,9 @@
 using EHRPlatform.Gateway.Infrastructure.Middleware;
 using EHRPlatform.Gateway.Infrastructure.Routing;
 using EHRPlatform.Gateway.Infrastructure.Services;
+using EHRPlatform.Gateway.Infrastructure.Observability;
+using EHRPlatform.Gateway.Infrastructure.HealthChecks;
+using EHRPlatform.Gateway.DTOs.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -68,10 +71,10 @@ builder.Services.AddAuthorization();
 
 // Health Checks
 builder.Services.AddHealthChecks()
-    .AddCheck<ServiceHealthCheck>("identity-service", tags: new[] { "services" })
-    .AddCheck<ServiceHealthCheck>("patient-service", tags: new[] { "services" })
-    .AddCheck<ServiceHealthCheck>("appointment-service", tags: new[] { "services" })
-    .AddCheck<ServiceHealthCheck>("audit-service", tags: new[] { "services" });
+    .AddCheck<ServiceHealthCheck>("identity-health", tags: new[] { "services", "identity" })
+    .AddCheck<ServiceHealthCheck>("patient-health", tags: new[] { "services", "patient" })
+    .AddCheck<ServiceHealthCheck>("appointment-health", tags: new[] { "services", "appointment" })
+    .AddCheck<ServiceHealthCheck>("audit-health", tags: new[] { "services", "audit" });
 
 // Rate Limiting
 builder.Services.AddRateLimiter(rateLimiterOptions =>
@@ -100,7 +103,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<IServiceRegistry, ServiceRegistry>();
 builder.Services.AddSingleton<IRequestTransformer, RequestTransformer>();
 builder.Services.AddScoped<IResponseAggregator, ResponseAggregator>();
-builder.Services.AddSingleton<IGatewayMetrics, GatewayMetrics>();
+
+// Metrics (from building-blocks integration)
+builder.Services.AddGatewayMetrics();
+
+// HTTP Client Factory
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -114,28 +122,31 @@ if (app.Environment.IsDevelopment())
 // 1. Logging
 app.UseSerilogRequestLogging();
 
-// 2. Correlation ID
+// 2. Metrics
+app.UseGatewayMetrics();
+
+// 3. Correlation ID
 app.UseMiddleware<CorrelationIdMiddleware>();
 
-// 3. Global Exception Handler
+// 4. Global Exception Handler
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// 4. HTTPS Redirection
+// 5. HTTPS Redirection
 app.UseHttpsRedirection();
 
-// 5. CORS
+// 6. CORS
 app.UseCors("AllowFrontend");
 
-// 6. Rate Limiting
+// 7. Rate Limiting
 app.UseRateLimiter();
 
-// 7. Authentication
+// 8. Authentication
 app.UseAuthentication();
 
-// 8. Authorization
+// 9. Authorization
 app.UseAuthorization();
 
-// 9. Custom Middleware
+// 10. Custom Middleware
 app.UseMiddleware<RequestEnrichmentMiddleware>();
 app.UseMiddleware<ResponseTransformMiddleware>();
 

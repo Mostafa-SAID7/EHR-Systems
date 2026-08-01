@@ -1,268 +1,142 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics;
-using System.Net.Http.Json;
 
-namespace EHRPlatform.Gateway.Infrastructure.HealthChecks
+namespace EHRPlatform.Gateway.Infrastructure.HealthChecks;
+
+/// <summary>
+/// Health check implementation for verifying downstream microservices are responding.
+/// Used to determine if a service is healthy, degraded, or unhealthy.
+/// </summary>
+public class ServiceHealthCheck : IHealthCheck
 {
-    /// <summary>
-    /// Health check implementation for verifying downstream microservices are responding.
-    /// Used to determine if a service is healthy, degraded, or unhealthy.
-    /// </summary>
-    public class ServiceHealthCheck : IHealthCheck
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<ServiceHealthCheck> _logger;
+    private readonly string _serviceName;
+    private readonly string _healthEndpoint;
+
+    public ServiceHealthCheck(
+        IHttpClientFactory httpClientFactory,
+        ILogger<ServiceHealthCheck> logger,
+        string serviceName,
+        string healthEndpoint)
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<ServiceHealthCheck> _logger;
-        private readonly string _serviceName;
-        private readonly string _healthEndpoint;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+        _serviceName = serviceName;
+        _healthEndpoint = healthEndpoint;
+    }
 
-        public ServiceHealthCheck(
-            IHttpClientFactory httpClientFactory,
-            ILogger<ServiceHealthCheck> logger,
-            string serviceName,
-            string healthEndpoint)
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        try
         {
-            _httpClientFactory = httpClientFactory;
-            _logger = logger;
-            _serviceName = serviceName;
-            _healthEndpoint = healthEndpoint;
-        }
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(10);
 
-        public async Task<HealthCheckResult> CheckHealthAsync(
-            HealthCheckContext context,
-            CancellationToken cancellationToken = default)
-        {
-            var stopwatch = Stopwatch.StartNew();
+            var response = await httpClient.GetAsync(_healthEndpoint, cancellationToken);
 
-            try
+            stopwatch.Stop();
+            var responseTime = stopwatch.ElapsedMilliseconds;
+
+            var data = new Dictionary<string, object>
             {
-                var httpClient = _httpClientFactory.CreateClient();
-                httpClient.Timeout = TimeSpan.FromSeconds(10);
+                { "ServiceName", _serviceName },
+                { "Endpoint", _healthEndpoint },
+                { "ResponseTime", $"{responseTime}ms" },
+                { "StatusCode", (int)response.StatusCode }
+            };
 
-                // Call service health endpoint
-                var response = await httpClient.GetAsync(_healthEndpoint, cancellationToken);
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation(
+                    "Service {ServiceName} health check passed. Response time: {ResponseTime}ms",
+                    _serviceName,
+                    responseTime);
 
-                stopwatch.Stop();
-                var responseTime = stopwatch.ElapsedMilliseconds;
-
-                // Determine health based on response
-                var data = new Dictionary<string, object>
+                if (responseTime > 1000)
                 {
-                    { "ServiceName", _serviceName },
-                    { "Endpoint", _healthEndpoint },
-                    { "ResponseTime", $"{responseTime}ms" },
-                    { "StatusCode", (int)response.StatusCode }
-                };
-
-                if (response.IsSuccessStatusCode)
-                {
-                    _logger.LogInformation(
-                        "Service {ServiceName} health check passed. Response time: {ResponseTime}ms",
-                        _serviceName,
-                        responseTime);
-
-                    // Degraded if slow response (>1000ms)
-                    if (responseTime > 1000)
-                    {
-                        return HealthCheckResult.Degraded(
-                            $"Service {_serviceName} is slow (response time: {responseTime}ms)",
-                            data: data);
-                    }
-
-                    return HealthCheckResult.Healthy(
-                        $"Service {_serviceName} is healthy",
+                    return HealthCheckResult.Degraded(
+                        $"Service {_serviceName} is slow (response time: {responseTime}ms)",
                         data: data);
                 }
 
-                // Service returned non-success status code
-                _logger.LogWarning(
-                    "Service {ServiceName} health check failed with status {StatusCode}. Response time: {ResponseTime}ms",
-                    _serviceName,
-                    response.StatusCode,
-                    responseTime);
-
-                data.Add("ResponseContent", response.Content.Headers.ContentLength ?? 0);
-
-                return HealthCheckResult.Unhealthy(
-                    $"Service {_serviceName} returned status {response.StatusCode}",
+                return HealthCheckResult.Healthy(
+                    $"Service {_serviceName} is healthy",
                     data: data);
             }
-            catch (HttpRequestException ex)
-            {
-                stopwatch.Stop();
-                _logger.LogError(
-                    "Service {ServiceName} health check failed with network error: {Error}",
-                    _serviceName,
-                    ex.Message);
 
-                return HealthCheckResult.Unhealthy(
-                    $"Service {_serviceName} is unreachable - {ex.Message}",
-                    exception: ex,
-                    data: new Dictionary<string, object>
-                    {
-                        { "ServiceName", _serviceName },
-                        { "Endpoint", _healthEndpoint },
-                        { "ErrorType", "NetworkError" },
-                        { "ErrorMessage", ex.Message }
-                    });
-            }
-            catch (OperationCanceledException ex)
-            {
-                stopwatch.Stop();
-                _logger.LogError(
-                    "Service {ServiceName} health check timed out after {Timeout}ms",
-                    _serviceName,
-                    stopwatch.ElapsedMilliseconds);
+            _logger.LogWarning(
+                "Service {ServiceName} health check failed with status {StatusCode}. Response time: {ResponseTime}ms",
+                _serviceName,
+                response.StatusCode,
+                responseTime);
 
-                return HealthCheckResult.Unhealthy(
-                    $"Service {_serviceName} timed out after {stopwatch.ElapsedMilliseconds}ms",
-                    exception: ex,
-                    data: new Dictionary<string, object>
-                    {
-                        { "ServiceName", _serviceName },
-                        { "Endpoint", _healthEndpoint },
-                        { "ErrorType", "Timeout" },
-                        { "TimeoutMs", stopwatch.ElapsedMilliseconds }
-                    });
-            }
-            catch (Exception ex)
-            {
-                stopwatch.Stop();
-                _logger.LogError(
-                    "Service {ServiceName} health check failed with unexpected error: {Error}",
-                    _serviceName,
-                    ex.Message);
+            data.Add("ResponseContent", response.Content.Headers.ContentLength ?? 0);
 
-                return HealthCheckResult.Unhealthy(
-                    $"Service {_serviceName} health check failed - {ex.Message}",
-                    exception: ex,
-                    data: new Dictionary<string, object>
-                    {
-                        { "ServiceName", _serviceName },
-                        { "Endpoint", _healthEndpoint },
-                        { "ErrorType", "UnexpectedError" },
-                        { "ErrorMessage", ex.Message }
-                    });
-            }
+            return HealthCheckResult.Unhealthy(
+                $"Service {_serviceName} returned status {response.StatusCode}",
+                data: data);
         }
-    }
-
-    /// <summary>
-    /// Factory for creating health checks for all downstream services.
-    /// Registered in dependency injection container.
-    /// </summary>
-    public static class ServiceHealthCheckExtensions
-    {
-        public static IHealthChecksBuilder AddServiceHealthChecks(
-            this IHealthChecksBuilder builder,
-            IConfiguration configuration)
+        catch (HttpRequestException ex)
         {
-            var services = configuration.GetSection("Services").Get<Dictionary<string, ServiceConfig>>() ?? new();
+            stopwatch.Stop();
+            _logger.LogError(
+                "Service {ServiceName} health check failed with network error: {Error}",
+                _serviceName,
+                ex.Message);
 
-            foreach (var service in services)
-            {
-                var serviceName = service.Key;
-                var config = service.Value;
-
-                // Create a health check for this service
-                builder.AddCheck(
-                    $"{serviceName}-health",
-                    new ServiceHealthCheck(
-                        new DefaultHttpClientFactory(), // Will be replaced with DI version
-                        LoggerFactory.Create(b => b.AddConsole()).CreateLogger<ServiceHealthCheck>(),
-                        serviceName,
-                        $"{config.BaseUrl}/health"),
-                    tags: new[] { "services", serviceName });
-            }
-
-            return builder;
-        }
-    }
-
-    /// <summary>
-    /// Service configuration for health check endpoint.
-    /// </summary>
-    public class ServiceConfig
-    {
-        public string Name { get; set; } = string.Empty;
-        public string BaseUrl { get; set; } = string.Empty;
-        public int Port { get; set; }
-        public string Version { get; set; } = "1.0";
-        public bool Critical { get; set; } = true; // If false, system can operate without this service
-    }
-
-    /// <summary>
-    /// Default HTTP client factory for health check dependencies.
-    /// </summary>
-    public class DefaultHttpClientFactory : IHttpClientFactory
-    {
-        public HttpClient CreateClient(string name)
-        {
-            return new HttpClient();
-        }
-    }
-
-    /// <summary>
-    /// Health check response aggregator - combines all service checks into single response.
-    /// </summary>
-    public class HealthCheckResponseAggregator
-    {
-        public static async Task<GatewayHealthResponse> AggregateAsync(
-            IHealthChecksService healthChecksService,
-            HealthReport report)
-        {
-            var services = new Dictionary<string, ServiceHealthStatus>();
-
-            foreach (var entry in report.Entries)
-            {
-                var parts = entry.Key.Split('-');
-                var serviceName = parts[0];
-
-                services[serviceName] = new ServiceHealthStatus
+            return HealthCheckResult.Unhealthy(
+                $"Service {_serviceName} is unreachable - {ex.Message}",
+                exception: ex,
+                data: new Dictionary<string, object>
                 {
-                    Name = serviceName,
-                    Status = entry.Value.Status.ToString(),
-                    ResponseTime = entry.Value.Data.TryGetValue("ResponseTime", out var time) ? time.ToString() : "N/A",
-                    Description = entry.Value.Description ?? "No description",
-                    LastChecked = DateTime.UtcNow
-                };
-            }
-
-            return new GatewayHealthResponse
-            {
-                OverallStatus = report.Status.ToString(),
-                Timestamp = DateTime.UtcNow,
-                Services = services,
-                TotalServices = services.Count,
-                HealthyServices = services.Count(s => s.Value.Status == "Healthy"),
-                DegradedServices = services.Count(s => s.Value.Status == "Degraded"),
-                UnhealthyServices = services.Count(s => s.Value.Status == "Unhealthy")
-            };
+                    { "ServiceName", _serviceName },
+                    { "Endpoint", _healthEndpoint },
+                    { "ErrorType", "NetworkError" },
+                    { "ErrorMessage", ex.Message }
+                });
         }
-    }
+        catch (OperationCanceledException ex)
+        {
+            stopwatch.Stop();
+            _logger.LogError(
+                "Service {ServiceName} health check timed out after {Timeout}ms",
+                _serviceName,
+                stopwatch.ElapsedMilliseconds);
 
-    /// <summary>
-    /// Gateway health response model.
-    /// </summary>
-    public class GatewayHealthResponse
-    {
-        public string OverallStatus { get; set; } = "Unknown";
-        public DateTime Timestamp { get; set; }
-        public Dictionary<string, ServiceHealthStatus> Services { get; set; } = new();
-        public int TotalServices { get; set; }
-        public int HealthyServices { get; set; }
-        public int DegradedServices { get; set; }
-        public int UnhealthyServices { get; set; }
-    }
+            return HealthCheckResult.Unhealthy(
+                $"Service {_serviceName} timed out after {stopwatch.ElapsedMilliseconds}ms",
+                exception: ex,
+                data: new Dictionary<string, object>
+                {
+                    { "ServiceName", _serviceName },
+                    { "Endpoint", _healthEndpoint },
+                    { "ErrorType", "Timeout" },
+                    { "TimeoutMs", stopwatch.ElapsedMilliseconds }
+                });
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            _logger.LogError(
+                "Service {ServiceName} health check failed with unexpected error: {Error}",
+                _serviceName,
+                ex.Message);
 
-    /// <summary>
-    /// Individual service health status.
-    /// </summary>
-    public class ServiceHealthStatus
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Status { get; set; } = "Unknown";
-        public string ResponseTime { get; set; } = "N/A";
-        public string Description { get; set; } = string.Empty;
-        public DateTime LastChecked { get; set; }
+            return HealthCheckResult.Unhealthy(
+                $"Service {_serviceName} health check failed - {ex.Message}",
+                exception: ex,
+                data: new Dictionary<string, object>
+                {
+                    { "ServiceName", _serviceName },
+                    { "Endpoint", _healthEndpoint },
+                    { "ErrorType", "UnexpectedError" },
+                    { "ErrorMessage", ex.Message }
+                });
+        }
     }
 }

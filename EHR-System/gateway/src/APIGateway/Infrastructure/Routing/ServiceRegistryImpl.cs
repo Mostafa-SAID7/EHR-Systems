@@ -1,16 +1,8 @@
 namespace EHRPlatform.Gateway.Infrastructure.Routing;
 
 /// <summary>
-/// Service registry mapping routes to microservices.
-/// Centralized configuration of all service endpoints.
+/// Service registry implementation for mapping routes to microservices.
 /// </summary>
-public interface IServiceRegistry
-{
-    string GetServiceUrl(string serviceName);
-    bool IsServiceAvailable(string serviceName);
-    void RegisterService(string name, string url);
-}
-
 public class ServiceRegistry : IServiceRegistry
 {
     private readonly IConfiguration _configuration;

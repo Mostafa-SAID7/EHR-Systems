@@ -1,17 +1,8 @@
 namespace EHRPlatform.Gateway.Infrastructure.Services;
 
-using System.Text.Json;
-
 /// <summary>
-/// Service for aggregating responses from multiple microservices.
-/// Handles parallel calls, timeout, and error handling.
+/// Implementation of response aggregation from multiple microservices.
 /// </summary>
-public interface IResponseAggregator
-{
-    Task<T> AggregateAsync<T>(params (string ServiceUrl, string Endpoint)[] calls) 
-        where T : class, new();
-}
-
 public class ResponseAggregator : IResponseAggregator
 {
     private readonly HttpClient _httpClient;

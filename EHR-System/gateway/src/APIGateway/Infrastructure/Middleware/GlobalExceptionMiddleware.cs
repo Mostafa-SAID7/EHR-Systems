@@ -1,9 +1,10 @@
-namespace EHRPlatform.Gateway.Infrastructure.Middleware;
+using EHRPlatform.BuildingBlocks.Contracts.Responses;
 
-using System.Text.Json;
+namespace EHRPlatform.Gateway.Infrastructure.Middleware;
 
 /// <summary>
 /// Global exception handler middleware for unified error responses.
+/// Uses ApiErrorResponse from building-blocks Contracts.
 /// </summary>
 public class GlobalExceptionMiddleware
 {
@@ -66,14 +67,4 @@ public class GlobalExceptionMiddleware
 
         return context.Response.WriteAsJsonAsync(response);
     }
-}
-
-public class ApiErrorResponse
-{
-    public string TraceId { get; set; } = string.Empty;
-    public int StatusCode { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; }
-    public Dictionary<string, string[]>? Errors { get; set; }
-    public string? Details { get; set; }
 }
