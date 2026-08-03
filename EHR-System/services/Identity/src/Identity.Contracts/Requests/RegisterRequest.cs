@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-namespace EHRPlatform.Services.Identity.Contracts.Requests;
+namespace Identity.Contracts.Requests;
 
 /// <summary>
 /// User registration request DTO.

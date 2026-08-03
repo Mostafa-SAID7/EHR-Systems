@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace EHRPlatform.Services.Identity.Persistence.Migrations
+namespace Identity.Persistence.Migrations;
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

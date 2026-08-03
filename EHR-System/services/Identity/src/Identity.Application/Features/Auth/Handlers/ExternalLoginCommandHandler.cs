@@ -3,10 +3,10 @@
 using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.BuildingBlocks.Common.Data.Abstractions;
 using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Security.Jwt;
 using EHRPlatform.Services.Identity.Contracts.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Auth.Commands;
-using EHRPlatform.Services.Identity.Infrastructure.Security;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Identity.Application.Features.Auth.Handlers;
@@ -14,23 +14,24 @@ namespace EHRPlatform.Services.Identity.Application.Features.Auth.Handlers;
 /// <summary>
 /// Handler for external OAuth logins (Google, Facebook).
 /// Single Responsibility: Verify or provision external user accounts and issue JWT tokens.
+/// Uses building-blocks JWT provider for token generation.
 /// </summary>
 public class ExternalLoginCommandHandler : ICommandHandler<ExternalLoginCommand, LoginResponse>
 {
     private readonly IUnitOfWork _uow;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IJwtTokenService _jwtTokenService;
+    private readonly IJwtTokenProvider _jwtTokenProvider;
     private readonly ILogger<ExternalLoginCommandHandler> _logger;
 
     public ExternalLoginCommandHandler(
         IUnitOfWork uow,
         IPasswordHasher passwordHasher,
-        IJwtTokenService jwtTokenService,
+        IJwtTokenProvider jwtTokenProvider,
         ILogger<ExternalLoginCommandHandler> logger)
     {
         _uow = uow ?? throw new ArgumentNullException(nameof(uow));
         _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
-        _jwtTokenService = jwtTokenService ?? throw new ArgumentNullException(nameof(jwtTokenService));
+        _jwtTokenProvider = jwtTokenProvider ?? throw new ArgumentNullException(nameof(jwtTokenProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -67,7 +68,9 @@ public class ExternalLoginCommandHandler : ICommandHandler<ExternalLoginCommand,
         if (!user.IsActive)
             throw new InvalidOperationException("User account is inactive.");
 
-        var accessToken = _jwtTokenService.GenerateAccessToken(user);
+        // Generate tokens using building-blocks JWT provider
+        var roles = user.UserRoles?.Select(ur => ur.Role?.Name ?? "User").ToList() ?? new List<string> { "User" };
+        var accessToken = _jwtTokenProvider.GenerateAccessToken(user.Id.ToString(), user.FirstName, user.Email, roles);
         var refreshToken = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
 
         var refreshTokenEntity = new RefreshToken
@@ -87,12 +90,8 @@ public class ExternalLoginCommandHandler : ICommandHandler<ExternalLoginCommand,
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn = _jwtTokenService.ExpiresInSeconds,
+            ExpiresIn = 3600, // 1 hour
             MfaRequired = false
         };
     }
 }
-
-
-
-

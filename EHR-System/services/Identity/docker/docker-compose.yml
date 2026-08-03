@@ -1,0 +1,104 @@
+version: '3.8'
+
+# Development Docker Compose - Extended with debugging and monitoring
+services:
+  identity-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ehr-identity-db-dev
+    environment:
+      SA_PASSWORD: "P@ssw0rd123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - identity-db-volume:/var/opt/mssql
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - ehr-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "P@ssw0rd123!" -Q "SELECT 1"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-redis-cache-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-volume:/data
+    networks:
+      - ehr-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    command: redis-server --appendonly yes
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ehr-rabbitmq-dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    volumes:
+      - rabbitmq-volume:/var/lib/rabbitmq
+    networks:
+      - ehr-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  identity-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: ehr-identity-api-dev
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=identity-db,1433;Database=EHRIdentity;User Id=sa;Password=P@ssw0rd123!;Encrypt=false;TrustServerCertificate=true;"
+      Redis__ConnectionString: "redis:6379"
+      Jwt__Secret: "your-super-secret-key-change-in-production-at-least-32-characters-long!"
+      Jwt__Issuer: "ehr-platform"
+      Jwt__Audience: "ehr-api"
+      Jwt__ExpirationMinutes: "60"
+      Jwt__RefreshTokenExpirationDays: "7"
+      Security__EncryptionKey: "ehr-platform-dev-encrypt-key-32c"
+      RabbitMQ__HostName: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__UserName: "guest"
+      RabbitMQ__Password: "guest"
+      Logging__LogLevel__Default: "Information"
+      Logging__LogLevel__Microsoft: "Warning"
+    depends_on:
+      identity-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ehr-network
+    restart: unless-stopped
+    volumes:
+      - ../src:/app/src
+
+volumes:
+  identity-db-volume:
+  redis-volume:
+  rabbitmq-volume:
+
+networks:
+  ehr-network:
+    driver: bridge

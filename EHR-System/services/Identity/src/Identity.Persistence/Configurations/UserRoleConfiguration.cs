@@ -1,19 +1,46 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EHRPlatform.Services.Identity.Domain.Entities;
+﻿namespace Identity.Persistence.Configurations;
 
-namespace EHRPlatform.Services.Identity.Persistence.Configurations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 /// <summary>
-/// Entity configuration for UserRole (junction table).
+/// Entity Framework Core configuration for the UserRole entity
 /// </summary>
-public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
+public sealed class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 {
-    public void Configure(EntityTypeBuilder<UserRole> entity)
+    /// <summary>
+    /// Configures the UserRole entity
+    /// </summary>
+    /// <param name="builder">The entity builder</param>
+    public void Configure(EntityTypeBuilder<UserRole> builder)
     {
-        entity.HasKey(e => new { e.UserId, e.RoleId });
-        entity.HasOne(e => e.User).WithMany(u => u.Roles).HasForeignKey(e => e.UserId);
-        entity.HasOne(e => e.Role).WithMany(r => r.Users).HasForeignKey(e => e.RoleId);
+        builder.ToTable("UserRoles");
+
+        builder.HasKey(ur => ur.Id);
+
+        builder.Property(ur => ur.Id)
+            .ValueGeneratedNever();
+
+        builder.Property(ur => ur.UserId)
+            .IsRequired();
+
+        builder.Property(ur => ur.RoleId)
+            .IsRequired();
+
+        builder.Property(ur => ur.AssignedAt)
+            .IsRequired();
+
+        builder.HasIndex(ur => new { ur.UserId, ur.RoleId })
+            .IsUnique();
+
+        builder.HasOne(ur => ur.User)
+            .WithMany(u => u.Roles)
+            .HasForeignKey(ur => ur.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(ur => ur.Role)
+            .WithMany()
+            .HasForeignKey(ur => ur.RoleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
-

@@ -2,7 +2,7 @@
 using EHRPlatform.BuildingBlocks.Common.Events;
 using Microsoft.EntityFrameworkCore;
 
-namespace EHRPlatform.Services.Identity.Persistence.Repositories;
+namespace Identity.Persistence.Repositories;
 
 public interface IOutboxEventRepository
 {

@@ -10,7 +10,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EHRPlatform.Services.Identity.Infrastructure.Extensions;
+namespace Identity.Infrastructure.Extensions;
 
 /// <summary>
 /// Service collection extensions for Identity service registration.

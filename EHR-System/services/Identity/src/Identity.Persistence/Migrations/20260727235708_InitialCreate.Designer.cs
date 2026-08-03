@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EHRPlatform.Services.Identity.Persistence.Migrations
+namespace Identity.Persistence.Migrations;
 {
     [DbContext(typeof(IdentityContext))]
     [Migration("20260727235708_InitialCreate")]

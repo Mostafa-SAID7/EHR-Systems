@@ -4,10 +4,10 @@ using EHRPlatform.BuildingBlocks.Common.Application.CQRS;
 using EHRPlatform.BuildingBlocks.Common.Data;
 using EHRPlatform.BuildingBlocks.SharedKernel.Exceptions;
 using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Security.Jwt;
 using EHRPlatform.Services.Identity.Contracts.Responses;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Features.Auth.Commands;
-using EHRPlatform.Services.Identity.Infrastructure.Security;
 using Microsoft.Extensions.Logging;
 
 namespace EHRPlatform.Services.Identity.Application.Features.Auth.Handlers;
@@ -15,23 +15,24 @@ namespace EHRPlatform.Services.Identity.Application.Features.Auth.Handlers;
 /// <summary>
 /// Validates credentials, issues JWT + refresh token, and handles MFA.
 /// HIPAA-compliant with audit logging.
+/// Uses building-blocks JWT provider for token generation.
 /// </summary>
 public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
 {
     private readonly IUnitOfWork      _uow;
     private readonly IPasswordHasher  _passwordHasher;
-    private readonly IJwtTokenService _jwtTokenService;
+    private readonly IJwtTokenProvider _jwtTokenProvider;
     private readonly ILogger<LoginCommandHandler> _logger;
 
     public LoginCommandHandler(
         IUnitOfWork      uow,
         IPasswordHasher  passwordHasher,
-        IJwtTokenService jwtTokenService,
+        IJwtTokenProvider jwtTokenProvider,
         ILogger<LoginCommandHandler> logger)
     {
         _uow             = uow             ?? throw new ArgumentNullException(nameof(uow));
         _passwordHasher  = passwordHasher  ?? throw new ArgumentNullException(nameof(passwordHasher));
-        _jwtTokenService = jwtTokenService ?? throw new ArgumentNullException(nameof(jwtTokenService));
+        _jwtTokenProvider = jwtTokenProvider ?? throw new ArgumentNullException(nameof(jwtTokenProvider));
         _logger          = logger          ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -64,15 +65,16 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
             throw new UnauthorizedException("Invalid email or password");
         }
 
-        // MFA gate â€” don't issue tokens until second factor is passed
+        // MFA gate – don't issue tokens until second factor is passed
         if (user.MfaEnabled)
         {
             _logger.LogInformation("MFA required for user: {UserId}", user.Id);
             return new LoginResponse { MfaRequired = true, AccessToken = string.Empty, RefreshToken = string.Empty, ExpiresIn = 0 };
         }
 
-        // Generate tokens
-        var accessToken  = _jwtTokenService.GenerateAccessToken(user);
+        // Generate tokens using building-blocks JWT provider
+        var roles = user.UserRoles?.Select(ur => ur.Role?.Name ?? "User").ToList() ?? new List<string> { "User" };
+        var accessToken  = _jwtTokenProvider.GenerateAccessToken(user.Id.ToString(), user.FirstName, user.Email, roles);
         var refreshToken = GenerateRefreshToken();
 
         // Store hashed refresh token
@@ -97,7 +99,7 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
         {
             AccessToken  = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn    = _jwtTokenService.ExpiresInSeconds,
+            ExpiresIn    = 3600, // 1 hour (hardcoded; can be pulled from JwtSettings if needed)
             MfaRequired  = false,
             User         = new UserResponseDto
             {
@@ -117,7 +119,3 @@ public class LoginCommandHandler : ICommandHandler<LoginCommand, LoginResponse>
     private static string GenerateRefreshToken() =>
         Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
 }
-
-
-
-

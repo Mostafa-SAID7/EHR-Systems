@@ -1,6 +1,6 @@
 ﻿using EHRPlatform.BuildingBlocks.SharedKernel.Entities;
 
-namespace EHRPlatform.Services.Identity.Domain.Entities;
+namespace Identity.Domain.Entities;
 
 /// <summary>
 /// Fine-grained permission for RBAC.

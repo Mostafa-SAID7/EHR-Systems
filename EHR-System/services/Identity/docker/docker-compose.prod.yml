@@ -1,0 +1,107 @@
+version: '3.8'
+
+# Production Docker Compose - Optimized for performance and security
+services:
+  identity-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ehr-identity-db-prod
+    environment:
+      SA_PASSWORD: "${DB_PASSWORD}"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - identity-db-volume-prod:/var/opt/mssql
+    networks:
+      - ehr-network
+    restart: always
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${DB_PASSWORD}" -Q "SELECT 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: ehr-redis-cache-prod
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-volume-prod:/data
+    networks:
+      - ehr-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ehr-rabbitmq-prod
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD}"
+    volumes:
+      - rabbitmq-volume-prod:/var/lib/rabbitmq
+    networks:
+      - ehr-network
+    restart: always
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  identity-api:
+    image: ehr-identity-api:latest
+    container_name: ehr-identity-api-prod
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Server=identity-db,1433;Database=EHRIdentity;User Id=sa;Password=${DB_PASSWORD};Encrypt=true;TrustServerCertificate=false;"
+      Redis__ConnectionString: "redis:6379,password=${REDIS_PASSWORD}"
+      Jwt__Secret: "${JWT_SECRET}"
+      Jwt__Issuer: "${JWT_ISSUER}"
+      Jwt__Audience: "${JWT_AUDIENCE}"
+      Jwt__ExpirationMinutes: "${JWT_EXPIRATION_MINUTES}"
+      Jwt__RefreshTokenExpirationDays: "${JWT_REFRESH_EXPIRATION_DAYS}"
+      Security__EncryptionKey: "${ENCRYPTION_KEY}"
+      RabbitMQ__HostName: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__UserName: "${RABBITMQ_USER}"
+      RabbitMQ__Password: "${RABBITMQ_PASSWORD}"
+      Logging__LogLevel__Default: "Warning"
+      Logging__LogLevel__Microsoft: "Error"
+    depends_on:
+      - identity-db
+      - redis
+      - rabbitmq
+    networks:
+      - ehr-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  identity-db-volume-prod:
+  redis-volume-prod:
+  rabbitmq-volume-prod:
+
+networks:
+  ehr-network:
+    driver: bridge

@@ -1,18 +1,23 @@
+namespace Identity.Application;
+
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using MediatR;
 
-namespace EHRPlatform.Services.Identity.Application;
-
+/// <summary>
+/// Extension methods for dependency injection of application services
+/// </summary>
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    /// <summary>
+    /// Adds application services to the dependency injection container
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The service collection</returns>
+    public static IServiceCollection AddIdentityApplication(this IServiceCollection services)
     {
-        // Register MediatR
-        services.AddMediatR(typeof(DependencyInjection));
-        
-        // Register AutoMapper
-        services.AddAutoMapper(typeof(DependencyInjection));
-        
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+
         return services;
     }
 }

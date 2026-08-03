@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using EHRPlatform.Services.Identity.Domain.Entities;
 
-namespace EHRPlatform.Services.Identity.Persistence.Configurations;
+namespace Identity.Persistence.Configurations;
 
 /// <summary>
 /// Entity configuration for RefreshToken.

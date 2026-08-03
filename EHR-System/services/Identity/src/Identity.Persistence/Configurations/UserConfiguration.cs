@@ -1,24 +1,70 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EHRPlatform.Services.Identity.Domain.Entities;
+﻿namespace Identity.Persistence.Configurations;
 
-namespace EHRPlatform.Services.Identity.Persistence.Configurations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 /// <summary>
-/// Entity configuration for User.
+/// Entity Framework Core configuration for the User entity
 /// </summary>
-public class UserConfiguration : IEntityTypeConfiguration<User>
+public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<User> entity)
+    /// <summary>
+    /// Configures the User entity
+    /// </summary>
+    /// <param name="builder">The entity builder</param>
+    public void Configure(EntityTypeBuilder<User> builder)
     {
-        entity.HasKey(e => e.Id);
-        entity.HasIndex(e => e.Email).IsUnique();
-        entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
-        entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
-        entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
-        entity.Property(e => e.PasswordHash).IsRequired();
-        entity.Property(e => e.PasswordSalt).IsRequired();
-        entity.Property(e => e.IsActive).HasDefaultValue(true);
+        builder.ToTable("Users");
+
+        builder.HasKey(u => u.Id);
+
+        builder.Property(u => u.Id)
+            .ValueGeneratedNever();
+
+        builder.Property(u => u.Email)
+            .HasConversion(
+                e => e.Value,
+                e => new(e))
+            .HasMaxLength(256)
+            .IsRequired();
+
+        builder.HasIndex(u => u.Email)
+            .IsUnique();
+
+        builder.Property(u => u.FirstName)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(u => u.LastName)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(u => u.PasswordHash)
+            .HasConversion(
+                p => p.Hash,
+                p => new(p))
+            .HasMaxLength(256)
+            .IsRequired();
+
+        builder.Property(u => u.Status)
+            .HasConversion<int>();
+
+        builder.Property(u => u.IsEmailVerified)
+            .HasDefaultValue(false);
+
+        builder.Property(u => u.FailedLoginAttempts)
+            .HasDefaultValue(0);
+
+        builder.Property(u => u.CreatedAt)
+            .IsRequired();
+
+        builder.Property(u => u.ModifiedAt);
+
+        builder.Property(u => u.LastLoginAt);
+
+        builder.HasMany(u => u.Roles)
+            .WithOne(ur => ur.User)
+            .HasForeignKey(ur => ur.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
-

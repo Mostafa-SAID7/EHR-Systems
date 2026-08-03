@@ -6,7 +6,7 @@ using EHRPlatform.Services.Identity.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace EHRPlatform.Services.Identity.Persistence.Data;
+namespace Identity.Persistence.Data;
 
 /// <summary>
 /// Idempotent runtime seeder for the Identity service.

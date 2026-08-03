@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EHRPlatform.Services.Identity.Infrastructure.Extensions;
+namespace Identity.Infrastructure.Extensions;
 
 /// <summary>
 /// Identity/JWT metrics instrumentation for OpenTelemetry.

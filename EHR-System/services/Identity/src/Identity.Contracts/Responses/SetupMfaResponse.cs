@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-namespace EHRPlatform.Services.Identity.Contracts.Responses;
+namespace Identity.Contracts.Responses;
 
 /// <summary>
 /// MFA setup response DTO.

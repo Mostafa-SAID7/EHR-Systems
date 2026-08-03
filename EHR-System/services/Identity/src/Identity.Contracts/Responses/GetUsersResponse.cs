@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-namespace EHRPlatform.Services.Identity.Contracts.Responses;
+namespace Identity.Contracts.Responses;
 
 /// <summary>
 /// Get users query response with pagination.

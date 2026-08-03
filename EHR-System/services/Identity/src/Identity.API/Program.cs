@@ -1,32 +1,37 @@
-namespace EHRPlatform.Services.Identity.API;
+using Identity.API.Extensions;
 
-public class Program
+var builder = WebApplicationBuilder.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
 {
-    public static void Main(string[] args)
+    options.AddPolicy("AllowAll", policy =>
     {
-        var builder = WebApplication.CreateBuilder(args);
-        
-        // Add services to the container
-        builder.Services.AddApplicationServices();
-        builder.Services.AddInfrastructureServices();
-        builder.Services.AddPersistenceServices();
-        
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-        
-        var app = builder.Build();
-        
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-        
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
-        app.MapControllers();
-        
-        app.Run();
-    }
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
+// Add Identity services
+builder.Services.AddIdentityServices(builder.Configuration);
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+await app.RunAsync();

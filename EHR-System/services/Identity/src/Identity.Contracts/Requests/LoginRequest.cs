@@ -1,20 +1,17 @@
-﻿#nullable enable
-
-namespace EHRPlatform.Services.Identity.Contracts.Requests;
+﻿namespace Identity.Contracts.Requests;
 
 /// <summary>
-/// Login request DTO.
+/// Request to authenticate a user
 /// </summary>
-public class LoginRequest
+public sealed record LoginRequest(
+    string Email,
+    string Password)
 {
     /// <summary>
-    /// User email address.
+    /// Default constructor for serialization
     /// </summary>
-    public string Email { get; set; } = string.Empty;
-
-    /// <summary>
-    /// User password (plain text, will be hashed server-side).
-    /// </summary>
-    public string Password { get; set; } = string.Empty;
+    public LoginRequest() 
+        : this(string.Empty, string.Empty)
+    {
+    }
 }
-

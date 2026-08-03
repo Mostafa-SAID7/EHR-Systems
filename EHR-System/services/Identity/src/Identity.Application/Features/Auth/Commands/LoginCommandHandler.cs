@@ -1,6 +1,7 @@
 namespace EHRPlatform.Services.Identity.Application.Features.Auth.Commands;
 
 using MediatR;
+using EHRPlatform.BuildingBlocks.Security.Jwt;
 using EHRPlatform.Services.Identity.Domain.Entities;
 using EHRPlatform.Services.Identity.Persistence;
 using EHRPlatform.Services.Identity.Application.Services;
@@ -9,23 +10,24 @@ using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Handler for LoginCommand - Authenticates user with credentials.
+/// Uses building-blocks JWT provider for token generation.
 /// </summary>
 public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
 {
     private readonly IIdentityDbContext _context;
     private readonly IAuthenticationService _authService;
-    private readonly IJwtTokenService _jwtService;
+    private readonly IJwtTokenProvider _jwtTokenProvider;
     private readonly ILogger<LoginCommandHandler> _logger;
 
     public LoginCommandHandler(
         IIdentityDbContext context,
         IAuthenticationService authService,
-        IJwtTokenService jwtService,
+        IJwtTokenProvider jwtTokenProvider,
         ILogger<LoginCommandHandler> logger)
     {
         _context = context;
         _authService = authService;
-        _jwtService = jwtService;
+        _jwtTokenProvider = jwtTokenProvider;
         _logger = logger;
     }
 
@@ -68,10 +70,17 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
             user.RecordLoginSuccess();
             await _context.SaveChangesAsync(cancellationToken);
 
-            // Generate tokens
+            // Generate tokens using building-blocks JWT provider
             var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
-            var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Email, roles);
-            var refreshToken = await _jwtService.GenerateRefreshTokenAsync(user.Id, cancellationToken);
+            var accessToken = _jwtTokenProvider.GenerateAccessToken(
+                user.Id.ToString(), 
+                user.FirstName, 
+                user.Email, 
+                roles);
+            var refreshToken = _jwtTokenProvider.GenerateRefreshToken(
+                user.Id.ToString(), 
+                user.FirstName, 
+                user.Email);
 
             _logger.LogInformation("Login successful for user {Email}", request.Email);
 

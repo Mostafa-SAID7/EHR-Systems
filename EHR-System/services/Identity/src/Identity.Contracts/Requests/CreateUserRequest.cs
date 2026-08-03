@@ -1,35 +1,21 @@
-﻿#nullable enable
-
-namespace EHRPlatform.Services.Identity.Contracts.Requests;
+﻿namespace Identity.Contracts.Requests;
 
 /// <summary>
-/// Create user request DTO (admin-only).
+/// Request to create a new user
 /// </summary>
-public class CreateUserRequest
+public sealed record CreateUserRequest(
+    string Email,
+    string FirstName,
+    string LastName,
+    string Password,
+    string? PhoneNumber = null,
+    List<string>? RoleIds = null)
 {
     /// <summary>
-    /// Email address.
+    /// Default constructor for serialization
     /// </summary>
-    public string Email { get; set; } = string.Empty;
-
-    /// <summary>
-    /// First name.
-    /// </summary>
-    public string FirstName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Last name.
-    /// </summary>
-    public string LastName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Role name to assign.
-    /// </summary>
-    public string Role { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Department (optional).
-    /// </summary>
-    public string? Department { get; set; }
+    public CreateUserRequest() 
+        : this(string.Empty, string.Empty, string.Empty, string.Empty)
+    {
+    }
 }
-

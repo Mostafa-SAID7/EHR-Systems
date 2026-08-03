@@ -1,243 +1,248 @@
-﻿namespace EHRPlatform.Services.Identity.Domain.Entities;
+﻿namespace Identity.Domain.Entities;
+
+using Identity.Domain.Enums;
+using Identity.Domain.ValueObjects;
 
 /// <summary>
-/// User aggregate root - Core user account entity with roles and authentication.
-/// Properties: Email, PasswordHash, Status (Active/Locked/Inactive), LastLogin, MFA setup
-/// RBAC: Users have multiple Roles; Roles have multiple Permissions
+/// Entity representing a user in the system
 /// </summary>
-public class User
+public sealed class User : AggregateRoot<Guid>
 {
-    public Guid Id { get; set; }
-    public string Email { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty; // Bcrypt
-    public bool EmailVerified { get; set; }
-    public DateTime? EmailVerifiedAt { get; set; }
-    public string Status { get; set; } = "Active"; // Active, Locked, Inactive, Pending
-    public int LoginFailureCount { get; set; }
-    public DateTime? LastLockedAt { get; set; }
-    public DateTime? LastLoginAt { get; set; }
-    
-    // MFA
-    public bool MfaEnabled { get; set; }
-    public string? MfaSecret { get; set; } // TOTP secret (encrypted)
-    public string? PhoneNumber { get; set; }
-    public bool PhoneNumberVerified { get; set; }
-    
-    // External Auth
-    public string? ExternalProviderId { get; set; } // OAuth provider ID (Google, Microsoft, etc.)
-    public string? ExternalProvider { get; set; } // google, microsoft, apple, etc.
-    
-    // Metadata
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public DateTime? DeletedAt { get; set; } // Soft delete
-    public bool IsDeleted { get; set; }
+    private readonly List<UserRole> _roles = new();
 
-    public ICollection<UserRole> UserRoles { get; } = new List<UserRole>();
-    public ICollection<RefreshToken> RefreshTokens { get; } = new List<RefreshToken>();
-
-    private readonly List<object> _domainEvents = new();
-
-    public void SetPassword(string hashedPassword)
+    /// <summary>
+    /// Initializes a new instance of the User class
+    /// </summary>
+    private User(
+        Guid id,
+        Email email,
+        string firstName,
+        string lastName,
+        Password passwordHash,
+        UserStatus status)
+        : base(id)
     {
-        PasswordHash = hashedPassword;
-        UpdatedAt = DateTime.UtcNow;
+        Email = email;
+        FirstName = firstName;
+        LastName = lastName;
+        PasswordHash = passwordHash;
+        Status = status;
+        CreatedAt = DateTime.UtcNow;
+        IsEmailVerified = false;
+        FailedLoginAttempts = 0;
+        LastLoginAt = null;
     }
 
+    /// <summary>
+    /// Gets the user email
+    /// </summary>
+    public Email Email { get; private set; }
+
+    /// <summary>
+    /// Gets the user first name
+    /// </summary>
+    public string FirstName { get; private set; }
+
+    /// <summary>
+    /// Gets the user last name
+    /// </summary>
+    public string LastName { get; private set; }
+
+    /// <summary>
+    /// Gets the password hash
+    /// </summary>
+    public Password PasswordHash { get; private set; }
+
+    /// <summary>
+    /// Gets the user account status
+    /// </summary>
+    public UserStatus Status { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the email is verified
+    /// </summary>
+    public bool IsEmailVerified { get; private set; }
+
+    /// <summary>
+    /// Gets the number of failed login attempts
+    /// </summary>
+    public int FailedLoginAttempts { get; private set; }
+
+    /// <summary>
+    /// Gets the last login timestamp
+    /// </summary>
+    public DateTime? LastLoginAt { get; private set; }
+
+    /// <summary>
+    /// Gets the creation timestamp
+    /// </summary>
+    public DateTime CreatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the last modification timestamp
+    /// </summary>
+    public DateTime? ModifiedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the user roles
+    /// </summary>
+    public IReadOnlyCollection<UserRole> Roles => _roles.AsReadOnly();
+
+    /// <summary>
+    /// Creates a new user
+    /// </summary>
+    /// <param name="email">The user email</param>
+    /// <param name="firstName">The user first name</param>
+    /// <param name="lastName">The user last name</param>
+    /// <param name="passwordHash">The password hash</param>
+    /// <returns>A new User instance</returns>
+    public static User Create(string email, string firstName, string lastName, string passwordHash)
+    {
+        var emailVo = new Email(email);
+        var passwordVo = new Password(passwordHash);
+
+        var user = new User(
+            Guid.NewGuid(),
+            emailVo,
+            firstName,
+            lastName,
+            passwordVo,
+            UserStatus.PendingEmailVerification);
+
+        user.RaiseDomainEvent(new UserCreatedEvent(
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName,
+            user.CreatedAt));
+
+        return user;
+    }
+
+    /// <summary>
+    /// Changes the user password
+    /// </summary>
+    /// <param name="newPasswordHash">The new password hash</param>
+    public void ChangePassword(string newPasswordHash)
+    {
+        PasswordHash = new Password(newPasswordHash);
+        ModifiedAt = DateTime.UtcNow;
+
+        RaiseDomainEvent(new UserPasswordChangedEvent(Id, Email, ModifiedAt.Value));
+    }
+
+    /// <summary>
+    /// Records a successful login
+    /// </summary>
+    public void RecordSuccessfulLogin()
+    {
+        FailedLoginAttempts = 0;
+        LastLoginAt = DateTime.UtcNow;
+        ModifiedAt = DateTime.UtcNow;
+
+        if (Status == UserStatus.LockedOut)
+        {
+            Status = UserStatus.Active;
+        }
+
+        RaiseDomainEvent(new UserLoggedInEvent(Id, Email, LastLoginAt.Value));
+    }
+
+    /// <summary>
+    /// Records a failed login attempt
+    /// </summary>
+    /// <param name="maxFailedAttempts">The maximum number of failed attempts before lockout</param>
+    public void RecordFailedLoginAttempt(int maxFailedAttempts = 5)
+    {
+        FailedLoginAttempts++;
+        ModifiedAt = DateTime.UtcNow;
+
+        if (FailedLoginAttempts >= maxFailedAttempts)
+        {
+            Status = UserStatus.LockedOut;
+        }
+    }
+
+    /// <summary>
+    /// Verifies the user email
+    /// </summary>
     public void VerifyEmail()
     {
-        EmailVerified = true;
-        EmailVerifiedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-        RaiseEvent(new UserEmailVerifiedEvent(Id, Email));
-    }
-
-    public void EnableMfa(string secret)
-    {
-        MfaEnabled = true;
-        MfaSecret = secret;
-        UpdatedAt = DateTime.UtcNow;
-        RaiseEvent(new UserMfaEnabledEvent(Id, Email));
-    }
-
-    public void DisableMfa()
-    {
-        MfaEnabled = false;
-        MfaSecret = null;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void Lock()
-    {
-        Status = "Locked";
-        LastLockedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-        RaiseEvent(new UserLockedEvent(Id, Email));
-    }
-
-    public void Unlock()
-    {
-        Status = "Active";
-        LoginFailureCount = 0;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void RecordLoginFailure()
-    {
-        LoginFailureCount++;
-        if (LoginFailureCount >= 5)
+        IsEmailVerified = true;
+        if (Status == UserStatus.PendingEmailVerification)
         {
-            Lock();
+            Status = UserStatus.Active;
         }
-        UpdatedAt = DateTime.UtcNow;
+        ModifiedAt = DateTime.UtcNow;
     }
 
-    public void RecordLoginSuccess()
+    /// <summary>
+    /// Suspends the user account
+    /// </summary>
+    public void Suspend()
     {
-        LastLoginAt = DateTime.UtcNow;
-        LoginFailureCount = 0;
-        UpdatedAt = DateTime.UtcNow;
-        RaiseEvent(new UserLoggedInEvent(Id, Email, LastLoginAt.Value));
+        if (Status != UserStatus.Suspended)
+        {
+            Status = UserStatus.Suspended;
+            ModifiedAt = DateTime.UtcNow;
+        }
     }
 
-    public void SoftDelete()
+    /// <summary>
+    /// Reactivates the user account
+    /// </summary>
+    public void Reactivate()
     {
-        IsDeleted = true;
-        DeletedAt = DateTime.UtcNow;
-        Status = "Inactive";
-        UpdatedAt = DateTime.UtcNow;
-        RaiseEvent(new UserDeletedEvent(Id, Email));
+        if (Status == UserStatus.Suspended || Status == UserStatus.LockedOut)
+        {
+            Status = UserStatus.Active;
+            FailedLoginAttempts = 0;
+            ModifiedAt = DateTime.UtcNow;
+        }
     }
 
-    public void LinkExternalProvider(string provider, string providerId)
+    /// <summary>
+    /// Disables the user account
+    /// </summary>
+    public void Disable()
     {
-        ExternalProvider = provider;
-        ExternalProviderId = providerId;
-        UpdatedAt = DateTime.UtcNow;
+        Status = UserStatus.Disabled;
+        ModifiedAt = DateTime.UtcNow;
     }
 
-    public void RaiseEvent(object @event) => _domainEvents.Add(@event);
-    public IReadOnlyList<object> GetDomainEvents() => _domainEvents.AsReadOnly();
-    public void ClearDomainEvents() => _domainEvents.Clear();
-}
+    /// <summary>
+    /// Adds a role to the user
+    /// </summary>
+    /// <param name="role">The role to add</param>
+    public void AddRole(Role role)
+    {
+        if (role == null)
+            throw new ArgumentNullException(nameof(role));
 
-/// <summary>
-/// Role - Role definition for RBAC
-/// </summary>
-public class Role
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty; // Admin, Doctor, Nurse, Patient, Receptionist
-    public string Description { get; set; } = string.Empty;
-    public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+        if (_roles.Any(r => r.RoleId == role.Id))
+            return;
 
-    public ICollection<UserRole> UserRoles { get; } = new List<UserRole>();
-    public ICollection<RolePermission> RolePermissions { get; } = new List<RolePermission>();
-}
+        var userRole = new UserRole(Id, role.Id);
+        _roles.Add(userRole);
+        ModifiedAt = DateTime.UtcNow;
+    }
 
-/// <summary>
-/// Permission - Permission definition (resource + action)
-/// </summary>
-public class Permission
-{
-    public Guid Id { get; set; }
-    public string Resource { get; set; } = string.Empty; // Patient, Appointment, Invoice, etc.
-    public string Action { get; set; } = string.Empty; // Create, Read, Update, Delete, Export
-    public string Description { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
+    /// <summary>
+    /// Removes a role from the user
+    /// </summary>
+    /// <param name="roleId">The role ID to remove</param>
+    public void RemoveRole(Guid roleId)
+    {
+        var role = _roles.FirstOrDefault(r => r.RoleId == roleId);
+        if (role != null)
+        {
+            _roles.Remove(role);
+            ModifiedAt = DateTime.UtcNow;
+        }
+    }
 
-    public ICollection<RolePermission> RolePermissions { get; } = new List<RolePermission>();
-}
-
-/// <summary>
-/// UserRole - Many-to-many relationship between User and Role
-/// </summary>
-public class UserRole
-{
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid RoleId { get; set; }
-    public DateTime AssignedAt { get; set; }
-
-    public User User { get; set; } = null!;
-    public Role Role { get; set; } = null!;
-}
-
-/// <summary>
-/// RolePermission - Many-to-many relationship between Role and Permission
-/// </summary>
-public class RolePermission
-{
-    public Guid Id { get; set; }
-    public Guid RoleId { get; set; }
-    public Guid PermissionId { get; set; }
-    public DateTime AssignedAt { get; set; }
-
-    public Role Role { get; set; } = null!;
-    public Permission Permission { get; set; } = null!;
-}
-
-/// <summary>
-/// RefreshToken - JWT refresh token tracking for token management
-/// </summary>
-public class RefreshToken
-{
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public string Token { get; set; } = string.Empty;
-    public DateTime ExpiresAt { get; set; }
-    public bool IsRevoked { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? RevokedAt { get; set; }
-    public string? ReplacedByToken { get; set; }
-
-    public User User { get; set; } = null!;
-
-    public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
-    public bool IsActive => !IsRevoked && !IsExpired;
-}
-
-// Domain Events
-public record UserCreatedEvent(Guid UserId, string Email, string FirstName, string LastName)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
-}
-
-public record UserUpdatedEvent(Guid UserId, string Email)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
-}
-
-public record UserDeletedEvent(Guid UserId, string Email)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
-}
-
-public record PasswordChangedEvent(Guid UserId, string Email)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
-}
-
-public record UserEmailVerifiedEvent(Guid UserId, string Email)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
-}
-
-public record UserMfaEnabledEvent(Guid UserId, string Email)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
-}
-
-public record UserLockedEvent(Guid UserId, string Email)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
-}
-
-public record UserLoggedInEvent(Guid UserId, string Email, DateTime LoginTime)
-{
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+    /// <summary>
+    /// Gets a value indicating whether the user is active
+    /// </summary>
+    public bool IsActive => Status == UserStatus.Active;
 }

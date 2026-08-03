@@ -1,4 +1,4 @@
-﻿namespace EHRPlatform.Services.Identity.Domain.Entities;
+﻿namespace Identity.Domain.Entities;
 
 /// <summary>
 /// Role permission assignment.

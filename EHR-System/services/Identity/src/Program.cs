@@ -3,6 +3,7 @@ using EHRPlatform.BuildingBlocks.Common.Application.Common.Extensions;
 using EHRPlatform.BuildingBlocks.Observability.HealthChecks;
 using EHRPlatform.BuildingBlocks.Common.Search;
 using EHRPlatform.BuildingBlocks.Security.Authentication;
+using EHRPlatform.BuildingBlocks.Security.Jwt;
 using EHRPlatform.BuildingBlocks.Common.Data.Migrations;
 using EHRPlatform.Services.Identity.Application.Identity.Extensions;
 using EHRPlatform.Services.Identity.Data;
@@ -103,8 +104,22 @@ try
     var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "ehr-api";
     var jwtExpMin   = int.TryParse(builder.Configuration["Jwt:ExpirationMinutes"], out var m) ? m : 60;
 
-    builder.Services.AddSingleton<IJwtTokenService>(
-        new JwtTokenService(jwtSecret, jwtIssuer, jwtAudience, jwtExpMin));
+    // Use building-blocks JWT provider
+    var jwtSettings = new JwtSettings
+    {
+        SecretKey = jwtSecret,
+        Issuer = jwtIssuer,
+        Audience = jwtAudience,
+        AccessTokenExpirationMinutes = jwtExpMin,
+        RefreshTokenExpirationDays = 7,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ClockSkewSeconds = 0
+    };
+    builder.Services.AddSingleton(jwtSettings);
+    builder.Services.AddScoped<IJwtTokenProvider, JwtTokenProvider>();
     builder.Services.AddJwtAuthentication(jwtSecret, jwtIssuer, jwtAudience);
 
     // â”€â”€ Redis Caching (optional â€” degrades gracefully if unavailable) â”€â”€â”€â”€â”€â”€â”€â”€â”€
