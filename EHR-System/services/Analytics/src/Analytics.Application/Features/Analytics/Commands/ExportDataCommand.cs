@@ -18,4 +18,5 @@ public record ExportDataResponse(
     bool Success,
     string Message,
     byte[]? FileContent = null,
-    string? FileName = null);
+    string? FileName = null,
+    Guid? ExportId = null);

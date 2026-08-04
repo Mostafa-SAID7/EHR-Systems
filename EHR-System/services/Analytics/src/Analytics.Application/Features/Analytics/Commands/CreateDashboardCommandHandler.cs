@@ -4,25 +4,34 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using EHRPlatform.Services.Analytics.Domain.Entities;
 using EHRPlatform.Services.Analytics.Domain.Repositories;
+using EHRPlatform.Services.Analytics.Domain.Events;
 using EHRPlatform.Services.Analytics.Contracts.Responses;
 using EHRPlatform.BuildingBlocks.Security.MultiTenancy;
+using EHRPlatform.BuildingBlocks.Security.CurrentUser;
+using EHRPlatform.BuildingBlocks.EventBus;
 
 /// <summary>
-/// Handler for creating dashboard
+/// Handler for creating dashboard with event publishing
 /// </summary>
 public class CreateDashboardCommandHandler : IRequestHandler<CreateDashboardCommand, CreateDashboardResponse>
 {
     private readonly IDashboardRepository _dashboardRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IMessageBroker _messageBroker;
     private readonly ILogger<CreateDashboardCommandHandler> _logger;
 
     public CreateDashboardCommandHandler(
         IDashboardRepository dashboardRepository,
         ITenantContext tenantContext,
+        ICurrentUserService currentUserService,
+        IMessageBroker messageBroker,
         ILogger<CreateDashboardCommandHandler> logger)
     {
         _dashboardRepository = dashboardRepository;
         _tenantContext = tenantContext;
+        _currentUserService = currentUserService;
+        _messageBroker = messageBroker;
         _logger = logger;
     }
 
@@ -58,6 +67,16 @@ public class CreateDashboardCommandHandler : IRequestHandler<CreateDashboardComm
 
             // Save to repository
             var savedDashboard = await _dashboardRepository.AddAsync(dashboard);
+
+            // Publish DashboardCreatedEvent for event sourcing and notifications
+            var createdEvent = new DashboardCreatedEvent(
+                savedDashboard.Id,
+                savedDashboard.Name,
+                savedDashboard.CreatedBy,
+                tenantId,
+                savedDashboard.CreatedAt);
+
+            await _messageBroker.PublishAsync(createdEvent, cancellationToken);
 
             _logger.LogInformation("Dashboard created successfully: {DashboardId}", savedDashboard.Id);
 
