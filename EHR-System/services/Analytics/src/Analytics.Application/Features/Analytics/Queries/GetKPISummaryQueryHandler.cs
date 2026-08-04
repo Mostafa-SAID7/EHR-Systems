@@ -4,20 +4,28 @@ using MediatR;
 using EHRPlatform.Services.Analytics.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using EHRPlatform.BuildingBlocks.Caching;
+using EHRPlatform.BuildingBlocks.Security.MultiTenancy;
 
 /// <summary>
-/// Handler for GetKPISummaryQuery - Retrieves KPI summary.
+/// Handler for GetKPISummaryQuery - Retrieves KPI summary with 15-minute cache.
 /// </summary>
 public class GetKPISummaryQueryHandler : IRequestHandler<GetKPISummaryQuery, GetKPISummaryResponse>
 {
     private readonly IAnalyticsDbContext _context;
+    private readonly ICacheService _cacheService;
+    private readonly ITenantContext _tenantContext;
     private readonly ILogger<GetKPISummaryQueryHandler> _logger;
 
     public GetKPISummaryQueryHandler(
         IAnalyticsDbContext context,
+        ICacheService cacheService,
+        ITenantContext tenantContext,
         ILogger<GetKPISummaryQueryHandler> logger)
     {
         _context = context;
+        _cacheService = cacheService;
+        _tenantContext = tenantContext;
         _logger = logger;
     }
 
@@ -28,8 +36,35 @@ public class GetKPISummaryQueryHandler : IRequestHandler<GetKPISummaryQuery, Get
 
         try
         {
+            var tenantId = _tenantContext.TenantId;
+            if (tenantId == 0)
+            {
+                return new GetKPISummaryResponse
+                {
+                    Success = false,
+                    Message = "Tenant context not available"
+                };
+            }
+
+            // Generate cache key
+            var cacheKey = $"kpi:summary:{tenantId}:{queryDate:yyyyMMdd}";
+
+            // Check cache (15 minutes)
+            var cachedSummary = await _cacheService.GetAsync<KPISummaryDto>(cacheKey);
+            if (cachedSummary != null)
+            {
+                _logger.LogInformation("Retrieved KPI summary from cache");
+                return new GetKPISummaryResponse
+                {
+                    Success = true,
+                    Summary = cachedSummary
+                };
+            }
+
+            // Get from database
             var summary = await _context.KPISummaries
-                .FirstOrDefaultAsync(k => k.SummaryDate.Date == queryDate, cancellationToken);
+                .Where(k => k.SummaryDate.Date == queryDate && k.TenantId == tenantId)
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (summary == null)
             {
@@ -58,6 +93,9 @@ public class GetKPISummaryQueryHandler : IRequestHandler<GetKPISummaryQuery, Get
                 ApiCallCount = summary.ApiCallCount,
                 AverageResponseTimeMs = summary.AverageResponseTimeMs
             };
+
+            // Cache for 15 minutes
+            await _cacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(15));
 
             return new GetKPISummaryResponse
             {

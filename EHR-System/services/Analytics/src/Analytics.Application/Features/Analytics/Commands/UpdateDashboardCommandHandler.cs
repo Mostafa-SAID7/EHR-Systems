@@ -7,6 +7,7 @@ using EHRPlatform.Services.Analytics.Domain.Exceptions;
 using EHRPlatform.Services.Analytics.Contracts.Responses;
 using EHRPlatform.BuildingBlocks.Caching;
 using EHRPlatform.BuildingBlocks.EventBus;
+using EHRPlatform.BuildingBlocks.Security.MultiTenancy;
 
 /// <summary>
 /// Handler for updating dashboard
@@ -16,17 +17,20 @@ public class UpdateDashboardCommandHandler : IRequestHandler<UpdateDashboardComm
     private readonly IDashboardRepository _dashboardRepository;
     private readonly ICacheService _cacheService;
     private readonly IMessageBroker _messageBroker;
+    private readonly ITenantContext _tenantContext;
     private readonly ILogger<UpdateDashboardCommandHandler> _logger;
 
     public UpdateDashboardCommandHandler(
         IDashboardRepository dashboardRepository,
         ICacheService cacheService,
         IMessageBroker messageBroker,
+        ITenantContext tenantContext,
         ILogger<UpdateDashboardCommandHandler> logger)
     {
         _dashboardRepository = dashboardRepository;
         _cacheService = cacheService;
         _messageBroker = messageBroker;
+        _tenantContext = tenantContext;
         _logger = logger;
     }
 
@@ -62,6 +66,8 @@ public class UpdateDashboardCommandHandler : IRequestHandler<UpdateDashboardComm
 
             // Clear cache
             await _cacheService.RemoveAsync($"dashboard:{command.DashboardId}");
+            await _cacheService.RemoveAsync("dashboards:all");
+            await _cacheService.RemoveAsync($"kpi:summary:{_tenantContext.TenantId}:{DateTime.UtcNow.Date:yyyyMMdd}");
 
             _logger.LogInformation("Dashboard updated successfully: {DashboardId}", command.DashboardId);
 
