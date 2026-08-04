@@ -12,17 +12,8 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
-        return services;
-    }
-}
-
-namespace EHRPlatform.Services.Analytics.Domain;
-
-public static class DependencyInjection
-{
-    public static IServiceCollection AddDomainServices(this IServiceCollection services)
-    {
-        // Register domain services here
+        // Domain services are typically injected through other layers
+        // Repository implementations are registered in Persistence/Infrastructure layers
         return services;
     }
 }

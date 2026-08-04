@@ -1,9 +1,12 @@
 using EHRPlatform.Services.Analytics.Persistence;
 using EHRPlatform.Services.Analytics.Infrastructure.Kafka;
+using EHRPlatform.Services.Analytics.Infrastructure;
 using EHRPlatform.BuildingBlocks.Common.Caching;
 using EHRPlatform.BuildingBlocks.Security.MultiTenancy;
 using EHRPlatform.BuildingBlocks.Security.CurrentUser;
 using EHRPlatform.BuildingBlocks.EventBus.Broker;
+using EHRPlatform.Observability.Telemetry;
+using EHRPlatform.Observability.ErrorReporting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -81,6 +84,16 @@ builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IMessageBroker, MessageBroker>();
+
+// Observability & Telemetry Services
+builder.Services.AddSingleton<ApplicationMetrics>();
+builder.Services.AddScoped<IPerformanceMonitor, PerformanceMonitor>();
+builder.Services.AddScoped<ITelemetryService, TelemetryService>();
+builder.Services.AddScoped<IErrorMetrics, ErrorMetrics>();
+builder.Services.AddScoped<IErrorReporter, ErrorReporter>();
+
+// Persistence Services
+builder.Services.AddPersistenceServices();
 
 // Health checks
 builder.Services.AddHealthChecks()

@@ -123,4 +123,36 @@ public class ApplicationMetrics
     {
         return ActivitySource;
     }
+
+    /// <summary>
+    /// Generic counter increment by metric name
+    /// </summary>
+    public void IncrementCounter(string metricName, long value = 1)
+    {
+        // Route to appropriate counter based on metric name
+        switch (metricName.ToLowerInvariant())
+        {
+            case "patientcreated" or "ehr.patient.created":
+                _patientCreatedCounter.Add(value);
+                break;
+            case "patientdeleted" or "ehr.patient.deleted":
+                _patientDeletedCounter.Add(value);
+                break;
+            case "appointmentscheduled" or "ehr.appointment.scheduled":
+                _appointmentScheduledCounter.Add(value);
+                break;
+            case "appointmentcancelled" or "ehr.appointment.cancelled":
+                _appointmentCancelledCounter.Add(value);
+                break;
+            case "clinicalnotecreated" or "ehr.clinical.note.created":
+                _clinicalNoteCreatedCounter.Add(value);
+                break;
+            case "invoicegenerated" or "ehr.invoice.generated":
+                _invoiceGeneratedCounter.Add(value);
+                break;
+            case "paymentprocessed" or "ehr.payment.processed":
+                _paymentProcessedCounter.Add(value);
+                break;
+        }
+    }
 }

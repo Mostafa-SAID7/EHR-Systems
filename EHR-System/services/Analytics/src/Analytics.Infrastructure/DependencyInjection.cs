@@ -12,16 +12,6 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
-        return services;
-    }
-}
-
-namespace EHRPlatform.Services.Analytics.Infrastructure;
-
-public static class DependencyInjection
-{
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
-    {
         // Register infrastructure services here (Kafka, external APIs, etc.)
         return services;
     }

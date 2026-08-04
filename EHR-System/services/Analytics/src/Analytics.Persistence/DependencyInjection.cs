@@ -1,6 +1,8 @@
 namespace EHRPlatform.Services.Analytics.Persistence;
 
 using Microsoft.Extensions.DependencyInjection;
+using EHRPlatform.Services.Analytics.Domain.Repositories;
+using EHRPlatform.Services.Analytics.Persistence.Repositories;
 
 /// <summary>
 /// Dependency injection for Analytics Persistence layer
@@ -8,29 +10,16 @@ using Microsoft.Extensions.DependencyInjection;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Adds persistence services
+    /// Adds persistence services and repositories
     /// </summary>
     public static IServiceCollection AddPersistenceServices(this IServiceCollection services)
     {
+        // Register repository implementations
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IKPIRepository, KPIRepository>();
+        services.AddScoped<IMetricRepository, AnalyticsMetricRepository>();
+
         return services;
     }
 }
-using Microsoft.Extensions.DependencyInjection;
 
-namespace EHRPlatform.Services.Analytics.Persistence;
-
-public static class DependencyInjection
-{
-    public static IServiceCollection AddPersistenceServices(
-        this IServiceCollection services,
-        string connectionString)
-    {
-        // Register DbContext
-        services.AddDbContext<AnalyticsDbContext>(options =>
-            options.UseSqlServer(connectionString));
-
-        // Register repositories here
-        
-        return services;
-    }
-}
