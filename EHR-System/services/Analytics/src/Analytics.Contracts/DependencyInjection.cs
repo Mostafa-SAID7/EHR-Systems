@@ -12,16 +12,6 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddContractServices(this IServiceCollection services)
     {
-        return services;
-    }
-}
-
-namespace EHRPlatform.Services.Analytics.Contracts;
-
-public static class DependencyInjection
-{
-    public static IServiceCollection AddContractServices(this IServiceCollection services)
-    {
         // Contract-level service registrations
         return services;
     }

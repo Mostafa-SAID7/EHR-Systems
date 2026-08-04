@@ -6,44 +6,44 @@ using EHRPlatform.Services.Analytics.Domain.Entities;
 namespace EHRPlatform.Services.Analytics.Domain.Repositories;
 
 /// <summary>
-/// Repository interface for KPI entity
+/// Repository interface for KPISummary entity
 /// </summary>
 public interface IKPIRepository
 {
     /// <summary>
     /// Get KPI by ID
     /// </summary>
-    Task<KPI?> GetByIdAsync(Guid id);
+    Task<KPISummary?> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Get all KPIs for tenant
     /// </summary>
-    Task<IEnumerable<KPI>> GetAllAsync(long tenantId);
+    Task<IEnumerable<KPISummary>> GetAllAsync(long tenantId);
 
     /// <summary>
     /// Get KPIs by category
     /// </summary>
-    Task<IEnumerable<KPI>> GetByCategoryAsync(string category, long tenantId);
+    Task<IEnumerable<KPISummary>> GetByCategoryAsync(string category, long tenantId);
 
     /// <summary>
     /// Get KPIs for dashboard
     /// </summary>
-    Task<IEnumerable<KPI>> GetByDashboardAsync(Guid dashboardId);
+    Task<IEnumerable<KPISummary>> GetByDashboardAsync(Guid dashboardId);
 
     /// <summary>
     /// Get KPI by name
     /// </summary>
-    Task<KPI?> GetByNameAsync(string name, long tenantId);
+    Task<KPISummary?> GetByNameAsync(string name, long tenantId);
 
     /// <summary>
     /// Add new KPI
     /// </summary>
-    Task<KPI> AddAsync(KPI kpi);
+    Task<KPISummary> AddAsync(KPISummary kpi);
 
     /// <summary>
     /// Update existing KPI
     /// </summary>
-    Task<KPI> UpdateAsync(KPI kpi);
+    Task<KPISummary> UpdateAsync(KPISummary kpi);
 
     /// <summary>
     /// Delete KPI

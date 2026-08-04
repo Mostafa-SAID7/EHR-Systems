@@ -1,6 +1,7 @@
 namespace EHRPlatform.Services.Analytics.Application.Features.Analytics.Commands;
 
 using MediatR;
+using EHRPlatform.Services.Analytics.Contracts.Responses;
 
 /// <summary>
 /// Command to create new dashboard.
@@ -13,9 +14,3 @@ public class CreateDashboardCommand : IRequest<CreateDashboardResponse>
     public bool IsPublic { get; set; } = false;
 }
 
-public class CreateDashboardResponse
-{
-    public bool Success { get; set; }
-    public string? Message { get; set; }
-    public Guid? DashboardId { get; set; }
-}
