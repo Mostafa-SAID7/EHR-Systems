@@ -1,11 +1,9 @@
-using System;
-
 namespace EHRPlatform.Services.Analytics.Domain.Exceptions;
 
 /// <summary>
-/// Exception thrown when metric validation fails
+/// Exception thrown when metric data is invalid
 /// </summary>
-public class InvalidMetricException : Exception
+public class InvalidMetricException : DomainException
 {
     public InvalidMetricException(string message) : base(message)
     {
@@ -16,18 +14,27 @@ public class InvalidMetricException : Exception
     {
     }
 
-    public static InvalidMetricException MetricNotFound(Guid id)
-        => new($"Metric with ID '{id}' not found.");
+    /// <summary>
+    /// Factory method for invalid metric name
+    /// </summary>
+    public static InvalidMetricException InvalidName(string name) =>
+        new($"Metric name '{name}' is invalid");
 
-    public static InvalidMetricException MetricNameRequired()
-        => new("Metric name is required.");
+    /// <summary>
+    /// Factory method for invalid metric category
+    /// </summary>
+    public static InvalidMetricException InvalidCategory(string category) =>
+        new($"Metric category '{category}' is not recognized");
 
-    public static InvalidMetricException InvalidMetricValue(double value)
-        => new($"Invalid metric value: {value}");
+    /// <summary>
+    /// Factory method for invalid metric unit
+    /// </summary>
+    public static InvalidMetricException InvalidUnit(string unit) =>
+        new($"Metric unit '{unit}' is not recognized");
 
-    public static InvalidMetricException CategoryRequired()
-        => new("Metric category is required.");
-
-    public static InvalidMetricException SourceServiceRequired()
-        => new("Source service is required.");
+    /// <summary>
+    /// Factory method for metric not found
+    /// </summary>
+    public static InvalidMetricException NotFound(Guid metricId) =>
+        new($"Metric '{metricId}' not found");
 }
